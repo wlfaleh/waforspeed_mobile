@@ -141,140 +141,147 @@ void ouvrir() {
 void fermer() { if (g.ouvert) WFS_LOG("profil (WFS-482) : écran fermé"); g.ouvert = false; g.doigt = -1; g.cible = RIEN; }
 bool ouvert() { return g.ouvert; }
 
+// WFS-557 (maquette 21 ; arbitrage du PO du 2026-11-16 : maquette à 100 %, boutons compris). Unité k = H / 720 (maquette
+// 1600 × 720) ; positions relevées sur la maquette, depuis la zone sûre. Pas de grande fenêtre : en-tête (sur-titre, pseudo,
+// « Pilote depuis », plaque à côté du nom), « ✎ Modifier » en verre en haut à droite, 6 tuiles de chiffres (3 × 2), panneau
+// « Records », panneau « Dernières courses » (cartes), autocollant « Retour / Menu principal » en bas à droite.
 void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     if (!g.ouvert || !ui::fontReady()) return;
     const textes::Journal journal;   // banc « textes » : textes de cet écran
     if (g.tOuvert < 0) g.tOuvert = temps;
     const float op = (float)std::clamp((temps - g.tOuvert) / 0.25, 0.0, 1.0);   // fondu d'entrée de 250 ms
-    const bool cp = ui::petitEcran(W, H);
-    const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
+    const float k = H / 720.f;
     g.dp = ui::pixelsParDp(W);
     const Sauvegarde& s = sauvegarde();
     const Profil& p = s.profil;
-    // WFS-548 (RG-01 à RG-03, maquette 21) : écran arrêté : fond flouté et assombri, fenêtre de verre dépoli (plus de liseré cyan)
     verre::fenetreSurEcran(r);   // menu dessous : son interface n'est plus dessinée (verre::couvert)
-    verre::assombrir(r, W, H, 0.55f * op);
-    const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
-    const float pw = std::min(zr - zl, 1040 * k), px = zl + (zr - zl - pw) / 2;
-    const float py = m.haut + (cp ? 8 : 24) * k, ph = H - py - m.bas - (cp ? 8 : 24) * k;
-    verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * kb});
-    const float x0 = px + 24 * k, x1 = px + pw - 24 * k;
-    // ---- en-tête (RG-02) : sur-titre, pseudo, « Pilote depuis le … », plaque à droite
-    float y = py + 14 * k;
-    verre::surTitre(r, x0, y, 12 * k, ui::tr("profil.surtitre"));
-    const float wPlaque = 170 * k;
-    const float largeurPseudo = x1 - wPlaque - 24 * k - (x0 + 14 * k);
-    const float tPseudo = 30 * k;
-    r.uiRect(x0, y + 22 * k, 4 * k, 26 * k, hex(ACCENT));   // barre néon du pseudo
+    verre::assombrir(r, W, H, 0.62f * op);
+    const float x0 = m.gauche + 56 * k, x1 = W - m.droite - 31 * k, y0 = m.haut;
+    // ---- en-tête : sur-titre, pseudo (Rajdhani italique 70), date d'arrivée (Inter), plaque à côté du nom
+    verre::surTitre(r, x0, y0 + 37 * k, 16 * k, ui::tr("profil.surtitre"));
+    const float tPseudo = 70 * k, placePseudo = 400 * k;
+    float finPseudo;
     {
         const textes::NomPropre np;   // pseudo du joueur : rien à traduire
-        const float pris = ui::textBoite(r, x0 + 14 * k, y + 18 * k, largeurPseudo, 34 * k, tPseudo, s.nick, hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
-        g.pseudoEntier = ui::width(pris, s.nick, 0.02f) <= largeurPseudo + 0.5f;   // RG-08 : jamais coupé
+        const std::string nom = ui::majuscules(s.nick);
+        const float pris = ui::textBoite(r, x0 + 2 * k, y0 + 46 * k, placePseudo, tPseudo, tPseudo, nom, hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+        g.pseudoEntier = ui::width(pris, nom, 0.01f) <= placePseudo + 0.5f;   // RG-08 : jamais coupé
+        finPseudo = x0 + 2 * k + std::min(placePseudo, ui::width(pris, nom, 0.01f));
     }
-    ui::text(r, x0 + 14 * k, y + 56 * k, 14 * k, ui::tr("profil.depuis", date(p.arrivee)), hex(MUTED), ui::GAUCHE, 0, false);
-    dessinerApercuPlaque(r, x1 - wPlaque, y + 22 * k, wPlaque, p.plaque, k);
-    y += 84 * k;
-    r.uiRect(x0, y, x1 - x0, std::max(1.f, kb), hex(TEXTE, 0.08f));   // séparation
-    y += 14 * k;
-    const float yCorps = y;
-    // ---- colonne de gauche : chiffres (RG-03), records (RG-04), voiture préférée (RG-05)
-    const float lg = (x1 - x0) * 0.47f;
+    { ui::AvecPolice police(ui::Police::Inter);
+      ui::text(r, x0, y0 + 103 * k, 15 * k, ui::tr("profil.depuis", date(p.arrivee)), hex(0xC9CDDA), ui::GAUCHE, 0, false); }
+    dessinerApercuPlaque(r, std::max(x0 + 201 * k, finPseudo + 44 * k), y0 + 53 * k, 230 * k, p.plaque, k);
+    // ---- « ✎ Modifier » : 158 × 51, en haut à droite
+    const bool pRet = g.doigt >= 0 && g.cible == RETOUR, pMod = g.doigt >= 0 && g.cible == MODIFIER;
     {
-        struct Chiffre { const char* cle; std::string valeur; };
-        const Chiffre ch[5] = {{"profil.courses", ui::nombre(p.courses)}, {"profil.km", ui::decimal(p.km(), 1)},
-                               {"profil.vmax", ui::tr("profil.kmh", std::to_string(p.vmax))}, {"profil.frolements", ui::nombre(p.frolements)},
-                               {"profil.victoires", ui::nombre(p.victoires)}};
-        const float cw = lg / 3, nh = 24 * k;
-        for (int i = 0; i < 5; i++) {
-            const float cx = x0 + (i % 3) * cw, cy = y + (i / 3) * (nh + 30 * k);
-            verre::Style tuile; tuile.rayon = 8 * k; tuile.lisere = kb; tuile.ombre = false; tuile.force = 0.55f;   // WFS-548 : tuile de verre
-            verre::panneau(r, cx - 8 * k, cy - 6 * k, cw - 4 * k, nh + 26 * k, tuile);
-            ui::textBoite(r, cx, cy, cw - 10 * k, nh, nh, ch[i].valeur, hex(TEXTE), ui::GAUCHE, 0, false, true);
-            ui::textBoite(r, cx, cy + nh + 2 * k, cw - 10 * k, 14 * k, 12 * k, ui::majuscules(ui::tr(ch[i].cle)), hex(MUTED), ui::GAUCHE, 0.10f);
-        }
-        y += 2 * (nh + 30 * k) + 2 * k;
+        const float tp = 21 * k, w = 158 * k, h = 51 * k;
+        g.modifier = {x1 - w, y0 + 40 * k, w, h};
+        ui::boutons::verreIcone(r, g.modifier.x, g.modifier.y, w, h, ui::boutons::Icone::Crayon, ui::majuscules(ui::tr("profil.modifier")), op, pMod, tp,
+                                {14 * k, 0, nullptr, 0.08f});
     }
-    verre::surTitre(r, x0, y, 12 * k, ui::tr("profil.records"));
-    y += 20 * k;
-    {
-        struct Rec { std::string mode, valeur; };
-        const Rec rec[3] = {{ui::tr("mode.checkpoint"), recordCheckpoint()}, {ui::tr("mode.course5"), recordCourse5()}, {ui::tr("mode.poursuite"), recordPoursuite()}};
-        for (const Rec& rc : rec) {
-            ui::textBoite(r, x0, y, lg * 0.42f, 20 * k, 14 * k, rc.mode, hex(MUTED), ui::GAUCHE, 0);
-            ui::textBoite(r, x0 + lg, y, lg * 0.56f, 20 * k, 15 * k, rc.valeur, hex(TEXTE), ui::DROITE, 0);
-            y += 22 * k;
-        }
-    }
-    y += 8 * k;
-    verre::surTitre(r, x0, y, 12 * k, ui::tr("profil.voiture"));
-    y += 20 * k;
+    // ---- 6 tuiles (203 × 82 puis 203 × 98, écarts de 14) : courses, km, km/h max, frôlements, victoires, voiture préférée
     {
         const std::string id = p.voiturePreferee();
-        if (id == "—") ui::textBoite(r, x0, y, lg, 22 * k, 15 * k, ui::tr("profil.aucune_voiture"), hex(MUTED), ui::GAUCHE, 0);
-        else {
+        std::string kmVoiture = "—", libVoiture = ui::majuscules(ui::tr("profil.voiture"));
+        if (id != "—") {
             const auto it = p.parVoiture.find(id);
-            const double km = it != p.parVoiture.end() ? it->second.metres / 1000.0 : 0;
-            const std::string nom = ui::majuscules(nomVoiture(id));
-            { const textes::NomPropre np; ui::textBoite(r, x0, y, lg * 0.66f, 22 * k, 17 * k, nom, hex(TEXTE), ui::GAUCHE, 0.04f, false, true); }
-            ui::textBoite(r, x0 + lg, y, lg * 0.32f, 22 * k, 15 * k, ui::tr("profil.km_valeur", ui::decimal(km, 1)), hex(ACCENT2), ui::DROITE, 0);
+            kmVoiture = ui::tr("profil.km_valeur", ui::decimal(it != p.parVoiture.end() ? it->second.metres / 1000.0 : 0, 0));
+            libVoiture += " · " + ui::majuscules(nomVoiture(id));
+        }
+        struct Tuile { std::string valeur, libelle; };
+        const Tuile t[6] = {{ui::nombre(p.courses), ui::tr("profil.courses")}, {ui::decimal(p.km(), 1), ui::tr("profil.km")},
+                            {std::to_string(p.vmax), ui::tr("profil.vmax")}, {ui::nombre(p.frolements), ui::tr("profil.frolements")},
+                            {ui::nombre(p.victoires), ui::tr("profil.victoires")}, {kmVoiture, libVoiture}};
+        const float tw = 203 * k, ecart = 14 * k;
+        for (int i = 0; i < 6; i++) {
+            const float tx = x0 + (i % 3) * (tw + ecart) + 1 * k, ty = y0 + (i < 3 ? 171 : 267) * k, th = (i < 3 ? 82 : 98) * k;
+            verre::Style st; st.rayon = 12 * k; st.lisere = 1.2f * k; st.ombre = false; st.force = 0.7f; st.opacite = op;
+            verre::panneau(r, tx, ty, tw, th, st);
+            { const textes::NomPropre np;   // chiffres et nom de voiture
+              ui::textBoite(r, tx + 16 * k, ty + 16 * k, tw - 32 * k, 40 * k, 48 * k, t[i].valeur, hex(TEXTE, op), ui::GAUCHE, 0, false, true); }
+            // libellé en capitales espacées (Inter Medium), sur deux lignes s'il ne tient pas (voiture préférée)
+            ui::AvecPolice police(ui::Police::InterMedium);
+            const std::string lib = ui::majuscules(t[i].libelle);
+            const float lp = 13 * k, esp = 0.18f, place = tw - 32 * k;
+            if (ui::width(lp, lib, esp) <= place) ui::text(r, tx + 16 * k, ty + 57 * k, lp, lib, hex(0xA3A8B5, op), ui::GAUCHE, esp, false);
+            else {
+                size_t coupe = std::string::npos;
+                for (size_t c = lib.find(' '); c != std::string::npos; c = lib.find(' ', c + 1))
+                    if (ui::width(lp, lib.substr(0, c), esp) <= place) coupe = c; else break;
+                const std::string l1 = coupe == std::string::npos ? lib : lib.substr(0, coupe), l2 = coupe == std::string::npos ? "" : lib.substr(coupe + 1);
+                ui::textBoite(r, tx + 16 * k, ty + 57 * k, place, lp, lp, l1, hex(0xA3A8B5, op), ui::GAUCHE, esp);
+                if (!l2.empty()) ui::textBoite(r, tx + 16 * k, ty + 71 * k, place, lp, lp, l2, hex(0xA3A8B5, op), ui::GAUCHE, esp);
+            }
         }
     }
-    // ---- colonne de droite : 20 dernières courses (RG-06), puis « Modifier » et « Retour » (RG-07, RG-01)
-    const float rx = x0 + lg + 28 * k, rw = x1 - rx;
-    const float bh = 50 * kb, by = py + ph - 14 * k - bh;
-    verre::surTitre(r, rx, yCorps, 12 * k, ui::tr("profil.historique"));
+    // ---- panneau « Records » : 638 × 196, rangs de 48
     {
+        const float rx = x0 + 1 * k, ry = y0 + 431 * k, rw = 638 * k, rh = 196 * k;
+        verre::Style st; st.rayon = 16 * k; st.lisere = 1.2f * k; st.ombre = false; st.force = 0.7f; st.opacite = op;
+        verre::panneau(r, rx, ry, rw, rh, st);
+        verre::surTitre(r, rx + 17 * k, ry + 16 * k, 14 * k, ui::tr("profil.records"), ui::GAUCHE, op);
+        struct Rec { std::string mode, valeur; };
+        const Rec rec[3] = {{ui::tr("mode.checkpoint"), recordCheckpoint()}, {ui::tr("mode.course5"), recordCourse5()}, {ui::tr("mode.poursuite"), recordPoursuite()}};
+        for (int i = 0; i < 3; i++) {
+            const float base = ry + (66 + 48 * i) * k;
+            { ui::AvecPolice police(ui::Police::InterMedium);
+              ui::textBoite(r, rx + 33 * k, base - 12 * k, rw * 0.40f, 16 * k, 16 * k, rec[i].mode, hex(TEXTE, op), ui::GAUCHE, 0); }
+            ui::textBoite(r, rx + rw - 32 * k, base - 13 * k, rw * 0.52f, 22 * k, 22 * k, rec[i].valeur, hex(TEXTE, op), ui::DROITE, 0, false, true);
+        }
+    }
+    // ---- panneau « Dernières courses » : 798 × 428, cartes de 55 tous les 63
+    const float lx0 = x0 + 685 * k, lyP = y0 + 171 * k, lwP = std::min(798 * k, x1 - 31 * k - lx0), lhP = 428 * k;
+    {
+        verre::Style st; st.rayon = 16 * k; st.lisere = 1.2f * k; st.ombre = false; st.force = 0.7f; st.opacite = op;
+        verre::panneau(r, lx0, lyP, lwP, lhP, st);
+        verre::surTitre(r, lx0 + 17 * k, lyP + 18 * k, 14 * k, ui::tr("profil.historique"), ui::GAUCHE, op);
         const std::string n = std::to_string(p.dernieres.size()) + " / " + std::to_string(profil::HISTORIQUE_MAX);
         const textes::NomPropre np;   // compteur : chiffres seulement
-        ui::text(r, x1, yCorps, 12 * k, n, hex(MUTED), ui::DROITE, 0.10f, false);
+        ui::AvecPolice police(ui::Police::InterMedium);
+        ui::text(r, lx0 + lwP - 18 * k, lyP + 19 * k, 13 * k, n, hex(0xA3A8B5, op), ui::DROITE, 0.18f, false);
     }
-    const float ly = yCorps + 20 * k, lh = by - 12 * k - ly, pad = 6 * k;
-    g.liste = {rx, ly, rw, lh};
-    { verre::Style tuile; tuile.rayon = 10 * k; tuile.lisere = kb; tuile.ombre = false; tuile.force = 0.55f; verre::panneau(r, rx, ly, rw, lh, tuile); }   // WFS-548
-    const float hl = LIGNE_DP * k, vue = lh - 2 * pad;
+    const float ly = lyP + 43 * k, lh = lhP - 43 * k - 16 * k, cx0 = lx0 + 16 * k, cw = lwP - 34 * k, hl = 63 * k, hc = 55 * k;
+    g.liste = {lx0, ly, lwP, lh};
     g.lignes = (int)p.dernieres.size();
-    g.defilMax = std::max(0.f, g.lignes * hl - vue);
+    g.defilMax = std::max(0.f, g.lignes * hl - (lh + (hl - hc)));
     g.defil = std::clamp(g.defil, 0.f, g.defilMax);
     if (p.dernieres.empty()) {
-        ui::textBoite(r, rx + rw / 2, ly, rw - 24 * k, lh, 15 * k, ui::tr("profil.vide"), hex(MUTED), ui::CENTRE, 0);
+        ui::AvecPolice police(ui::Police::Inter);
+        ui::textBoite(r, lx0 + lwP / 2, ly, lwP - 48 * k, lh, 16 * k, ui::tr("profil.vide"), hex(0xA3A8B5, op), ui::CENTRE, 0);
     } else {
-        const float lx = rx + 12 * k, lw = rw - 24 * k - 10 * k;
         for (int i = 0; i < g.lignes; i++) {
-            const float yl = ly + pad + i * hl - g.defil;
-            if (yl < ly + pad - 0.5f || yl + hl > ly + lh - pad + 0.5f) continue;   // lignes entièrement visibles seulement
+            const float yl = ly + i * hl - g.defil;
+            if (yl < ly - 0.5f || yl + hc > ly + lh + 0.5f) continue;   // cartes entièrement visibles seulement
             const CourseJouee& c = p.dernieres[(size_t)i];
-            if (i == 0) r.uiRect(rx + 2 * k, yl + 4 * k, 3 * k, hl - 8 * k, hex(ACCENT2));   // la plus récente : liseré cyan
-            if (i > 0) r.uiRect(lx, yl, lw, std::max(1.f, kb * 0.8f), hex(TEXTE, 0.06f));
-            const std::string res = resultat(c);
-            const float wr = std::min(lw * 0.45f, ui::width(15 * k, res) + 4 * k);
-            ui::textBoite(r, lx, yl + 5 * k, lw - wr - 10 * k, 18 * k, 15 * k, nomMode(c.mode), hex(TEXTE), ui::GAUCHE, 0);
+            verre::Style st; st.rayon = 8 * k; st.lisere = 0; st.ombre = false; st.force = 0.45f; st.opacite = op;
+            verre::panneau(r, cx0, yl, cw, hc, st);
+            // WFS-557 (RG-15 a) : « · record » quand la course égale le record actuel de son mode (calcul à l'affichage)
+            const bool record = !c.quittee && ((c.mode == ModeJoue::Checkpoint && s.best > 0 && c.score == s.best) ||
+                                               (c.mode == ModeJoue::Course5 && s.aRecordCourse5() && c.tempsMs == s.rec5Ms && c.place == s.rec5Place) ||
+                                               (c.mode == ModeJoue::Poursuite && s.aRecordPoursuite() && s.recPVictoire && c.victoire && c.score == s.recPScore));
+            const std::string res = record ? resultat(c) + " · " + ui::tr("profil.record") : resultat(c);
+            // WFS-548 (RG-05) : rouge = perte (duel perdu, arrêté) ; cyan = gagné ou échappé ; quittée : gris clair
+            const bool bon = !c.quittee && (c.victoire || (c.mode == ModeJoue::Course5 && c.place == 1));
+            const bool perte = !c.quittee && !c.victoire && (c.mode == ModeJoue::Duel || c.mode == ModeJoue::Poursuite);
+            const vec4 cr = record ? verre::hexa(verre::TOI, op) : bon ? hex(0x5FD6E8, op) : perte ? verre::hexa(verre::PERTE, op) : hex(c.quittee ? 0xD7DAE2 : TEXTE, op);
+            ui::AvecPolice police(ui::Police::InterMedium);
+            const float wr = std::min(cw * 0.45f, ui::width(16 * k, res) + 4 * k);
+            ui::textBoite(r, cx0 + 17 * k, yl + 10 * k, cw - wr - 50 * k, 18 * k, 16 * k, nomMode(c.mode), hex(TEXTE, op), ui::GAUCHE, 0);
             {
                 const textes::NomPropre np;   // nom de la voiture (inchangé en anglais) et date
-                ui::textBoite(r, lx, yl + 25 * k, lw - wr - 10 * k, 16 * k, 12 * k, ui::majuscules(nomVoiture(c.voiture)) + "  ·  " + date(c.date), hex(MUTED), ui::GAUCHE, 0.04f);
+                ui::AvecPolice inter(ui::Police::Inter);
+                ui::textBoite(r, cx0 + 17 * k, yl + 31 * k, cw - wr - 50 * k, 14 * k, 12 * k, ui::majuscules(nomVoiture(c.voiture)) + " · " + date(c.date), hex(0xA3A8B5, op), ui::GAUCHE, 0);
             }
-            const bool bon = !c.quittee && (c.victoire || (c.mode == ModeJoue::Course5 && c.place == 1));
-            // WFS-548 (RG-05) : rouge = perte (duel perdu, arrêté par la police)
-            const bool perte = !c.quittee && !c.victoire && (c.mode == ModeJoue::Duel || c.mode == ModeJoue::Poursuite);
-            ui::textBoite(r, lx + lw, yl + 5 * k, wr, 18 * k, 15 * k, res, bon ? hex(ACCENT2) : perte ? verre::hexa(verre::PERTE) : hex(c.quittee ? MUTED : TEXTE), ui::DROITE, 0);
+            ui::textBoite(r, cx0 + cw - 16 * k, yl, wr, hc, 16 * k, res, cr, ui::DROITE, 0);
         }
-        if (g.defilMax > 0) {   // ascenseur
-            const float sx = rx + rw - 8 * k, hb = std::max(24 * k, vue * vue / (g.lignes * hl)), sy = ly + pad + (vue - hb) * (g.defil / g.defilMax);
-            r.uiRect(sx, ly + pad, 4 * k, vue, hex(TEXTE, 0.08f));
-            r.uiRect(sx, sy, 4 * k, hb, hex(ACCENT2, 0.85f));
-        }
+        // maquette 21 : pas d'ascenseur dessiné (la liste se fait glisser au doigt)
     }
-    // boutons : « Modifier » (action, orange) puis « Retour » (vitré, texte cyan), en bas à droite ; largeurs mesurées sur le français
-    const float tp = (cp ? 18 : 20) * k;
-    auto largeur = [&](const char* cle) { return ui::width(tp, ui::majuscules(ui::trLangue(cle, ui::langue::Langue::Francais)), 0.12f) + 56 * kb; };
-    const float wRet = largeur("profil.retour"), wMod = largeur("profil.modifier");
-    g.retour = {x1 - wRet, by, wRet, bh};
-    g.modifier = {x1 - wRet - 14 * k - wMod, by, wMod, bh};
-    const bool pRet = g.doigt >= 0 && g.cible == RETOUR, pMod = g.doigt >= 0 && g.cible == MODIFIER;
-    dessin2d::biseau(r, g.modifier.x, by, wMod, bh, 14 * kb, dessin2d::uni(hex(pMod ? ACCENT_PRESSE : ACCENT)));
-    ui::textBoite(r, g.modifier.x + wMod / 2, by, wMod - 40 * kb, bh, tp, ui::majuscules(ui::tr("profil.modifier")), hex(BG), ui::CENTRE, 0.12f);
-    ui::boutons::autocollant(r, g.retour.x, by, wRet, bh, ui::majuscules(ui::tr("profil.retour")), 1, pRet, tp);   // WFS-549 (RG-02) : sortie, même rectangle
-    // aide sous la colonne de gauche, seulement quand la liste dépasse son cadre
-    if (g.defilMax > 0) ui::textBoite(r, x0, by, std::max(0.f, g.modifier.x - 16 * k - x0), bh, 12 * k, ui::tr("profil.aide"), hex(MUTED), ui::GAUCHE, 0);
+    // ---- autocollant « Retour / Menu principal » : 206 × 88, en bas à droite (au-dessus du bord de la zone sûre)
+    {
+        const float w = 206 * k, h = 88 * k;
+        g.retour = {x1 - 32 * k - w, H - m.bas - 8 * k - h, w, h};
+        ui::boutons::autocollant(r, g.retour.x, g.retour.y, w, h, ui::majuscules(ui::tr("profil.retour")), op, pRet, 40 * k, ui::tr("reglages.surtitre.menu"));
+    }
     // manette : seules les zones de cet écran ; « Retour » est la zone retour (touche Retour d'Android, RG-01)
     manette::zonesImage().clear();
     manette::focus(g.modifier);

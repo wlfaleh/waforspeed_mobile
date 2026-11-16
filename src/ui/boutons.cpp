@@ -66,8 +66,8 @@ float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, boo
     // reflet doux autour de la bague (lumière du parking sur le chrome)
     lueur(r, x, y, w, h, R, std::max(4.f, h * 0.12f), {1, 1, 1, 0.10f * op});
     // bague chrome : bord haut très clair, milieu gris, bas clair (reflet), comme un bouton de démarrage poli
-    plein(r, x, y, w, h, R, hex(0xF1F3F6, op), hex(0x6E7480, op));
-    plein(r, x + t * 0.35f, y + h * 0.5f, w - t * 0.7f, h * 0.5f - t * 0.35f, std::max(0.f, R - t * 0.35f), hex(0x8A909B, 0), hex(0xD5D9E0, 0.55f * op));
+    plein(r, x, y, w, h, R, hex(0xD9DCE1, op), hex(0x4A4F59, op));   // WFS-557 : chrome plus sombre (maquettes 01, 08b, 19)
+    plein(r, x + t * 0.35f, y + h * 0.5f, w - t * 0.7f, h * 0.5f - t * 0.35f, std::max(0.f, R - t * 0.35f), hex(0x8A909B, 0), hex(0xD5D9E0, 0.25f * op));
     bord(r, x, y, w, h, R, 1, hex(0x2A2D35, 0.9f * op));   // arête extérieure
     // centre sombre (enfoncé à l'appui : plus clair)
     const float xi = x + t, yi = y + t, wi = w - 2 * t, hi = h - 2 * t, Ri = std::max(0.f, R - t);
@@ -227,6 +227,111 @@ void verre(Renderer& r, float x, float y, float w, float h, const std::string& t
     if (px <= 0) px = h * 0.38f;
     const vec4 c = couleurTexte ? vec4{couleurTexte->x, couleurTexte->y, couleurTexte->z, couleurTexte->w * op} : hex(TEXTE, op);
     ui::textBoite(r, x + w / 2, y + (h - px) / 2, w - h * 0.5f, px, px, texte, c, ui::CENTRE, 0.12f, false, true);
+}
+
+void icone(Renderer& r, Icone i, float cx, float cy, float s, const vec4& c) {
+    const float ep = std::max(1.2f, s * 0.09f), h = s / 2;
+    switch (i) {
+        case Icone::Aucune: return;
+        case Icone::Recommencer: {   // flèche circulaire ↺ : arc ouvert en haut à gauche, pointe en haut
+            const float R = s * 0.40f;
+            dessin2d::arc(r, cx, cy, R, ep, -0.30f * PI, 1.25f * PI, c);   // 0 = haut, sens horaire
+            const float ax = cx + R * std::sin(-0.30f * PI), ay = cy - R * std::cos(-0.30f * PI), d = s * 0.20f;
+            const vec2 pointe[3] = {{ax - d, ay - d * 0.6f}, {ax + d * 0.15f, ay + d * 0.05f}, {ax - d * 0.2f, ay + d}};
+            dessin2d::trait(r, pointe, 3, ep, c);
+            return;
+        }
+        case Icone::Sortie: {   // porte ⇥ : crochet ouvert à droite, flèche vers la droite
+            const vec2 porte[4] = {{cx + h * 0.05f, cy - h * 0.85f}, {cx - h * 0.85f, cy - h * 0.85f}, {cx - h * 0.85f, cy + h * 0.85f},
+                                   {cx + h * 0.05f, cy + h * 0.85f}};
+            dessin2d::trait(r, porte, 4, ep, c);
+            const vec2 tige[2] = {{cx - h * 0.25f, cy}, {cx + h * 0.95f, cy}};
+            dessin2d::trait(r, tige, 2, ep, c);
+            const vec2 pointe[3] = {{cx + h * 0.55f, cy - h * 0.4f}, {cx + h * 0.95f, cy}, {cx + h * 0.55f, cy + h * 0.4f}};
+            dessin2d::trait(r, pointe, 3, ep, c);
+            return;
+        }
+        case Icone::Engrenage: {   // engrenage au trait (maquettes 01 et 19) : anneau fin, 8 dents courtes, moyeu
+            const float R0 = s * 0.27f, R1 = s * 0.44f;
+            for (int k = 0; k < 8; k++) {
+                const float a = k * PI / 4, ca = std::cos(a), sa = std::sin(a);
+                const vec2 d[2] = {{cx + ca * (R0 + ep * 0.5f), cy + sa * (R0 + ep * 0.5f)}, {cx + ca * R1, cy + sa * R1}};
+                dessin2d::trait(r, d, 2, ep * 1.3f, c);
+            }
+            dessin2d::anneau(r, cx, cy, R0 - ep * 0.5f, R0 + ep * 0.5f, c);
+            dessin2d::anneau(r, cx, cy, s * 0.09f - ep * 0.5f, s * 0.09f + ep * 0.5f, c);
+            return;
+        }
+        case Icone::Crayon: {   // crayon ✎ incliné à 45°
+            const float d = s * 0.42f, l = s * 0.12f;
+            const vec2 corps[5] = {{cx - d + l * 0.4f, cy + d}, {cx - d, cy + d - l * 0.4f}, {cx + d - l, cy - d}, {cx + d, cy - d + l}, {cx - d + l * 0.4f, cy + d}};
+            dessin2d::trait(r, corps, 5, ep, c);
+            return;
+        }
+        case Icone::Etoile: {   // étoile à 5 branches au trait
+            vec2 p[11];
+            for (int k = 0; k < 10; k++) {
+                const float a = -0.5f * PI + k * PI / 5, R = (k % 2 ? 0.21f : 0.48f) * s;
+                p[k] = {cx + R * std::cos(a), cy + 0.06f * s + R * std::sin(a)};
+            }
+            p[10] = p[0];
+            dessin2d::trait(r, p, 11, ep, c);
+            return;
+        }
+        case Icone::Document: {   // feuille au coin plié et deux lignes de texte
+            const float w = s * 0.36f, hh = s * 0.46f, pli = s * 0.16f;
+            const vec2 f[6] = {{cx - w, cy - hh}, {cx + w - pli, cy - hh}, {cx + w, cy - hh + pli}, {cx + w, cy + hh}, {cx - w, cy + hh}, {cx - w, cy - hh}};
+            dessin2d::trait(r, f, 6, ep, c);
+            const vec2 l1[2] = {{cx - w * 0.5f, cy + hh * 0.05f}, {cx + w * 0.5f, cy + hh * 0.05f}}, l2[2] = {{cx - w * 0.5f, cy + hh * 0.45f}, {cx + w * 0.5f, cy + hh * 0.45f}};
+            dessin2d::trait(r, l1, 2, ep, c);
+            dessin2d::trait(r, l2, 2, ep, c);
+            return;
+        }
+        case Icone::Croix: iconeCroix(r, cx, cy, s, c); return;
+        case Icone::Ecran: {   // moniteur : écran arrondi et pied
+            vec2 p[MAX_SOMMETS];
+            const int n = contourArrondi(p, cx - s * 0.46f, cy - s * 0.38f, s * 0.92f, s * 0.60f, s * 0.08f);
+            dessin2d::contour(r, p, n, ep, c);
+            const vec2 pied[2] = {{cx, cy + s * 0.22f}, {cx, cy + s * 0.40f}}, socle[2] = {{cx - s * 0.22f, cy + s * 0.42f}, {cx + s * 0.22f, cy + s * 0.42f}};
+            dessin2d::trait(r, pied, 2, ep, c);
+            dessin2d::trait(r, socle, 2, ep, c);
+            return;
+        }
+        case Icone::Volant: {   // volant : anneau, moyeu et trois branches
+            dessin2d::anneau(r, cx, cy, s * 0.46f - ep, s * 0.46f, c);
+            dessin2d::anneau(r, cx, cy, s * 0.10f, s * 0.10f + ep, c);
+            const vec2 b1[2] = {{cx - s * 0.44f, cy - s * 0.02f}, {cx - s * 0.11f, cy}}, b2[2] = {{cx + s * 0.11f, cy}, {cx + s * 0.44f, cy - s * 0.02f}},
+                       b3[2] = {{cx, cy + s * 0.11f}, {cx, cy + s * 0.44f}};
+            dessin2d::trait(r, b1, 2, ep, c); dessin2d::trait(r, b2, 2, ep, c); dessin2d::trait(r, b3, 2, ep, c);
+            return;
+        }
+        case Icone::HautParleur: {   // haut-parleur et deux ondes
+            const vec2 hp[7] = {{cx - s * 0.45f, cy - s * 0.14f}, {cx - s * 0.25f, cy - s * 0.14f}, {cx, cy - s * 0.38f}, {cx, cy + s * 0.38f},
+                                {cx - s * 0.25f, cy + s * 0.14f}, {cx - s * 0.45f, cy + s * 0.14f}, {cx - s * 0.45f, cy - s * 0.14f}};
+            dessin2d::trait(r, hp, 7, ep, c);
+            dessin2d::arc(r, cx + s * 0.02f, cy, s * 0.20f, ep, 0.2f * PI, 0.8f * PI, c);
+            dessin2d::arc(r, cx + s * 0.02f, cy, s * 0.38f, ep, 0.22f * PI, 0.78f * PI, c);
+            return;
+        }
+    }
+}
+
+void verreIcone(Renderer& r, float x, float y, float w, float h, Icone i, const std::string& texte, float op, bool appuye, float px,
+                const OptionsVerre& o) {
+    const float R = o.rayon >= 0 ? o.rayon : std::min(h * 0.24f, w / 2);
+    lueur(r, x, y, w, h, R, std::max(3.f, h * 0.18f), {0, 0, 0, 0.35f * op});   // ombre douce sous le verre
+    plein(r, x, y, w, h, R, {38 / 255.f, 41 / 255.f, 52 / 255.f, (appuye ? 0.95f : 0.80f) * op}, {18 / 255.f, 20 / 255.f, 27 / 255.f, 0.86f * op});
+    if (o.bord) bord(r, x, y, w, h, R, std::max(1.5f, h * 0.03f), hex(o.bord, (appuye ? 1.f : 0.85f) * op));
+    else bord(r, x, y, w, h, R, std::max(1.f, h * 0.02f), {1, 1, 1, (appuye ? 0.38f : 0.20f) * op});
+    const vec4 c = o.couleurTexte ? vec4{o.couleurTexte->x, o.couleurTexte->y, o.couleurTexte->z, o.couleurTexte->w * op} : hex(TEXTE, op);
+    if (px <= 0) px = h * 0.40f;
+    const float s = px * 0.86f;
+    if (texte.empty()) { icone(r, i, x + w / 2, y + h / 2, s, c); return; }
+    const float ecart = i == Icone::Aucune ? 0 : px * 0.65f, si = i == Icone::Aucune ? 0 : s;
+    const float tw = std::min(ui::width(px, texte, o.espacement), w - h * 0.6f - si - ecart);
+    const float x0 = x + w / 2 - (si + ecart + tw) / 2;
+    icone(r, i, x0 + si / 2, y + h / 2, s, c);
+    ui::textBoite(r, x0 + si + ecart, y + (h - px) / 2, tw, px, px, texte, c, ui::GAUCHE, o.espacement, false, true);
 }
 
 } // namespace wfs::ui::boutons

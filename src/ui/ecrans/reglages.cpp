@@ -90,7 +90,6 @@ const Ligne LIGNES[N_LIGNES] = {
     {"reglages.langue", 3, {"reglages.langue.auto", "reglages.langue.fr", "reglages.langue.en"}},   // WFS-504 RG-02 : ui::langue::choisir, clé langue
 };
 // lignes et onglets : reglages_onglets.h (WFS-291, WFS-318, testé par tests/test_reglages_onglets.cpp)
-constexpr int LIGNES_PLACE = 13;   // WFS-318 : hauteur du grand panneau comptée pour 13 lignes (« Fermer » ne bouge pas)
 
 // ---------------------------------------------------------------- WFS-419 : menu caché de diagnostic de performance
 // 5 touchers sur le titre « Réglages » en moins de 3 s ouvrent, par-dessus le panneau, la liste des interrupteurs (un toucher :
@@ -147,16 +146,20 @@ enum { P_AUCUN, P_BOUTON, P_FERMER, P_CREDITS };
 int g_presse = P_AUCUN, g_doigt = -1;
 Zone g_credits;   // WFS-549 (RG-06) : « Crédits » à côté de « Conditions d'utilisation » (menu principal seulement : l'écran Crédits est celui du menu)
 bool g_creditsVisible = false;
-// WFS-308 (RG-05) : bouton vitré ; zone ≥ 44 dp. WFS-549 (RG-06) : bouton de verre (maquette 14), même taille ; « Crédits » à
-// sa gauche au menu principal, de la même hauteur. Rend la largeur prise (les deux boutons et leur écart).
+// WFS-557 (maquettes 14, 24, 25) : « ☆ Crédits » et « 🗎 Conditions d'utilisation » en bas à droite, boutons de verre de 46 px,
+// icône à gauche, texte en capitales italiques ; « Crédits » au menu principal seulement. x : bord droit, y : haut.
+// Zones de toucher ≥ 44 dp (WFS-308 RG-05). Rend la largeur prise (les deux boutons et leur écart).
 float boutonCgu(Renderer& r, float x, float y, float h, float k) {
-    const float tp = 13 * k; const std::string t = ui::majuscules(ui::tr("reglages.cgu")); const float w = largeurMax(tp, "reglages.cgu", 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
+    const float tp = 19 * k, pad = 22 * k, ic = tp * 0.86f + tp * 0.65f;
+    const std::string t = ui::majuscules(ui::tr("reglages.cgu"));
+    const float w = largeurMax(tp, "reglages.cgu", 0.10f) + ic + 2 * pad, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::pixelsParDp((float)r.width()));
     g_cgu = {x - w, y + (h - zh) / 2, w, zh};
-    ui::boutons::verre(r, x - w, y, w, h, t, 1, false, tp);
+    ui::boutons::verreIcone(r, x - w, y, w, h, ui::boutons::Icone::Document, t, 1, false, tp, {14 * k, 0, nullptr, 0.10f});
     if (!g_creditsVisible) { g_credits = {}; return w; }
-    const std::string tc = ui::majuscules(ui::tr("credits.bouton")); const float wc = largeurMax(tp, "credits.bouton", 0.12f) + 28 * k, ecart = 10 * k;
+    const std::string tc = ui::majuscules(ui::tr("credits.bouton"));
+    const float wc = largeurMax(tp, "credits.bouton", 0.10f) + ic + 2 * pad, ecart = 17 * k;
     g_credits = {x - w - ecart - wc, y + (h - zh) / 2, wc, zh};
-    ui::boutons::verre(r, x - w - ecart - wc, y, wc, h, tc, 1, g_presse == P_CREDITS, tp);   // RG-08 : appuyé tant que le doigt est posé
+    ui::boutons::verreIcone(r, x - w - ecart - wc, y, wc, h, ui::boutons::Icone::Etoile, tc, 1, g_presse == P_CREDITS, tp, {14 * k, 0, nullptr, 0.10f});   // RG-08
     return w + ecart + wc;
 }
 // WFS-290 (RG-03, ANO-159) : cible d'appui de 48 dp et anti-rebond de 0,3 s : reglages_appui.h (calculs testés). Sur téléphone,
@@ -175,18 +178,28 @@ bool basculementPermis() { return appui::basculementPermis(maintenant(), g_derni
 // relâcher dans la cible ; un doigt qui glisse hors de la cible annule l'appui
 int g_onglet = O_AFFICHAGE;   // RG-03 : dernier onglet ouvert, gardé (clé « onglet » du fichier des réglages)
 Zone g_onglets[N_ONGLETS];
-// dessine la barre des onglets dans (x, y, w, h) : onglet actif comme un choix actif (fond cyan léger, trait et texte cyan),
-// les autres sur la surface ; zones de toucher = les onglets dessinés (h ≥ 40 dp sur téléphone)
-void dessinerOnglets(Renderer& r, float x, float y, float w, float h, float tp, float gapO, float) {
-    const float ow = (w - (N_ONGLETS - 1) * gapO) / N_ONGLETS;
+// WFS-557 (maquette 14) : sélecteur de verre des onglets, icône (écran, volant, haut-parleur) + texte Inter en capitales ;
+// largeur de chaque onglet = son contenu + 24 px de chaque côté ; (x, y) : coin haut gauche ; rend la largeur totale.
+// Zones de toucher = les onglets dessinés.
+const ui::boutons::Icone ICONES_ONGLET[N_ONGLETS] = {ui::boutons::Icone::Ecran, ui::boutons::Icone::Volant, ui::boutons::Icone::HautParleur};
+float dessinerOnglets(Renderer& r, float x, float y, float h, float tp, float k) {
+    const float in = 4 * k, ic = tp * 1.05f, ecart = 10 * k, pad = 24 * k;
+    float ow[N_ONGLETS], total = 2 * in;
+    { ui::AvecPolice p(ui::Police::InterMedium);
+      for (int o = 0; o < N_ONGLETS; o++) { ow[o] = ic + ecart + ui::width(tp, ui::majuscules(ui::tr(ONGLETS_CLE[o])), 0.10f) + 2 * pad; total += ow[o]; } }
+    ui::boutons::selecteurFond(r, x, y, total, h);
+    float ox = x + in;
     for (int o = 0; o < N_ONGLETS; o++) {
-        const float ox = x + o * (ow + gapO);
         const bool on = o == g_onglet;
-        g_onglets[o] = {ox, y, ow, h};
-        // WFS-549 (RG-06, RG-07) : onglets en sélecteur de verre (onglet ouvert = pilule blanche, texte sombre), mêmes zones
-        if (o == 0) ui::boutons::selecteurFond(r, x, y, w, h);
-        ui::boutons::selecteurChoix(r, ox, y, ow, h, ui::majuscules(ui::tr(ONGLETS_CLE[o])), on, 1, false, tp);   // WFS-504 (RG-08)
+        g_onglets[o] = {ox, y, ow[o], h};
+        ui::boutons::selecteurChoix(r, ox, y + in, ow[o], h - 2 * in, "", on);   // pilule blanche de l'onglet ouvert
+        const vec4 c = on ? hex(BG) : hex(0xD7DAE2);
+        ui::boutons::icone(r, ICONES_ONGLET[o], ox + pad + ic / 2, y + h / 2, ic, c);
+        ui::AvecPolice p(ui::Police::InterMedium);
+        ui::text(r, ox + pad + ic + ecart, y + (h - tp) / 2, tp, ui::majuscules(ui::tr(ONGLETS_CLE[o])), c, ui::GAUCHE, 0.10f, false);
+        ox += ow[o];
     }
+    return total;
 }
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
@@ -402,7 +415,7 @@ public:
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
         // WFS-548 : sous les conditions d'utilisation, le panneau n'est pas dessiné (il se voyait à travers leur fenêtre de verre)
-        if (!cgu().ouvert()) { if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k); }
+        if (!cgu().ouvert()) dessinerPanneau(r, g, W, H);   // WFS-557 : une seule mise en page (maquettes 14, 24, 25)
         for (int o = 0; o < N_ONGLETS; o++) manette::focus(g_onglets[o]);   // WFS-291 : la manette passe d'un onglet à l'autre
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) if (dansOnglet(l, g_onglet)) manette::focus(g_choix[l][c]);
         manette::focus(g_fermer, true);
@@ -417,161 +430,109 @@ private:
     // .cam-btn : vitré, bordure 1 px, biais 8 px, 44 px de haut, « RÉGLAGES » ; en haut à droite de la zone sûre
     // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte et place gardés
     void dessinerBouton(Renderer& r, const GameView& g, float W, float k, float kb) {
-        const float h = 44 * kb, tp = 15 * k, pad = 18 * kb;
+        // WFS-557 (maquettes 01 et 19, arbitrage du PO du 2026-11-16) : bouton de verre arrondi, icône engrenage.
+        // Pause (19) : « ⚙ RÉGLAGES », 155 × 51 à 31 px du bord droit et 22 px du haut ; menu (01) : bouton rond de 46 px, engrenage
+        // seul, 30 px du bord droit (le compteur d'étoiles est à sa gauche). Zone de toucher : la cible de 48 dp (dansCible).
+        (void)k;
         const std::string t = ui::majuscules(ui::tr("reglages.bouton"));   // WFS-504
-        const float tw = largeurMax(tp, "reglages.bouton", 0.12f), dx = (tw - ui::width(tp, t, 0.12f)) / 2;   // RC-E20-04 : taille fixe
-        const float w = pad + tw + pad, x = W - g.marges.droite - 16 * k - w, y = g.marges.haut + 14 * k;
+        const bool pause = g.ecran == Ecran::Pause;
+        const float h = pause ? 51 * kb : 46 * kb, w = pause ? 155 * kb : h;
+        const float x = W - g.marges.droite - (pause ? 31 : 30) * kb - w, y = g.marges.haut + 22 * kb;
         g_bouton = {x, y, w, h};
         g_boutonFrais = true;   // WFS-537 (accroche) : compteur d'étoiles posé à cette image
-        biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, BORD);
-        biseau(r, x, y, w, h, 8 * kb, GLASS);
-        if (g_presse == P_BOUTON) biseau(r, x, y, w, h, 8 * kb, hex(ACCENT2, 0.22f));   // WFS-290 (RG-04) : appuyé, voile cyan
-        ui::text(r, std::round(x + pad + dx), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
+        ui::boutons::verreIcone(r, x, y, w, h, ui::boutons::Icone::Engrenage, pause ? t : std::string(), 1, g_presse == P_BOUTON,
+                                pause ? 20 * kb : 22 * kb, {pause ? 12 * kb : h / 2, 0, nullptr, 0.10f});
     }
-    // section .settings : voile, .eyebrow, .big « Réglages », lignes .set-row (libellé + boutons .seg), « Fermer »
-    void dessinerPanneau(Renderer& r, const GameView& g, float W, float H, float k) {
-        // WFS-548 (RG-02, maquettes 14, 24, 25) : écran arrêté : fond flouté et assombri (avant : voile --bg à 86 %)
+    // WFS-557 (maquettes 14, 24, 25 ; arbitrage du PO du 2026-11-16 : maquette à 100 %, boutons compris). Une seule mise en page,
+    // en unités de la maquette (1600 × 720, k = H / 720), pour le téléphone (2400 × 1080) comme pour le PC : fenêtre de verre
+    // pleine page (16 px du bord), sur-titre et « RÉGLAGES » en haut à gauche, onglets en sélecteur de verre au milieu du haut,
+    // « ✕ Fermer » en haut à droite, lignes de l'onglet en deux colonnes (4 au plus par colonne, la gauche d'abord), ligne
+    // « Rendu · Mémoire » en Inter grise en bas à gauche, « Crédits » et « Conditions d'utilisation » en bas à droite.
+    void dessinerPanneau(Renderer& r, const GameView& g, float W, float H) {
         verre::fenetreSurEcran(r);   // menu ou pause dessous : leur interface n'est plus dessinée (verre::couvert)
         verre::assombrir(r, W, H, 0.55f);
+        const float k = H / 720.f;
         const Marges& m = g.marges;
-        const float zl = m.gauche, zw = W - m.gauche - m.droite;
-        const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
-        // WFS-75 : 6 lignes → lignes de 50 px (64 avant) séparées de 10 px, première ligne 22 px plus haut ;
-        // WFS-80 (RG-03) : 8 lignes → lignes de 38 px séparées de 7 px, même hauteur de panneau (pas de défilement) ;
-        // WFS-108 : 11 lignes → lignes de 30 px séparées de 5 px
-        const float rowH = 30 * k, gap = 5 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)LIGNES_PLACE * (rowH + gap) + bh + 30 * k;
-        verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * H / 720.f});   // WFS-548 (RG-01) : verre dépoli (plus de liseré cyan)
-        const float x0 = px + 36 * k;
-        verre::surTitre(r, x0, py + 30 * k, 13 * k, ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu"));   // WFS-548 (RG-03)
-        ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules(ui::tr("reglages.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        g_titre = {x0, py + 52 * k, ui::width(56 * k, ui::majuscules(ui::tr("reglages.titre")), 0.02f), 56 * k};   // WFS-419 : 5 touchers → menu caché
-        boutonCgu(r, px + pw - 36 * k, py + 30 * k, 36 * k, k);   // WFS-308 (RG-05)
-        // WFS-291 : onglets sous le titre, puis les lignes de l'onglet ouvert (plus hautes : la place de 13 lignes est gardée,
-        // « Fermer » ne bouge pas) ; les lignes des autres onglets n'ont plus de zone de toucher
+        const float px = m.gauche + 16 * k, py = m.haut + 16 * k, pw = W - m.gauche - m.droite - 32 * k, ph = H - m.haut - m.bas - 32 * k;
+        r.uiRect(0, 0, W, H, hex(0x0B0D12, 0.80f));   // maquettes 14, 24, 25 : page sombre opaque (#0B0D12), la scène ne se voit plus
+        verre::panneau(r, px, py, pw, ph, {10 * k, 1.5f * k});
+        const float x0 = px + 40 * k, xd = px + pw - 41 * k;   // bords intérieurs gauche et droit
+        verre::surTitre(r, x0, py + 27 * k, 16 * k, ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu"));
+        const std::string titre = ui::majuscules(ui::tr("reglages.titre"));
+        ui::text(r, x0, py + 46 * k, 52 * k, titre, hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+        g_titre = {x0, py + 46 * k, ui::width(52 * k, titre, 0.01f), 52 * k};   // WFS-419 : 5 touchers → menu caché
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < 4; c++) g_choix[l][c] = {};
-        dessinerOnglets(r, x0, py + haut - 8 * k, pw - 72 * k, 40 * k, 15 * k, 6 * k, 3 * k);
-        const float rowO = 40 * k, gapO = 10 * k;
-        float y = py + haut + 40 * k + 14 * k;
-        const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 3 * 6 * k) / 4);
-        for (int i = 0; i < nLignesOnglet(g_onglet); i++) {
-            const int l = LIGNES_ONGLET[g_onglet][i];
-            const float rowH = rowO, gap = gapO;
-            r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
-            ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(ui::tr(LIGNES[l].libelle)), hex(MUTED), ui::GAUCHE, 0.16f, false);
-            const int n = nChoix(l);
-            float bx = px + pw - 36 * k - n * segW - (n - 1) * 6 * k;
-            ui::boutons::selecteurFond(r, bx, y, n * segW + (n - 1) * 6 * k, rowH);   // WFS-549 (RG-05) : rangée de verre
-            for (int c = 0; c < n; c++) {
-                const bool on = valeur(l) == c;   // WFS-549 (RG-05) : choix actif = pilule blanche, texte sombre ; mêmes zones qu'avant
-                g_choix[l][c] = {bx, y, segW, rowH};
-                ui::boutons::selecteurChoix(r, bx, y, segW, rowH, ui::majuscules(ui::tr(LIGNES[l].choix[c])), on, 1, false, 15 * k);   // WFS-504 (RG-08)
-                bx += segW + 6 * k;
+        dessinerOnglets(r, px + 415 * k, py + 30 * k, 50 * k, 16 * k, k);
+        {   // « ✕ Fermer » : 143 × 50 en haut à droite
+            const float tp = 24 * k, fw = largeurMax(tp, "reglages.fermer", 0.10f) + tp * 1.4f + 48 * k, fh = 50 * k;
+            g_fermer = {xd - fw, py + 31 * k, fw, fh};
+            ui::boutons::verreOrange(r, g_fermer.x, g_fermer.y, fw, fh, ui::majuscules(ui::tr("reglages.fermer")), 1, g_presse == P_FERMER, tp);
+        }
+        // lignes : deux colonnes de 699 px (gauche 56 → 755, droite 836 → 1543 sur la maquette), rangs de 85 px
+        const int n = nLignesOnglet(g_onglet), parCol = n <= 4 ? 4 : (n + 1) / 2;
+        const float colW = (xd - x0 - 81 * k) / 2, rangH = 85 * k, choixH = 44 * k, y0 = py + 165 * k - choixH / 2;
+        for (int i = 0; i < n; i++) {
+            const int l = LIGNES_ONGLET[g_onglet][i], col = i / parCol, rang = i % parCol;
+            const float cx = x0 + col * (colW + 81 * k), cy = y0 + rang * rangH;
+            const int nCol = col == 0 ? std::min(n, parCol) : n - parCol;
+            if (rang < nCol - 1) r.uiRect(cx, cy + choixH / 2 + rangH / 2, colW, 1 * k, hex(TEXTE, 0.08f));   // séparateur entre deux rangs
+            dessinerLibelle(r, cx, cy + choixH / 2, ui::majuscules(ui::tr(LIGNES[l].libelle)), k);
+            // choix : largeur de chaque pilule = son texte + 20 px de chaque côté ; rangée calée sur le bord droit de la colonne
+            const int nc = nChoix(l);
+            const float tp = 16 * k, in = 4 * k, padC = 20 * k;
+            float cw[4], total = 2 * in;
+            { ui::AvecPolice p(ui::Police::InterMedium);
+              for (int c = 0; c < nc; c++) { cw[c] = ui::width(tp, ui::majuscules(ui::tr(LIGNES[l].choix[c])), 0.06f) + 2 * padC; total += cw[c]; } }
+            float bx = cx + colW - total;
+            ui::boutons::selecteurFond(r, bx, cy, total, choixH);
+            bx += in;
+            for (int c = 0; c < nc; c++) {
+                const bool on = valeur(l) == c;
+                g_choix[l][c] = {bx, cy, cw[c], choixH};   // zone de toucher : toute la hauteur de la rangée (44 px de la maquette)
+                ui::boutons::selecteurChoix(r, bx, cy + in, cw[c], choixH - 2 * in, "", on);
+                ui::AvecPolice p(ui::Police::InterMedium);
+                ui::text(r, bx + cw[c] / 2, cy + (choixH - tp) / 2, tp, ui::majuscules(ui::tr(LIGNES[l].choix[c])), on ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.06f, false);
+                bx += cw[c];
             }
-            for (int c = n; c < 4; c++) g_choix[l][c] = {};
-            y += rowH + gap;
+            for (int c = nc; c < 4; c++) g_choix[l][c] = {};
         }
-        // .btn « Fermer » (orange, biais 14 px), à droite, sous la dernière ligne ; WFS-286 (RG-01, ANO-156) : toutes les lignes à la
-        // suite (avant : « Aide à la direction » et « Regard cockpit » sous le bouton, placé après la ligne 11) ; tailles inchangées
-        const float tp = 20 * k;
-        const std::string ft = ui::majuscules(ui::tr("reglages.fermer"));
-        const float fw = largeurMax(tp, "reglages.fermer", 0.12f) + 56 * k,   // WFS-504 (RC-E20-04) : même taille dans les deux langues
-        fx = px + pw - 36 * k - fw, fy = py + haut + (float)LIGNES_PLACE * (rowH + gap) + 10 * k;
-        g_fermer = {fx, fy, fw, bh};
-        // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
-        const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne, réduite pour tenir avant « Fermer »
-        ui::langue::journalTechnique(true);   // WFS-504 : lignes de mesure (textes de src/render, hors de cette zone) notées à part
-        {   // WFS-297 (RG-06) : rendu puis mémoire sur la même ligne, réduite pour tenir avant « Fermer » (aucun bouton ne bouge)
-            const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
-            const float tr = std::min(15 * k, 15 * k * (fx - x0 - 8 * k) / std::max(ui::width(15 * k, lr, 0.02f), 1.f));
-            ui::text(r, x0, lm.empty() ? fy + (bh - tr) / 2 : fy + bh / 2 - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        // bas : « Crédits » et « Conditions d'utilisation » (46 px) ; ligne technique en Inter grise à gauche, sur deux lignes au plus
+        const float bh = 46 * k, by = py + ph - 24 * k - bh;
+        const float pris = boutonCgu(r, xd, by, bh, k);
+        ui::langue::journalTechnique(true);   // WFS-504 : lignes de mesure (src/render, hors de cette zone), notées à part
+        const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
+        const float lw = xd - pris - 60 * k - x0, tl = 13 * k;
+        {
+            ui::AvecPolice p(ui::Police::Inter);
+            std::string l1 = lr, l2;
+            if (ui::width(tl, lr, 0) > lw) {   // coupe au dernier « · » ou espace qui tient
+                size_t coupe = std::string::npos;
+                for (size_t i = lr.find(' '); i != std::string::npos; i = lr.find(' ', i + 1))
+                    if (ui::width(tl, lr.substr(0, i), 0) <= lw) coupe = i; else break;
+                if (coupe != std::string::npos) { l1 = lr.substr(0, coupe); l2 = lr.substr(coupe + 1); }
+            }
+            const float yb = by + bh / 2 + (l2.empty() ? -tl / 2 : -tl - 1 * k);
+            ui::text(r, x0, yb, tl, l1, hex(MUTED), ui::GAUCHE, 0, false);
+            if (!l2.empty()) ui::text(r, x0, yb + tl + 3 * k, tl, l2, hex(MUTED), ui::GAUCHE, 0, false);
+            // WFS-246 (accroche, RG-06) : ligne de la dernière mesure (toucher : partager), au-dessus de la ligne technique
+            const std::string lm = qualite::ligneMesure();
+            if (!lm.empty()) { const float tm = std::min(tl, tl * lw / std::max(ui::width(tl, lm, 0.f), 1.f));
+                               g_mesure = {x0, yb - tl - 10 * k, lw, tl + 8 * k}; ui::text(r, x0, yb - tl - 6 * k, tm, lm, hex(TEXTE, 0.85f), ui::GAUCHE, 0.f, false); }
+            else g_mesure = {};
         }
-        if (!lm.empty()) { const float tm = std::min(12 * k, 12 * k * (fx - x0 - 8 * k) / std::max(ui::width(12 * k, lm, 0.f), 1.f)); g_mesure = {x0, fy, fx - x0 - 8 * k, bh};
-                           ui::text(r, x0, fy + bh / 2 + 1 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
         ui::langue::journalTechnique(false);
-        // WFS-549 (RG-06, RG-07) : « ✕ Fermer » en bouton de verre cerclé d'orange, même rectangle ; WFS-290 (RG-04) : appuyé, plus vif
-        ui::boutons::verreOrange(r, fx, fy, fw, bh, ft, 1, g_presse == P_FERMER, tp);
     }
 
-    // WFS-147 (RG-01, RG-02, RG-06, ANO-19) : téléphone couché (k = pixels par dp). Reprise de la mise en page petit écran de
-    // WFS-102 (6d3ed61), sans échelle commune : 11 lignes en deux colonnes de 6, choix de 42 dp de haut (zone de toucher de
-    // 48 dp, l'écart compris, sans déborder sur la voisine), textes des choix en 14 dp, libellés en capitales 12 dp,
-    // « Fermer » en haut à droite (48 dp), ligne « Rendu » en bas (14 dp) : tout tient dans 400 dp de haut, sans défilement.
-    void dessinerPanneauPetit(Renderer& r, const GameView& g, float W, float H, float k) {
-        // WFS-548 (RG-02, maquettes 14, 24, 25) : écran arrêté : fond flouté et assombri (avant : voile --bg à 86 %)
-        verre::fenetreSurEcran(r);   // menu ou pause dessous : leur interface n'est plus dessinée (verre::couvert)
-        verre::assombrir(r, W, H, 0.55f);
-        const Marges& m = g.marges;
-        const float zl = m.gauche, zw = W - m.gauche - m.droite;
-        const int PAR_COL = (L_REGARD + 1) / 2;   // WFS-235 : « Regard cockpit » dans l'en-tête, les 12 autres lignes ne bougent pas
-        // WFS-168 (RG-01) : taille des choix et de « Fermer » d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0 :
-        // choix de 30 x 170 au plus, « Fermer » de 50) ; lignes, colonnes et textes en dp gardés (choix centrés dans leur ligne)
-        const float kb = H / 720.f, choixH = 30 * kb;
-        const float rowH = 42 * k, gap = 6 * k, haut = 66 * k, bh = 50 * kb;
-        const float ph = haut + PAR_COL * (rowH + gap) + 36 * k;
-        const float pw = std::min(zw - 16 * k, 900 * k), px = zl + (zw - pw) / 2, py = std::max(m.haut + 4 * k, (H - ph) / 2);
-        verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * H / 720.f});   // WFS-548 (RG-01) : verre dépoli (plus de liseré cyan)
-        const float x0 = px + 24 * k;
-        verre::surTitre(r, x0, py + 14 * k, 12 * k, ui::tr(g.ecran == Ecran::Pause ? "reglages.surtitre.pause" : "reglages.surtitre.menu"));   // WFS-548 (RG-03)
-        ui::text(r, x0, py + 30 * k, 30 * k, ui::majuscules(ui::tr("reglages.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        g_titre = {x0, py + 26 * k, ui::width(30 * k, ui::majuscules(ui::tr("reglages.titre")), 0.02f), 38 * k};   // WFS-419 : 5 touchers → menu caché
-        {   // .btn « Fermer » (orange, biais 14 px), en haut à droite du panneau
-            const float tp = 18 * k;
-            const std::string ft = ui::majuscules(ui::tr("reglages.fermer"));
-            const float fw = largeurMax(tp, "reglages.fermer", 0.12f) + 56 * kb, fx = px + pw - 24 * k - fw, fy = py + 10 * k;
-            g_fermer = {fx, fy, fw, bh};
-            ui::boutons::verreOrange(r, fx, fy, fw, bh, ft, 1, g_presse == P_FERMER, tp);   // WFS-549 (RG-06) ; WFS-290 (RG-04) : appuyé
-        }
-        const float colGap = 24 * k, colW = (pw - 48 * k - colGap) / 2, libW = 104 * k, segGap = 6 * k;
-        // WFS-291 : onglets dans l'en-tête, entre le titre et « Fermer » (place de « Regard cockpit », qui passe dans Affichage) ;
-        // lignes de l'onglet ouvert en deux colonnes de 3 ; taille du panneau inchangée, « Fermer » ne bouge pas
-        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < 4; c++) g_choix[l][c] = {};
-        dessinerOnglets(r, px + (pw - colW) / 2, py + (haut - rowH) / 2, colW, rowH, 14 * k, segGap, 3 * kb);
-        // WFS-504 : 3 lignes par colonne jusqu'à 6 lignes (Conduite, Son : inchangés) ; Affichage (7 lignes avec « Langue ») : 4 + 3,
-        // dans la hauteur du panneau (place de 6 rangs)
-        const int PAR_COL_ONGLET = nLignesOnglet(g_onglet) > 6 ? 4 : 3;
-        for (int i = 0; i < nLignesOnglet(g_onglet); i++) {
-            const int l = LIGNES_ONGLET[g_onglet][i];
-            const int col = i / PAR_COL_ONGLET, rang = i % PAR_COL_ONGLET;
-            const float cx = x0 + col * (colW + colGap), y = py + haut + rang * (rowH + gap);
-            r.uiRect(cx, y + rowH + gap / 2, colW, 1 * k, hex(TEXTE, 0.08f));   // séparateur
-            // libellé : sur deux lignes s'il dépasse sa place (« Réduire les mouvements », « Zone morte gyro »)
-            const std::string lib = ui::majuscules(ui::tr(LIGNES[l].libelle));
-            const float lp = 12 * k;
-            if (ui::width(lp, lib, 0.12f) <= libW) ui::text(r, cx, y + (rowH - lp) / 2, lp, lib, hex(MUTED), ui::GAUCHE, 0.12f, false);
-            else {
-                size_t coupe = lib.find(' ', lib.size() / 2 - 2);
-                if (coupe == std::string::npos) coupe = lib.rfind(' ');
-                ui::text(r, cx, y + rowH / 2 - lp - 1 * k, lp, lib.substr(0, coupe), hex(MUTED), ui::GAUCHE, 0.12f, false);
-                ui::text(r, cx, y + rowH / 2 + 1 * k, lp, lib.substr(coupe + 1), hex(MUTED), ui::GAUCHE, 0.12f, false);
-            }
-            const int n = nChoix(l);
-            // WFS-168 : largeur d'avant WFS-147 (panneau de 760 au plus, une colonne), bornée par la place de la colonne
-            const float pwAvant = std::min(zw - 32 * kb, 760 * kb), segAvant = std::min(170 * kb, (pwAvant - 72 * kb - 190 * kb - 3 * 6 * kb) / 4);
-            const float place = colW - libW, segW = std::min(segAvant, (place - 3 * segGap) / 4);   // même largeur pour 2 ou 4 choix
-            const float cy = y + (rowH - choixH) / 2;   // choix centré dans sa ligne
-            float bx = cx + colW - n * segW - (n - 1) * segGap;
-            ui::boutons::selecteurFond(r, bx, cy, n * segW + (n - 1) * segGap, choixH);   // WFS-549 (RG-05) : rangée de verre
-            for (int c = 0; c < n; c++) {
-                const bool on = valeur(l) == c;   // WFS-549 (RG-05) : choix actif = pilule blanche, texte sombre
-                g_choix[l][c] = {bx, cy, segW, choixH};   // WFS-168 : zone de toucher d'avant WFS-147 (le choix lui-même)
-                const std::string ch = ui::majuscules(ui::tr(LIGNES[l].choix[c]));
-                ui::boutons::selecteurChoix(r, bx, cy, segW, choixH, ch, on, 1, false, 14 * k);   // WFS-504 (RG-08) : réduit de 20 % au plus
-                bx += segW + segGap;
-            }
-            for (int c = n; c < 4; c++) g_choix[l][c] = {};
-        }
-        // WFS-134 (RG-01) : rendu réellement utilisé, sous les deux colonnes
-        {   // WFS-297 (RG-06) : rendu puis mémoire du jeu, de la carte graphique et numéro de la partie, réduits s'ils ne tiennent pas
-            const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
-            const float lw = pw - 48 * k - boutonCgu(r, px + pw - 24 * k, py + ph - 32 * k, 26 * k, k) - 12 * k;   // WFS-308 (RG-05) : en bas à droite
-            ui::langue::journalTechnique(true);   // WFS-504 : lignes de mesure (src/render, hors de cette zone), notées à part
-            const float tr = std::min(14 * k, 14 * k * lw / std::max(ui::width(14 * k, lr, 0.02f), 1.f));
-            ui::text(r, x0, py + ph - 12 * k - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
-        }
-        const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne sous le rendu (toucher : partager)
-        if (!lm.empty()) { const float lw = g_cgu.x - 12 * k - x0, tm = std::min(10 * k, 10 * k * lw / std::max(ui::width(10 * k, lm, 0.f), 1.f)); g_mesure = {x0, py + ph - 28 * k, lw, 28 * k};
-                           ui::text(r, x0, py + ph - 11 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
-        ui::langue::journalTechnique(false);
+    // libellé d'une ligne (Inter Medium, capitales espacées, gris) centré sur ym ; sur deux lignes au-delà de 210 px (maquette 14 :
+    // « Réduire les / mouvements »)
+    void dessinerLibelle(Renderer& r, float x, float ym, const std::string& lib, float k) {
+        ui::AvecPolice p(ui::Police::InterMedium);
+        const float lp = 16 * k, esp = 0.15f;
+        if (ui::width(lp, lib, esp) <= 210 * k) { ui::text(r, x, ym - lp / 2, lp, lib, hex(0xA3A8B5), ui::GAUCHE, esp, false); return; }
+        size_t coupe = lib.find(' ', lib.size() / 2 - 2);
+        if (coupe == std::string::npos) coupe = lib.rfind(' ');
+        ui::text(r, x, ym - lp - 1 * k, lp, lib.substr(0, coupe), hex(0xA3A8B5), ui::GAUCHE, esp, false);
+        ui::text(r, x, ym + 1 * k, lp, lib.substr(coupe + 1), hex(0xA3A8B5), ui::GAUCHE, esp, false);
     }
 
     // WFS-419 : menu caché (k = pixels par dp) : interrupteurs en deux colonnes (zones de 44 dp), appareil, temps par passe, explication

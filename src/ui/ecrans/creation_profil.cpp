@@ -36,7 +36,6 @@ const unsigned BG = 0x0A0B10, SURFACE = 0x14161F, SURFACE2 = 0x1E2130, ACCENT = 
 const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f};
 
 // RG-03 : touche de 57 dp (9,05 mm à 160 dp par pouce ; S21 FE, 2,625 px/dp à 401 ppp : 150 px = 9,5 mm), écart 4 dp
-constexpr float TOUCHE_DP = 57, ECART_DP = 4, MARGE_DP = 16, COLONNE_MIN_DP = 200;
 
 struct Zone {
     float x = 0, y = 0, w = 0, h = 0;
@@ -125,52 +124,33 @@ bool toucher(const Touch& t) {
 }
 
 // ---------------------------------------------------------------- dessin
-struct Page { float u, x0, y0, colonne, kx, ky, touche, ecart; };
-Page miseEnPage(float W, float H, const Marges& m) {
-    const float ppd = ui::pixelsParDp(W), Wd = W - m.gauche - m.droite, Hd = H - m.haut - m.bas;
-    const float largeurClavier = creation::COLONNES * TOUCHE_DP + (creation::COLONNES - 1) * ECART_DP;   // 606 dp
-    const float hauteurClavier = creation::LIGNES * TOUCHE_DP + (creation::LIGNES - 1) * ECART_DP;      // 301 dp
-    // unité : la densité du téléphone (touches de 9 mm), agrandie sur un écran de bureau, réduite si la page ne tient pas
-    float u = std::max(ppd, std::min(Hd / 400.f, Wd / 900.f));
-    u = std::min({u, Hd / (hauteurClavier + 2 * MARGE_DP), Wd / (largeurClavier + 3 * MARGE_DP + COLONNE_MIN_DP)});
-    Page p{};
-    p.u = u; p.touche = TOUCHE_DP * u; p.ecart = ECART_DP * u;
-    p.x0 = m.gauche + MARGE_DP * u; p.y0 = m.haut + MARGE_DP * u;
-    p.kx = W - m.droite - MARGE_DP * u - largeurClavier * u;
-    p.ky = m.haut + (Hd - hauteurClavier * u) / 2;
-    p.colonne = p.kx - MARGE_DP * u - p.x0;
-    return p;
-}
-
 // champ de saisie (verre teinté, liseré bas, contour cyan quand il est choisi) ; texte du joueur, curseur clignotant
 bool g_champsEntiers = true;   // WFS-482 (RG-08) : textes saisis entiers dans leur champ à la dernière image
+// WFS-557 (maquette 20) : champ de verre aux coins arrondis (12 px), bordé d'orange quand il est choisi ; texte du joueur en
+// Rajdhani italique ; curseur orange clignotant ; indice en Inter gris
 void champ(Renderer& r, const Zone& z, float u, const std::string& valeur, const char* indice, bool choisi, bool clignote, float espacement) {
-    r.uiRect(z.x, z.y, z.w, z.h, GLASS);
-    r.uiRect(z.x, z.y + z.h - 3 * u, z.w, 3 * u, choisi ? hex(ACCENT2) : hex(SURFACE2));
-    if (choisi) {
-        const vec2 c[4] = {{z.x, z.y}, {z.x + z.w, z.y}, {z.x + z.w, z.y + z.h}, {z.x, z.y + z.h}};
-        dessin2d::contour(r, c, 4, 2 * u, hex(ACCENT2, 0.9f));
-    }
+    vec2 q[ui::boutons::MAX_SOMMETS];
+    const int n = ui::boutons::contourArrondi(q, z.x, z.y, z.w, z.h, 12 * u);
+    dessin2d::polygone(r, q, n, {hex(0x2A2C34, 0.92f), hex(0x1C1E25, 0.92f), z.y, z.y + z.h});
+    dessin2d::contour(r, q, n, (choisi ? 2.f : 1.f) * u, choisi ? hex(ACCENT) : hex(TEXTE, 0.14f));
     // WFS-482 (RG-08) : texte saisi réduit pour tenir dans le champ (16 « W » sans rien qui déborde), curseur compris
-    const float px0 = 24 * u, tx = z.x + 12 * u, place = z.w - 24 * u - 6 * u;
+    const float px0 = 30 * u, tx = z.x + 17 * u, place = z.w - 34 * u - 6 * u;
     const float large = valeur.empty() ? 0.f : ui::width(px0, valeur, espacement);
     const float px = large > place && large > 0 ? px0 * place / large : px0;
-    const float ty = z.y + (z.h - px) / 2 - 1.5f * u * px / px0;
+    const float ty = z.y + (z.h - px) / 2;
     if (valeur.empty()) {
-        if (indice) {   // indice en gris : texte de la table (journal des textes du banc)
-            ui::text(r, tx, ty + 3 * u, 18 * u, ui::tr(indice), hex(MUTED), ui::GAUCHE, 0, false);
-        }
+        if (indice) { ui::AvecPolice inter(ui::Police::Inter); ui::text(r, tx, z.y + (z.h - 17 * u) / 2, 17 * u, ui::tr(indice), hex(MUTED), ui::GAUCHE, 0, false); }
     } else {
         // texte saisi par le joueur : ce n'est pas un texte du jeu à traduire (journal des textes : ligne technique)
         ui::langue::journalTechnique(true);
-        ui::text(r, tx, ty, px, valeur, hex(TEXTE), ui::GAUCHE, espacement, false);
+        ui::text(r, tx, ty, px, valeur, hex(TEXTE), ui::GAUCHE, espacement, false, true);
         ui::langue::journalTechnique(false);
     }
     // WFS-482 (RG-08) : fin du texte et curseur dans le cadre (vérifié par le banc « profil »)
     if (!valeur.empty() && tx + ui::width(px, valeur, espacement) + 4 * u > z.x + z.w - 2 * u) g_champsEntiers = false;
     if (choisi && clignote) {
-        const float cx = valeur.empty() ? tx : tx + ui::width(px, valeur, espacement) + 2 * u;
-        r.uiRect(cx, z.y + 10 * u, 2 * u, z.h - 20 * u, hex(ACCENT2));
+        const float cx = valeur.empty() ? tx : tx + ui::width(px, valeur, espacement) + 3 * u;
+        r.uiRect(cx, z.y + 12 * u, 2 * u, z.h - 24 * u, hex(ACCENT));
     }
 }
 
@@ -179,15 +159,21 @@ void champ(Renderer& r, const Zone& z, float u, const std::string& valeur, const
 // RG-02 : aperçu 2D de la plaque (gabarit du jeu, en attendant la plaque 3D de WFS-483) : plaque claire 520 x 110 mm,
 // bord sombre, bande « WFS » à gauche (marque inventée du jeu, aucune marque ni aucun pays réel), texte du joueur en noir ;
 // WFS-482 : aussi dessiné par l'écran Profil (déclaré dans creation_profil.h)
+// WFS-557 (maquettes 20 et 21) : plaque crème aux coins arrondis, bande orange à gauche avec « WFS » en petit en bas,
+// cadre sombre fin ; texte du joueur en capitales espacées, sombre. Hauteur = largeur × 50 / 230 (maquette 21 : 230 × 50).
 void dessinerApercuPlaque(Renderer& r, float x, float y, float w, const std::string& texte, float u) {
-    const float h = w * 110.f / 520.f, bande = w * 0.11f, b = std::max(1.f, 2 * u);
-    r.uiRect(x - b, y - b, w + 2 * b, h + 2 * b, hex(BG));
-    r.uiRect(x, y, w, h, hex(TEXTE));
-    r.uiRect(x, y, bande, h, hex(SURFACE2));
-    r.uiRect(x + bande, y, std::max(1.f, u), h, hex(MUTED));
+    const float h = w * 50.f / 230.f, bande = w * 0.12f, b = std::max(1.f, 2 * u), R = 3 * u;
+    vec2 q[ui::boutons::MAX_SOMMETS];
+    int n = ui::boutons::contourArrondi(q, x - b, y - b, w + 2 * b, h + 2 * b, R + b);
+    dessin2d::polygone(r, q, n, dessin2d::uni(hex(0x15171D)));
+    n = ui::boutons::contourArrondi(q, x, y, w, h, R);
+    dessin2d::polygone(r, q, n, dessin2d::uni(hex(0xF2F0EA)));
+    n = ui::boutons::contourArrondi(q, x, y, bande + R, h, R);
+    dessin2d::polygone(r, q, n, dessin2d::uni(hex(0xFF6A00)));
+    r.uiRect(x + bande, y, R, h, hex(0xF2F0EA));   // bord droit de la bande net (le coin arrondi ne vaut qu'à gauche)
     ui::langue::journalTechnique(true);   // marque du jeu et texte du joueur : rien à traduire
-    ui::textBoite(r, x + bande / 2, y, bande, h, h * 0.30f, "WFS", hex(TEXTE), ui::CENTRE, 0.05f);
-    if (!texte.empty()) ui::textBoite(r, x + bande + (w - bande) / 2, y, w - bande - 8 * u, h, h * 0.70f, texte, hex(BG), ui::CENTRE, 0.10f);
+    ui::textBoite(r, x + bande / 2, y + h * 0.66f, bande, h * 0.30f, h * 0.22f, "WFS", hex(0x15171D), ui::CENTRE, 0.02f);
+    if (!texte.empty()) ui::textBoite(r, x + bande + (w - bande) / 2, y, w - bande - 12 * u, h, h * 0.66f, texte, hex(0x15171D), ui::CENTRE, 0.12f);
     ui::langue::journalTechnique(false);
 }
 namespace {
@@ -216,95 +202,105 @@ void iconeEffacer(Renderer& r, float cx, float cy, float u, const vec4& c) {
     dessin2d::trait(r, d1, 2, ep, c); dessin2d::trait(r, d2, 2, ep, c);
 }
 
+// WFS-557 (maquette 20 ; arbitrages du PO du 2026-11-16 : maquette à 100 %, RG-14 : plus de champ « Plaque » à part, la plaque
+// suit le pseudo ; toucher l'aperçu « Ta plaque » la rend modifiable avec le même clavier). Unité k = H / 720 (maquette
+// 1600 × 720). Sur-titre « Première course », titre ; panneau de gauche : « Pseudo » (champ bordé d'orange quand il est
+// choisi), « Ta plaque » (aperçu, bordé d'orange quand il est choisi), phrase d'aide ; « C'est parti » rond (Start/Stop) ;
+// clavier de verre : les 39 premières touches de la table en 3 rangs de 13 (⇧ plus large), ⌫ seule, puis « Espace ».
 void dessiner(Renderer& r, const GameView& g) {
-    const float W = g.uiWidth, H = g.uiHeight;
-    const Page p = miseEnPage(W, H, g.marges);
-    const float u = p.u, op = (float)std::clamp((g.time - g_e.tOuvert) / 0.25, 0.0, 1.0);   // fondu d'entrée de 250 ms
+    const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
+    const float op = (float)std::clamp((g.time - g_e.tOuvert) / 0.25, 0.0, 1.0);   // fondu d'entrée de 250 ms
     const Saisie& s = g_e.saisie;
     const bool clignote = std::fmod(g.time - g_e.tOuvert, 1.0) < 0.6;
-    // WFS-548 (RG-02, maquette 20) : écran arrêté : la scène derrière est floutée et assombrie (avant : fond presque opaque),
-    // lueur orange en bas à gauche gardée
     verre::fenetreSurEcran(r);   // menu dessous : rien de son interface (verre::couvert)
-    verre::assombrir(r, W, H, 0.55f * op);
-    {
-        const vec4 a = hex(ACCENT, 0.10f * op), z = hex(ACCENT, 0);
-        const UiVertex q[4] = {{0, H * 0.55f, -1, -1, z.x, z.y, z.z, 0}, {W * 0.5f, H * 0.55f, -1, -1, z.x, z.y, z.z, 0},
-                               {W * 0.5f, H, -1, -1, a.x, a.y, a.z, 0}, {0, H, -1, -1, a.x, a.y, a.z, a.w}};
-        r.uiQuad(q);
-    }
-    // ---- colonne de gauche : titre, champs, erreurs, aperçu de la plaque, « C'est parti »
-    const float x = p.x0, L = p.colonne;
-    float y = p.y0;
-    r.uiRect(x, y + 4 * u, 4 * u, 26 * u, hex(ACCENT));   // barre néon du titre
+    verre::assombrir(r, W, H, 0.62f * op);
+    const float ox = g.marges.gauche, oy = g.marges.haut;
+    const float x = ox + 56 * k;
+    // ---- titre
+    verre::surTitre(r, x, oy + 41 * k, 16 * k, ui::tr(g_e.modification ? "profil.surtitre" : "creation.surtitre"));
     const char* titre = g_e.modification ? "profil.modifier_titre" : "creation.titre";   // WFS-482 (RG-07)
-    ui::textBoite(r, x + 14 * u, y, L - 14 * u, 34 * u, 30 * u, ui::majuscules(ui::tr(titre)), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
-    y += 34 * u + 16 * u;
-    {   // WFS-548 (RG-01) : fenêtres de verre derrière les champs et derrière le clavier (maquette 20)
-        const float wp0 = std::min(L, 200 * u), hClavier = creation::LIGNES * p.touche + (creation::LIGNES - 1) * p.ecart;
-        const float lClavier = W - g.marges.droite - p.kx - (p.x0 - g.marges.gauche);
-        verre::Style st; st.rayon = 12 * u; st.lisere = 1.2f * u; st.opacite = op;
-        verre::panneau(r, x - 10 * u, y - 12 * u, L + 20 * u, 2 * 94 * u + wp0 * 110.f / 520.f + 26 * u, st);
-        verre::panneau(r, p.kx - 10 * u, p.ky - 10 * u, lClavier + 20 * u, hClavier + 20 * u, st);   // 6 dp du bord droit (marge de 16 dp)
-    }
-    auto bloc = [&](Champ c, const char* libelle, Zone& z, const std::string& valeur, const char* indice, float esp) {
-        ui::textBoite(r, x, y, L, 14 * u, 12 * u, ui::majuscules(ui::tr(libelle)), verre::hexa(verre::SUR_TITRE), ui::GAUCHE, 0.22f);   // WFS-548 (RG-03)
-        y += 14 * u + 4 * u;
-        z = {x, y, L, 46 * u};
-        champ(r, z, u, valeur, indice, s.champ() == c, clignote, esp);
-        y += 46 * u + 4 * u;
-        if (const char* e = s.erreur(c)) ui::textBoite(r, x, y, L, 16 * u, 14 * u, ui::tr(e), hex(DANGER), ui::GAUCHE, 0, false);
-        y += 16 * u + 10 * u;
-    };
+    ui::textBoite(r, x + 2 * k, oy + 49 * k, 470 * k, 60 * k, 60 * k, ui::majuscules(ui::tr(titre)), hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+    // ---- panneau de gauche : 462 × 258
+    verre::Style st; st.rayon = 16 * k; st.lisere = 1.2f * k; st.opacite = op;
+    verre::panneau(r, x + 1 * k, oy + 131 * k, 462 * k, 258 * k, st);
+    const float xi = x + 22 * k, li = 419 * k;
+    verre::surTitre(r, xi, oy + 154 * k, 14 * k, ui::tr("creation.pseudo"));
     g_champsEntiers = true;
-    bloc(Champ::Pseudo, "creation.pseudo", g_e.zPseudo, s.pseudo(), "creation.indice", 0.02f);
-    bloc(Champ::Plaque, "creation.plaque", g_e.zPlaque, s.plaque(), nullptr, 0.10f);
-    const float wp = std::min(L, 200 * u);
-    dessinerApercuPlaque(r, x, y, wp, s.plaque(), u);
-    // « C'est parti » en bas de la colonne (bouton orange incliné ; grisé tant que le pseudo ou la plaque ne sont pas valides)
-    const float bh = 50 * u, by = std::max(y + wp * 110.f / 520.f + 14 * u, p.ky + creation::LIGNES * p.touche + (creation::LIGNES - 1) * p.ecart - bh);
-    // WFS-482 (RG-07) : en modification, « Valider » (orange) et « Annuler » (vitré, texte cyan) côte à côte
-    const float bw = g_e.modification ? std::min((L - 10 * u) / 2, 200 * u) : std::min(L, 260 * u);
+    g_e.zPseudo = {xi, oy + 175 * k, li, 52 * k};
+    champ(r, g_e.zPseudo, k, s.pseudo(), "creation.indice", s.champ() == Champ::Pseudo, clignote, 0.01f);
+    if (const char* e = s.erreur(Champ::Pseudo)) { ui::AvecPolice inter(ui::Police::InterMedium); ui::textBoite(r, xi, oy + 230 * k, li, 16 * k, 13 * k, ui::tr(e), hex(DANGER), ui::GAUCHE, 0, false); }
+    verre::surTitre(r, xi, oy + 250 * k, 14 * k, ui::tr("creation.ta_plaque"));
+    const float wp = 297 * k, hp = wp * 50.f / 230.f, yp = oy + 274 * k;
+    dessinerApercuPlaque(r, xi, yp, wp, s.plaque(), k);
+    g_e.zPlaque = {xi - 4 * k, yp - 4 * k, wp + 8 * k, hp + 8 * k};
+    if (s.champ() == Champ::Plaque) {   // RG-14 : plaque choisie : contour orange (comme le champ du pseudo), curseur après le texte
+        vec2 q[ui::boutons::MAX_SOMMETS];
+        const int n = ui::boutons::contourArrondi(q, xi - 4 * k, yp - 4 * k, wp + 8 * k, hp + 8 * k, 6 * k);
+        dessin2d::contour(r, q, n, 2 * k, hex(ACCENT));
+        if (const char* e = s.erreur(Champ::Plaque)) { ui::AvecPolice inter(ui::Police::InterMedium); ui::textBoite(r, xi + wp + 12 * k, yp, li - wp - 12 * k, hp, 12 * k, ui::tr(e), hex(DANGER), ui::GAUCHE, 0, false); }
+    }
+    { ui::AvecPolice inter(ui::Police::Inter);
+      ui::textBoite(r, xi, oy + 348 * k, li, 16 * k, 14 * k, ui::tr("creation.aide_plaque"), hex(0xC9CDDA, op), ui::GAUCHE, 0, false); }
+    // ---- « C'est parti » rond (146 px, centre 265, 545) ; en modification « Valider » au même endroit, « Annuler » (autocollant) à droite
     const bool ok = s.valide();
-    // WFS-549 (RG-01, RG-07) : « C'est parti » / « Valider » en bouton Start/Stop, même rectangle, grisé tant que ce n'est pas valide
-    const char* valider = g_e.modification ? "profil.valider" : "creation.valider";
-    ui::boutons::startStop(r, x, by, bw, bh, ui::majuscules(ui::tr(valider)), 1, false, "", 21 * u, !ok);
-    g_e.zValider = {x, by, bw, bh};
+    const float d = 146 * k;
+    g_e.zValider = {x + 209 * k - d / 2, oy + 545 * k - d / 2, d, d};
+    {
+        const std::string t = ui::majuscules(ui::tr(g_e.modification ? "profil.valider" : "creation.valider"));
+        const size_t sp = t.find(' ');   // « C'EST » en grand, « PARTI » en sous-titre (maquette 20)
+        ui::boutons::startStop(r, g_e.zValider.x, g_e.zValider.y, d, d, sp == std::string::npos ? t : t.substr(0, sp), 1, false,
+                               sp == std::string::npos ? "" : t.substr(sp + 1), 24 * k, !ok);
+    }
     g_e.zAnnuler = {};
     if (g_e.modification) {
-        const float ax = x + bw + 10 * u;
-        ui::boutons::autocollant(r, ax, by, bw, bh, ui::majuscules(ui::tr("profil.annuler")), 1, false, 20 * u);   // WFS-549 (RG-02) : sortie
-        g_e.zAnnuler = {ax, by, bw, bh};
+        g_e.zAnnuler = {g_e.zValider.x + d + 30 * k, oy + 545 * k - 36 * k, 190 * k, 72 * k};
+        ui::boutons::autocollant(r, g_e.zAnnuler.x, g_e.zAnnuler.y, g_e.zAnnuler.w, g_e.zAnnuler.h, ui::majuscules(ui::tr("profil.annuler")), 1, false, 30 * k);
     }
-    // ---- clavier (RG-03)
+    // ---- clavier : panneau 1018 × 348 ; touches 62 × 52, pas de 74 × 64 ; ⇧ et ⌫ de 84 ; « Espace » 439
+    const float kx0 = ox + 521 * k, ky0 = oy + 131 * k;
+    verre::panneau(r, kx0, ky0, 1018 * k, 348 * k, st);
     const Touche* cl = creation::clavier(ui::langue::active());
     const bool appuiRecent = g_e.presse >= 0 && g_e.maintenant - g_e.tPresse < 0.12;
+    const float tw0 = 62 * k, th = 52 * k, ec = 12 * k, large = 84 * k, centre = kx0 + 509 * k;
+    float rangX[3], xCur[3];
+    for (int rg = 0; rg < 3; rg++) {   // largeur de chaque rang (⇧ plus large) : rangs centrés sur le panneau
+        float lw = 0;
+        for (int i = rg * 13; i < rg * 13 + 13; i++) lw += (cl[i].genre == Touche::Majuscules ? large : tw0) + (i % 13 ? ec : 0);
+        rangX[rg] = xCur[rg] = centre - lw / 2;
+    }
+    (void)rangX;
     for (int i = 0; i < creation::NB_TOUCHES; i++) {
         const Touche& t = cl[i];
-        const float tx = p.kx + t.colonne * (p.touche + p.ecart), ty = p.ky + t.ligne * (p.touche + p.ecart);
-        const float tw = t.largeur * p.touche + (t.largeur - 1) * p.ecart;
+        float tx, ty, tw;
+        if (i < 39) { const int rg = i / 13; tw = t.genre == Touche::Majuscules ? large : tw0; tx = xCur[rg]; ty = ky0 + 19 * k + rg * (th + ec); xCur[rg] += tw + ec; }
+        else if (t.genre == Touche::Effacer) { tw = large; tx = centre - tw / 2; ty = ky0 + 211 * k; }
+        else { tw = 439 * k; tx = centre - tw / 2; ty = ky0 + 275 * k; }
         const bool active = creation::toucheActive(t, s.champ());
         const bool majArmee = t.genre == Touche::Majuscules && s.majuscules() && s.champ() == Champ::Pseudo;
-        const float a = active ? 1.f : 0.35f;
-        // touche grisée : fond opaque plus sombre (rien de la scène ne passe à travers), texte atténué
-        const unsigned fond = !active ? 0x111219 : t.genre == Touche::Caractere ? SURFACE2 : SURFACE;
-        r.uiRect(tx, ty, tw, p.touche, appuiRecent && g_e.presse == i ? hex(0x3A3F55) : hex(fond));
-        r.uiRect(tx, ty + p.touche - 2 * u, tw, 2 * u, majArmee ? hex(ACCENT2) : hex(BG, 0.6f));   // bord bas (relief) ; cyan : majuscule armée
-        // zone touchable : la touche et la moitié des écarts autour (aucun trou entre deux touches)
-        g_e.zTouches[i] = {tx - p.ecart / 2, ty - p.ecart / 2, tw + p.ecart, p.touche + p.ecart};
-        const vec4 c = hex(TEXTE, a);
-        const float cx = tx + tw / 2, cy = ty + p.touche / 2;
+        const bool presse = appuiRecent && g_e.presse == i;
+        // touche de verre sombre aux coins arrondis, liseré clair ; grisée : plus sombre, texte atténué
+        vec2 q[ui::boutons::MAX_SOMMETS];
+        const int n = ui::boutons::contourArrondi(q, tx, ty, tw, th, 9 * k);
+        dessin2d::halo(r, q, n, 3 * k, {0, 0, 0, 0.35f});
+        dessin2d::polygone(r, q, n, {presse ? hex(0x3A3F4E) : hex(active ? 0x262933 : 0x14161C), hex(presse ? 0x2C303C : active ? 0x17191F : 0x101217), ty, ty + th});
+        dessin2d::contour(r, q, n, 1 * k, majArmee ? hex(ACCENT2) : hex(TEXTE, active ? 0.14f : 0.06f));
+        // zone touchable : la touche et la moitié des écarts autour (aucun trou entre deux touches d'un rang)
+        g_e.zTouches[i] = {tx - ec / 2, ty - ec / 2, tw + ec, th + ec};
+        const vec4 c = hex(TEXTE, active ? 1.f : 0.35f);
+        const float cx = tx + tw / 2, cy = ty + th / 2;
         switch (t.genre) {
             case Touche::Caractere: {
                 const bool capitale = s.champ() == Champ::Plaque || s.majuscules();
                 const char ch = t.c >= 'a' && t.c <= 'z' && capitale ? (char)(t.c - 'a' + 'A') : t.c;
                 ui::langue::journalTechnique(true);   // touche d'un caractère : rien à traduire
-                ui::textBoite(r, cx, ty, tw, p.touche, 26 * u, std::string(1, ch), c, ui::CENTRE);
+                { ui::AvecPolice inter(ui::Police::InterMedium); ui::textBoite(r, cx, ty, tw, th, 19 * k, std::string(1, ch), c, ui::CENTRE); }
                 ui::langue::journalTechnique(false);
                 break;
             }
-            case Touche::Majuscules: iconeMajuscules(r, cx, cy, 11 * u, majArmee, majArmee ? hex(ACCENT2) : c); break;
-            case Touche::Effacer: iconeEffacer(r, cx, cy, u, c); break;
-            case Touche::Espace: ui::textBoite(r, cx, ty, tw, p.touche, 15 * u, ui::majuscules(ui::tr("creation.espace")), hex(MUTED, a), ui::CENTRE, 0.15f); break;
+            case Touche::Majuscules: iconeMajuscules(r, cx, cy, 8 * k, majArmee, majArmee ? hex(ACCENT2) : c); break;
+            case Touche::Effacer: iconeEffacer(r, cx, cy, 0.75f * k, c); break;
+            case Touche::Espace: { ui::AvecPolice inter(ui::Police::InterMedium);
+                                   ui::textBoite(r, cx, ty, tw, th, 14 * k, ui::majuscules(ui::tr("creation.espace")), hex(0xC9CDDA, active ? 1.f : 0.35f), ui::CENTRE, 0.20f); break; }
         }
     }
 }
@@ -428,7 +424,10 @@ int benchCreationProfil(Game& g, Renderer& r, const std::string& out) {
     {
         const float dp = ui::pixelsParDp((float)r.width());
         WFS_LOG("création du profil (WFS-481) banc : touche %.0f px = %.1f dp (%.1f mm à 160 dp par pouce)", g_e.zTouches[0].h, g_e.zTouches[0].h / dp, g_e.zTouches[0].h / dp * 25.4f / 160.f);
-        verifier(r.width() < 2000 || g_e.zTouches[0].h / dp * 25.4f / 160.f >= 9.f, "RG-03 : touches de 9 mm au moins (zone touchable)");
+        // WFS-557 (arbitrage du PO du 2026-11-16, RG-06 / RG-07) : touches de la maquette 20 (62 × 52 px) ; zone touchable (touche et
+        // demi-écarts, 74 × 64 px de la maquette) jamais sous 44 px de la maquette (la règle des 9 mm de WFS-481 est remplacée)
+        const float k = r.height() / 720.f;
+        verifier(g_e.zTouches[0].h >= 44 * k - 0.5f && g_e.zTouches[0].w >= 44 * k - 0.5f, "WFS-557 RG-07 : zone touchable ≥ 44 px de la maquette");
     }
     images(20);
     capture("vide", "écran vide, « C'est parti » grisé, majuscule armée");

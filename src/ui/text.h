@@ -17,6 +17,19 @@ enum Align { GAUCHE, CENTRE, DROITE };
 inline const vec4 BLANC{1, 1, 1, 1}, CYAN{0.f, 0.898f, 1.f, 1}, ORANGE{1.f, 0.416f, 0.f, 1}, ROUGE{1.f, 0.122f, 0.294f, 1},
                   GRIS{0.62f, 0.66f, 0.72f, 1};
 
+// WFS-557 (RG-10 à RG-12) : faces de l'atlas. Rajdhani Bold : titres, boutons, chiffres, HUD ; Inter : texte courant des
+// maquettes R19 (descriptions, lignes d'information, CGU). Choix par portée : { ui::AvecPolice p(ui::Police::Inter); ui::text(…); }
+enum class Police { Rajdhani = 0, Inter = 1, InterMedium = 2 };
+constexpr int NB_POLICES = 3;
+struct AvecPolice {
+    explicit AvecPolice(Police p);
+    ~AvecPolice();
+    AvecPolice(const AvecPolice&) = delete;
+    AvecPolice& operator=(const AvecPolice&) = delete;
+private:
+    Police avant_;
+};
+
 bool fontReady();
 bool chargerPolice(Renderer& r);   // WFS-35 : police chargée une seule fois, avant la partie (écran de chargement)
 void libererPolice(Renderer& r);   // WFS-308 : atlas libéré (avant Renderer::shutdown hors partie : fenêtre perdue pendant les CGU)
@@ -38,7 +51,7 @@ float textBoite(Renderer& r, float x, float y, float largeur, float hauteur, flo
 // formats français (toLocaleString('fr-FR') du jeu web)
 std::string nombre(long long v);                 // 12 345 (espace fine insécable)
 std::string decimal(double v, int chiffres);      // 1,2
-std::string chrono(double secondes);              // fmtTime du jeu web : m:ss.d
+std::string chrono(double secondes);              // fmtTime du jeu web : m:ss,d (m:ss.d en anglais, WFS-557)
 std::string majuscules(const std::string& utf8);  // libellés en capitales (accents compris)
 
 } // namespace ui

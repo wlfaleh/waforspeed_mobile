@@ -61,7 +61,10 @@ void panneau(Renderer& r, float x, float y, float w, float h, const Style& s) {
 }
 
 void surTitre(Renderer& r, float x, float y, float px, const std::string& texte, ui::Align align, float opacite) {
-    ui::text(r, x, y, px, ui::majuscules(texte), hexa(SUR_TITRE, opacite), align, 0.22f, false);
+    // WFS-557 (maquettes R19, arbitrage du PO : RG-12) : sur-titres en Inter Medium, comme sur les maquettes ; même hauteur de
+    // capitales qu'avant (capitales d'Inter ≈ 0,60 px, de Rajdhani ≈ 0,50 px : taille × 0,85), espacement 0,20 em
+    ui::AvecPolice police(ui::Police::InterMedium);
+    ui::text(r, x, y + px * 0.08f, px * 0.85f, ui::majuscules(texte), hexa(SUR_TITRE, opacite), align, 0.20f, false);
 }
 
 void fondFloute(Renderer& r) { r.flouFond = 1.f; }

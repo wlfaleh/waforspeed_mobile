@@ -11,7 +11,8 @@
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../text.h"
-#include "../verre.h"   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, dégradé de la marque
+#include "../verre.h"
+#include "../boutons.h"   // WFS-557 : « Réessayer » rond (Start/Stop), formes arrondies   // WFS-548 (R19) : fenêtre de verre, sur-titre gris, dégradé de la marque
 #include "../langue.h"   // WFS-505 : textes de l'écran de chargement en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
@@ -98,16 +99,29 @@ float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float op) {
 }
 
 static std::string texteChargement();   // WFS-297 (RG-06), plus bas
+
+// WFS-557 (maquette 08) : 4 étapes sous la barre ; étape en cours = celle du libellé, ou celle de la progression si elle est
+// plus loin (le chargement des voitures n'a pas de libellé propre) ; bornes de progression de chaque étape
+static const char* const ETAPES_BARRE[4] = {"chargement.barre.moteur", "chargement.barre.modeles", "chargement.barre.voitures", "chargement.barre.ville"};
+static const float BORNES[5] = {0.f, 0.20f, 0.45f, 0.70f, 1.f};
+static int etapeEnCours(float p, const std::string& libelle) {
+    int e = 0;
+    while (e < 3 && p >= BORNES[e + 1]) e++;
+    if (libelle == "Chargement du modèle 3D…") e = std::max(e, 1);
+    if (libelle == "Construction de la ville") e = 3;
+    return e;
+}
+
+// WFS-557 (maquettes 08 et 08b ; arbitrage du PO du 2026-11-16 : maquette à 100 %). Unité k = H / 720 (maquette 1600 × 720).
+// Sur-titre, logo « WA FOR / SPEED » en italique (FOR au trait), fenêtre de verre 687 × 197 : étape en Inter (rouge si échec),
+// gros pourcentage à droite, barre arrondie au dégradé de la marque (vers le rouge si échec), 4 étapes (Moteur, Modèles 3D,
+// Voitures, Ville), deux lignes d'information en Inter grise ; échec : « Réessayer » rond (Start/Stop) en bas à droite.
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float op) {
     const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
-    // WFS-147 (RG-01, RG-02) : téléphone couché : logo de 100 dp au plus, libellé de 19 dp, bouton de 48 dp (dp réels)
-    const bool cp = ui::petitEcran(W, H);
-    const MiseEnPage m = cp ? miseEnPagePetit(W, H, 100, 16) : miseEnPage(W, H);
-    const float k = m.k, x = m.x, largeur = m.largeur, gap = m.gap;
+    const float k = H / 720.f;
+    p = clampv(p, 0, 1);
     r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran
-    // WFS-146 (RG-10, ANO-39) : reflets d'asphalte de .screen--loading, sans rien déplacer :
-    // radial-gradient(120% 60% at 50% 110%, rgba(255,106,0,.14)) et radial-gradient(80% 50% at 85% 100%, rgba(0,229,255,.10)),
-    // en éventails de quadrilatères à couleurs par sommet (centre à l'opacité du web, bord transparent)
+    // WFS-146 (RG-10, ANO-39) : reflets d'asphalte (centre à l'opacité du web, bord transparent)
     auto reflet = [&](float cx, float cy, float rx, float ry, const vec4& c) {
         const int N = 48;
         for (int i = 0; i < N; i++) {
@@ -118,49 +132,102 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
             r.uiQuad(q);
         }
     };
-    reflet(W * 0.5f, H * 1.1f, W * 1.2f, H * 0.6f, hex(ACCENT, 0.14f * op));
-    reflet(W * 0.85f, H * 1.0f, W * 0.8f, H * 0.5f, hex(ACCENT2, 0.10f * op));
-    const float barre = 6 * k, txt = 19 * k;   // libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
-    const float total = m.hauteurBloc + gap + barre + 10 * k + txt;
-    float y = std::max(16 * k, (H - total) / 2);
+    reflet(W * 0.5f, H * 1.1f, W * 1.2f, H * 0.6f, hex(ACCENT, 0.08f * op));
+    reflet(W * 0.85f, H * 1.0f, W * 0.8f, H * 0.5f, hex(ACCENT2, 0.05f * op));
     const bool police = ui::fontReady();
-    y = dessinerBlocLogo(r, m, y, op);
-    {   // WFS-548 (RG-01, maquette 08) : fenêtre de verre dépoli autour de la barre, de l'étape et des chiffres (rien ne bouge)
-        const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k, kb = H / 720.f;
-        const float bas = erreur ? txt + (cp ? 16 : 24) * k + 56 * kb : txt + 10 * k + 2 * tm + 4 * k;
-        verre::Style st; st.rayon = 14 * k; st.lisere = 1.5f * kb; st.opacite = op;
-        verre::panneau(r, x - 24 * k, y - 22 * k, largeur + 48 * k, barre + 10 * k + bas + 40 * k, st);
+    const float x = 70 * k;
+    if (police) {
+        verre::surTitre(r, x, 71 * k, 17 * k, ui::tr("chargement.surtitre"), ui::GAUCHE, op);
+        // logo : « WA » blanc, « FOR » au trait (copies décalées puis fond), « SPEED » orange avec halo ; italique (maquette 08)
+        const float logo = 120 * k, xl = x + 6 * k, yl = 83 * k, ys = 166 * k;
+        ui::text(r, xl, yl, logo, "WA", hex(TEXTE, op), ui::GAUCHE, -0.02f, false, true);
+        const float xf = xl + ui::width(logo, "WA", -0.02f) - 0.02f * logo, e = 2 * k;
+        if (op < 0.999f) ui::text(r, xf, yl, logo, "FOR", hex(MUTED, op), ui::GAUCHE, -0.02f, false, true);
+        else {
+            for (int i = 0; i < 8; i++) { const float a = i * 0.785398f; ui::text(r, xf + std::cos(a) * e, yl + std::sin(a) * e, logo, "FOR", hex(TEXTE, op), ui::GAUCHE, -0.02f, false, true); }
+            ui::text(r, xf, yl, logo, "FOR", hex(BG, op), ui::GAUCHE, -0.02f, false, true);
+        }
+        for (int i = 0; i < 8 && op >= 0.999f; i++) {   // halo orange (text-shadow 0 0 22px)
+            const float a = i * 0.785398f;
+            ui::text(r, xl + std::cos(a) * 7 * k, ys + std::sin(a) * 7 * k, logo, "SPEED", hex(ACCENT, 0.10f * op), ui::GAUCHE, -0.02f, false, true);
+        }
+        ui::text(r, xl, ys, logo, "SPEED", hex(ACCENT, op), ui::GAUCHE, -0.02f, false, true);
     }
-    // barre .cp-bar : fond --surface-2, remplissage du dégradé de la marque cyan → orange (WFS-548, RG-04 : verre::barreMarque,
-    // un seul dégradé continu, mêmes couleurs qu'avant)
-    r.uiRect(x, y, largeur, barre, hex(SURFACE2, op));
-    const float plein = largeur * clampv(p, 0, 1);
-    if (plein > 0) verre::barreMarque(r, x, y, plein, barre, op);
-    y += barre + 10 * k;
-    // étape et pourcentage (renderLoadProgress : libellé + ' ' + n + ' %') ou message d'échec
+    // fenêtre de verre
+    const float px = x, py = 341 * k, pw = 687 * k, ph = 197 * k, xi = px + 24 * k, wi = pw - 47 * k;
+    { verre::Style st; st.rayon = 16 * k; st.lisere = 1.5f * k; st.opacite = op; verre::panneau(r, px, py, pw, ph, st); }
+    const vec4 rouge = verre::hexa(verre::PERTE, op);
+    // barre : piste sombre arrondie, remplissage du dégradé de la marque (cyan → orange ; échec : cyan → rouge), halo en bout
+    const float by = 426 * k, bh = 7 * k;
+    {
+        vec2 q[ui::boutons::MAX_SOMMETS];
+        const int n = ui::boutons::contourArrondi(q, xi, by, wi, bh, bh / 2);
+        dessin2d::polygone(r, q, n, dessin2d::uni(hex(0x2A2D36, op)));
+        const float plein = std::max(bh, wi * p), R = bh / 2;
+        if (p > 0) {
+            const vec4 c0 = hex(ACCENT2, op), c1 = erreur ? rouge : hex(ACCENT, op);
+            const int m = ui::boutons::contourArrondi(q, xi, by, plein, bh, R);
+            dessin2d::halo(r, q, m, 6 * k, {c1.x, c1.y, c1.z, 0.35f * op});
+            // corps en dégradé horizontal (couleurs par sommet), bouts arrondis de la couleur de leur côté
+            const float x0 = xi + R, x1 = xi + plein - R;
+            if (x1 > x0) {
+                const UiVertex v[4] = {{x0, by, -1, -1, c0.x, c0.y, c0.z, c0.w}, {x1, by, -1, -1, c1.x, c1.y, c1.z, c1.w},
+                                       {x1, by + bh, -1, -1, c1.x, c1.y, c1.z, c1.w}, {x0, by + bh, -1, -1, c0.x, c0.y, c0.z, c0.w}};
+                r.uiQuad(v);
+            }
+            dessin2d::anneau(r, x0, by + R, 0, R, c0, PI, 2 * PI);
+            dessin2d::anneau(r, std::max(x0, x1), by + R, 0, R, c1, 0, PI);
+        }
+    }
+    // 4 étapes : trait de 3 px puis libellé (✓ cyan pour une étape finie)
+    const int e = etapeEnCours(p, libelle);
+    const float sw = (wi - 3 * 8 * k) / 4;
+    for (int i = 0; i < 4; i++) {
+        const float sx = xi + i * (sw + 8 * k);
+        vec2 q[ui::boutons::MAX_SOMMETS];
+        int n = ui::boutons::contourArrondi(q, sx, 449 * k, sw, 3 * k, 1.5f * k);
+        dessin2d::polygone(r, q, n, dessin2d::uni(i < e ? hex(0xE6E8EE, op) : hex(0x3A3D46, op)));
+        if (i == e) {
+            const float f = clampv((p - BORNES[i]) / (BORNES[i + 1] - BORNES[i]), 0.05f, 1.f);
+            n = ui::boutons::contourArrondi(q, sx, 449 * k, sw * f, 3 * k, 1.5f * k);
+            dessin2d::polygone(r, q, n, dessin2d::uni(erreur ? rouge : hex(ACCENT, op)));
+        }
+        if (!police) continue;
+        ui::AvecPolice inter(ui::Police::InterMedium);
+        float tx = sx;
+        if (i < e) {   // coche
+            const vec2 c[3] = {{sx + 3 * k, 467 * k}, {sx + 7 * k, 471 * k}, {sx + 14 * k, 462 * k}};
+            dessin2d::trait(r, c, 3, 1.8f * k, hex(ACCENT2, op));
+            tx += 25 * k;
+        }
+        const vec4 c = i < e ? hex(TEXTE, op) : i == e ? (erreur ? rouge : hex(0xFF8A3D, op)) : hex(MUTED, op);
+        ui::text(r, tx, 460 * k, 13 * k, ui::tr(ETAPES_BARRE[i]), c, ui::GAUCHE, 0, false);
+    }
+    // WFS-279 (RG-01) : version en petit, coin bas droit
     if (!police) return;
-    // WFS-279 (RG-01) : version en petit, couleur discrète, coin bas droit libre (rien d'autre ne bouge) ; 14 dp sur téléphone (WFS-147)
-    const float tv = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
-    ui::text(r, W - 16 * k, H - 16 * k - tv, tv, texteVersion(versionJeu()), hex(MUTED, op), ui::DROITE, 0.15f);
-    if (erreur) {   // WFS-146 (RG-10) : message inchangé (taille, place), puis bouton « Réessayer » (« Quitter » si le moteur ne repart pas)
-        ui::text(r, x, y, txt, ui::tr("chargement.echec"), hex(DANGER, op), ui::GAUCHE);
-        // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte en dp gardé
-        const float kb = H / 720.f;
-        const float tp = 20 * k, bh = 56 * kb, by = y + txt + (cp ? 16 : 24) * k;
-        const char* cle = g_quitter ? "chargement.quitter" : "chargement.reessayer";   // WFS-505 (RG-03) : largeur du bouton mesurée en français
-        const std::string t = ui::majuscules(ui::tr(cle));
-        const float tw = ui::width(tp, ui::majuscules(ui::trLangue(cle, ui::langue::Langue::Francais)), 0.12f), bw = tw + 56 * kb;
-        g_reessayer = {x, by, bw, bh};
-        dessin2d::biseau(r, x, by, bw, bh, 14 * kb, dessin2d::uni(hex(ACCENT, op)));
-        ui::textBoite(r, x + bw / 2, by, tw, bh, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
+    ui::text(r, W - 31 * k, H - 31 * k - 12 * k, 12 * k, texteVersion(versionJeu()), hex(MUTED, op), ui::DROITE, 0.15f);
+    {   // étape (ou échec) et pourcentage
+        ui::AvecPolice inter(ui::Police::InterMedium);
+        const std::string lib = erreur ? ui::tr("chargement.echec") : libelleAffiche(libelle);
+        ui::textBoite(r, xi, 386 * k, wi - 140 * k, 20 * k, 17 * k, lib, erreur ? rouge : hex(TEXTE, op), ui::GAUCHE, 0);
     }
-    else {
-        ui::text(r, x, y, txt, libelleAffiche(libelle) + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
-        // WFS-297 (RG-06) : données chargées et mémoire utilisée, en petit sous l'étape (pendant et à la fin du chargement)
-        const float tm = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
-        ui::text(r, x, y + txt + 8 * k, tm, texteChargement(), hex(MUTED, op), ui::GAUCHE, 0.f, false);
-        ui::text(r, x, y + txt + 10 * k + tm, tm, texteMemoire(true), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+    {
+        const std::string pc = std::to_string((int)std::lround(p * 100));
+        const float xp = xi + wi - 20 * k;
+        ui::text(r, xp - 4 * k, 359 * k, 60 * k, pc, erreur ? rouge : hex(TEXTE, op), ui::DROITE, 0, false, true);
+        ui::text(r, xp, 385 * k, 22 * k, "%", hex(0xC9CDDA, op), ui::GAUCHE, 0, false, true);
     }
+    {   // WFS-297 (RG-06) : données chargées et mémoire, en Inter grise
+        ui::AvecPolice inter(ui::Police::Inter);
+        ui::text(r, xi, 489 * k, 12 * k, texteChargement(), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+        ui::text(r, xi, 505 * k, 12 * k, texteMemoire(true), hex(MUTED, op), ui::GAUCHE, 0.f, false);
+    }
+    if (erreur) {   // WFS-146 (RG-10) : « Réessayer » (« Quitter » si le moteur ne repart pas), bouton rond de 142 px (maquette 08b)
+        const float d = 142 * k;
+        const char* cle = g_quitter ? "chargement.quitter" : "chargement.reessayer";
+        g_reessayer = {W - 116 * k - d, H - 74 * k - d, d, d};
+        ui::boutons::startStop(r, g_reessayer.x, g_reessayer.y, d, d, ui::majuscules(ui::tr(cle)), op, g_doigtErreur >= 0, "", 21 * k);
+    } else g_reessayer = {};
 }
 
 const char* versionJeu() { return WFS_VERSION; }   // WFS-279
