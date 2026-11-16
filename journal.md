@@ -743,3 +743,9 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Refus (6 points) : captures modes-choix et fin Checkpoint périmées (avant 3eaf6eb4) ; CGU coupées en 16:9 (« J'accepte » hors écran, cgu.cpp:147, k = H / 720) ; Market : carte Pack débutant sans image (maquette 12, non déclaré) ; salon : solde ★ absent (maquette 23) ; tests-cpu.log et section « Tests CPU » absents ; description (« 21 % plus grande ») à corriger. Capture du garage demandée (bague chrome partagée).
 - Pour le PO : banc menu2, parcours duel « Revanche » à 0,0 s en échec aussi sur main (088f306c), déjà signalé par la revue de #430.
 - La synchronisation avec main après WFS-550 est faite par le développeur (message du coordinateur) ; aucune fusion.
+
+### 2026-11-16 13:34:33 — WFS-559 : PR #431 corrigée après la revue du lead dev (Claude, agent dev3d (01Us6uCwnA))
+- Cause racine du point 2 : le système de la nuit (`nuit.cpp`, ordre 950) remet `fp.spotCount` à 0 après le portique (ordre 112) : la lumière de nuit des feux était effacée à chaque image. Elle est posée par `PortiqueDepartLumiere` (ordre 960), en cône, 0,003 par colonne, portée 12 m (réglé au banc sur le critère de l'agent 3D) ; le banc `portique-depart` vérifie qu'elle est posée (rouge au décompte, verte au GO).
+- Tests CPU : 152 réussis sur aa466277 (`qa/pr/WFS-559/tests-cpu.log`) ; banc `portique-depart` 2400 × 1080 : 0 écart ; captures de nuit refaites.
+- Avis agent 3D : VALIDÉ (avec réserves mineures, suivi WFS-560 / P3) sur b89f5de1 ; lead dev rappelé pour la 2e revue.
+
