@@ -1258,3 +1258,9 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Captures : `qa/pr/WFS-496/` (21 après, 1 paire avant / après du garage).
 - Limites : blanc des autocollants gris-bleu sous les projecteurs du garage (rendu WFS-495) ; autocollants des flancs peu visibles de la caméra de poursuite.
 
+
+### 2026-11-16 00:31:13 — Arbitrage WFS-557 : éléments sans place sur les maquettes R19 (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) (RG-09). Décisions écrites dans `regles-de-gestion/WFS-557.md` (RG-14 à RG-18).
+- Plaque : suit le pseudo, toucher « Ta plaque » la modifie. Profil : « · record » si le score égale le record du mode ; aide de glissement retirée.
+- Menu : Crédits seulement dans les Réglages (maquette 14) ; compteur d'étoiles → Market ; bloc « RECORD » → Profil (pas de bouton ajouté) ; sous-titres, « Ta voiture » et aide retirés.
+- Pause : « CP 2 » sans total en Checkpoint. Market : apparence 100 % ; le pack débutant existe déjà (WFS-510, 511, 513), il est branché tel quel, grisé « Après ta 3e course » tant qu'il n'est pas proposé ; pas de nouvelle US.
