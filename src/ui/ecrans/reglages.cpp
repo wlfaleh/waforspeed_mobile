@@ -430,18 +430,26 @@ private:
     // .cam-btn : vitré, bordure 1 px, biais 8 px, 44 px de haut, « RÉGLAGES » ; en haut à droite de la zone sûre
     // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte et place gardés
     void dessinerBouton(Renderer& r, const GameView& g, float W, float k, float kb) {
-        // WFS-557 (maquettes 01 et 19, arbitrage du PO du 2026-11-16) : bouton de verre arrondi, icône engrenage.
-        // Pause (19) : « ⚙ RÉGLAGES », 155 × 51 à 31 px du bord droit et 22 px du haut ; menu (01) : bouton rond de 46 px, engrenage
-        // seul, 30 px du bord droit (le compteur d'étoiles est à sa gauche). Zone de toucher : la cible de 48 dp (dansCible).
-        (void)k;
+        if (g.ecran == Ecran::Pause) { dessinerPilulePause(r, g, W, kb); return; }   // WFS-557 (maquette 19)
+        const float h = 44 * kb, tp = 15 * k, pad = 18 * kb;
         const std::string t = ui::majuscules(ui::tr("reglages.bouton"));   // WFS-504
-        const bool pause = g.ecran == Ecran::Pause;
-        const float h = pause ? 51 * kb : 46 * kb, w = pause ? 155 * kb : h;
-        const float x = W - g.marges.droite - (pause ? 31 : 30) * kb - w, y = g.marges.haut + 22 * kb;
+        const float tw = largeurMax(tp, "reglages.bouton", 0.12f), dx = (tw - ui::width(tp, t, 0.12f)) / 2;   // RC-E20-04 : taille fixe
+        const float w = pad + tw + pad, x = W - g.marges.droite - 16 * k - w, y = g.marges.haut + 14 * k;
         g_bouton = {x, y, w, h};
         g_boutonFrais = true;   // WFS-537 (accroche) : compteur d'étoiles posé à cette image
-        ui::boutons::verreIcone(r, x, y, w, h, ui::boutons::Icone::Engrenage, pause ? t : std::string(), 1, g_presse == P_BOUTON,
-                                pause ? 20 * kb : 22 * kb, {pause ? 12 * kb : h / 2, 0, nullptr, 0.10f});
+        biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, BORD);
+        biseau(r, x, y, w, h, 8 * kb, GLASS);
+        if (g_presse == P_BOUTON) biseau(r, x, y, w, h, 8 * kb, hex(ACCENT2, 0.22f));   // WFS-290 (RG-04) : appuyé, voile cyan
+        ui::text(r, std::round(x + pad + dx), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
+    }
+    // WFS-557 (maquette 19, arbitrage du PO du 2026-11-16) : en pause, « ⚙ RÉGLAGES » en bouton de verre arrondi, 155 × 51, à 31 px
+    // du bord droit et 22 px du haut ; zone de toucher : la cible de 48 dp (dansCible). Au menu : bouton de WFS-550 (maquette 01).
+    void dessinerPilulePause(Renderer& r, const GameView& g, float W, float kb) {
+        const std::string t = ui::majuscules(ui::tr("reglages.bouton"));   // WFS-504
+        const float h = 51 * kb, w = 155 * kb, x = W - g.marges.droite - 31 * kb - w, y = g.marges.haut + 22 * kb;
+        g_bouton = {x, y, w, h};
+        g_boutonFrais = true;   // WFS-537 (accroche) : compteur d'étoiles posé à cette image
+        ui::boutons::verreIcone(r, x, y, w, h, ui::boutons::Icone::Engrenage, t, 1, g_presse == P_BOUTON, 20 * kb, {12 * kb, 0, nullptr, 0.10f});
     }
     // WFS-557 (maquettes 14, 24, 25 ; arbitrage du PO du 2026-11-16 : maquette à 100 %, boutons compris). Une seule mise en page,
     // en unités de la maquette (1600 × 720, k = H / 720), pour le téléphone (2400 × 1080) comme pour le PC : fenêtre de verre
