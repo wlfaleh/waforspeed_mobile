@@ -128,6 +128,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
+> ⚖️ **2026-11-16 01:42 UTC — Arbitrage WFS-551 (éléments absents des maquettes)** : bouton MARKET retiré du garage (toucher le solde ouvre le Market) ; crédit CC BY gardé en petit ; 28 couleurs gardées, rangées de la maquette 06 qui défilent ; scène 3D du garage = nouveau **WFS-563** (P1, ⏳ Prêt, `@dev` + avis `@3d`).
+
 > ⚖️ **2026-11-16 01:05 UTC — Arbitrage WFS-550 / 551 / 557 (maquettes R19 à 100 %)** : onglets du garage (VOITURE / PEINTURE / FINITION / SKINS, panneau étroit de l'onglet Voiture) = **WFS-551** (déjà sur sa branche) ; WFS-550 en dessine seulement le contenu (cadrans, barres, 17 segments) ; le 2e fusionné montre 06, 07, 13, 15, 16 à 100 %. Menu (maquette 01, RG-16 de 557) **passe à WFS-550** : cartes collées au bord droit, colonne Market / Profil / Crédits retirée (Market = compteur d'étoiles, Profil = bloc RECORD, Crédits dans les Réglages).
 
 > 🖼️ **2026-11-16 01:01 UTC — WFS-562 créé (E23, P1, `@dev` + avis `@3d`, après WFS-557)** : vraies images des 3 modes de la maquette 02 (arbitrage RG-21 / RG-22 de WFS-557 : Distance et Difficulté seulement dans la carte du mode choisi qui s'en sert ; scène floutée en attendant les images).
@@ -299,6 +301,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-560 | Interface R19 : fin de course, portique « ARRIVÉE », damier au sol, score en chiffres 3D avec reflet (maquette 10) | E23 (objets de course) | ⏳ En attente (WFS-559) |  | WFS-559 ; `@dev` + avis `@3d` | `feature/waforspeed-560` |  |  |
 | P1 Urgent | WFS-561 | Interface R19 : résultats, tableau LED ambre des 5 pilotes dans le parking, voiture du joueur (maquette 11) | E23 (E8 + menu 3D) | ⏳ Prêt |  | — ; `@dev` + avis `@3d` | `feature/waforspeed-561` |  |  |
 | P1 Urgent | WFS-562 | Interface R19 : vraies images des 3 modes sur l'écran « Choisis ton mode » (maquette 02) | E23 (E5 + E8) | ⏳ En attente (WFS-557) |  | WFS-557 ; `@dev` + avis `@3d` | `feature/waforspeed-562` |  |  |
+| P1 Urgent | WFS-563 | Interface R19 : scène 3D du garage à la maquette (plateau tournant blanc lumineux, fond sombre sans néon) | E23 (menu 3D) | ⏳ Prêt |  | — ; `@dev` (dev-artiste-3d) + avis `@3d` | `feature/waforspeed-563` |  |  |
 | P2 Haute | WFS-553 | [TECHNIQUE] Banc `score-fin` : l'appui sur le compteur ouvre le Market (après WFS-513), 40 échecs (ANO-274) | E22 (banc de 537) | ⏳ Prêt |  | — ; `@dev` | `feature/waforspeed-553` |  |  |
 | P2 Haute | WFS-554 | Correction : finitions du menu 3D de WFS-552 (pièces jaunes SF-X, vernis, caméléon, béton, cadrage 720p) (ANO-275) | E23 (menu 3D) | ⏳ Prêt |  | — ; `@dev` (dev-artiste-3d) + avis `@3d` | `feature/waforspeed-554` |  |  |
 | P1 Urgent | WFS-463 | [TECHNIQUE] Publier les paquets après WFS-371, avec la Corniche de WFS-426 (reprend WFS-462) | E14 (exception PO : aucun code) | 🟡 À valider (utilisateur) — paquets publiés (run #3 de « Paquets de cartes », 19:11) | agent expert ci cd (01UY1Vv3nf), 2026-11-12 15:32 UTC (à sa demande) | WFS-371 ; agent expert ci cd | `feature/waforspeed-463` |  |  |
