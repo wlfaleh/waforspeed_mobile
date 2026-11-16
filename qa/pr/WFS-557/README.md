@@ -23,3 +23,13 @@ Captures « avant » : `origin/main` = `088f306c6d010358c3109646831b9363bdb12f26
 | `textes-fr-duel-fin` | ![avant](avant-textes-fr-duel-fin.jpg) | ![après](apres-textes-fr-duel-fin.jpg) |
 | `textes-fr-fin-course5` | ![avant](avant-textes-fr-fin-course5.jpg) | ![après](apres-textes-fr-fin-course5.jpg) |
 | `textes-fr-fin-poursuite` | ![avant](avant-textes-fr-fin-poursuite.jpg) | ![après](apres-textes-fr-fin-poursuite.jpg) |
+
+Choix de la carte (RG-23), captures ajoutées :
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `terrain-0` | ![avant](avant-terrain-0.jpg) | ![après](apres-terrain-0.jpg) |
+| `terrain-1` | ![avant](avant-terrain-1.jpg) | ![après](apres-terrain-1.jpg) |
+| `paquets-terrain-installee` | ![avant](avant-paquets-terrain-installee.jpg) | ![après](apres-paquets-terrain-installee.jpg) |
+| `paquets-terrain-progression-2` | ![avant](avant-paquets-terrain-progression-2.jpg) | ![après](apres-paquets-terrain-progression-2.jpg) |
+| `paquets-terrain-telecharger` | ![avant](avant-paquets-terrain-telecharger.jpg) | ![après](apres-paquets-terrain-telecharger.jpg) |
