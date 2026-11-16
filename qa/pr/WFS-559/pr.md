@@ -57,3 +57,12 @@ Captures « avant » : `origin/main` = `68a71e26edc4f336bd583795aece05af9386c094
 | `portique-course5-ville-jour-feux5` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/apres-portique-course5-ville-jour-feux5.jpg?raw=true) |
 | `portique-course5-ville-nuit-feux3` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/apres-portique-course5-ville-nuit-feux3.jpg?raw=true) |
 | `portique-course5-ville-nuit-go` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/apres-portique-course5-ville-nuit-go.jpg?raw=true) |
+
+## Zooms (pour l'agent 3D, banc `portique-depart` en 2400 × 1080, agrandis)
+
+| Zoom | Image |
+|---|---|
+| caisson et 5 colonnes de feux (3 allumées), jour, ×4 | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/zoom4-feux-jour.jpg?raw=true) |
+| caisson et feux (5 allumés), nuit, ×4 | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/zoom4-feux-nuit.jpg?raw=true) |
+| pied gauche en treillis et platine, jour, ×2 | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/zoom2-pied-gauche-jour.jpg?raw=true) |
+| portique entier vu de la grille (Course à 5), jour, ×3 | ![](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/zoom3-portique-course5-jour.jpg?raw=true) |
