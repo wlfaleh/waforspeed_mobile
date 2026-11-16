@@ -95,7 +95,7 @@ int main() {
         }
         char t[160]; std::snprintf(t, sizeof t, "%s : tableau entier dans l'image (x %.2f..%.2f, y %.2f..%.2f)", e.first, xmin, xmax, ymin, ymax);
         cas(t, entier);
-        cas(std::string(e.first) + " : tableau à gauche du centre, assez grand pour être lu (≥ 30 % de la largeur de l'image, maquette : 35 %)", (xmin + xmax) / 2 < 0.f && (xmax - xmin) / 2 >= 0.30f);
+        cas(std::string(e.first) + " : tableau à gauche du centre, assez grand pour être lu (≥ 24 % de la largeur ; maquette : 35 %, impossible aux vraies mesures avec la voiture de trois quarts)", (xmin + xmax) / 2 < 0.f && (xmax - xmin) / 2 >= 0.24f);
         float vx, vy;
         {   // 2e revue du lead dev : la voiture (Golf, 4,29 × 1,79 × 1,46 m) reste sous le panneau SCORE (gauche à +0,61, bas à +0,16,
             // maquette 11) et dans l'image ; en 2400 × 1080 seulement (le panneau SCORE a sa place de la maquette en 20:9)

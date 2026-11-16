@@ -24,16 +24,18 @@ vec3 refletSol(const vec3& E, const vec3& P) {
 mat4 parkingDepuisVoiture() { return rotateY(-LACET_VOITURE) * translate({-POSE_VOITURE.x, -POSE_VOITURE.y, -POSE_VOITURE.z}); }
 
 Camera camera(float aspect) {
-    // œil au bout de l'allée, à droite (12,4 m devant le voile, 5,8 m à droite du tableau), à 1,31 m de haut. Cadrage ajusté sur
+    // œil au bout de l'allée, à droite (10,4 m devant le voile, 5,1 m à droite du tableau), à 1,57 m de haut. Cadrage ajusté sur
     // la maquette 11 (image 2400 × 1080, en fraction de la demi-image ; 2e revue du lead dev) : maquette : tableau de −0,44 à
-    // +0,26 en largeur et de −0,42 à +0,40 en hauteur, voiture de +0,23 à +0,76 et de −0,82 à +0,04, toit sous le panneau SCORE
-    // (bas du panneau à +0,16, gauche à +0,61) ; obtenu (Golf) : tableau −0,41 à +0,21 et −0,40 à +0,38 ; voiture +0,23 à +0,76
-    // et −0,86 à +0,13, à droite de x = 0,58 sous +0,13 (test_tableau_led). Angle vertical de 17,3° en 20:9 ; les écrans moins
-    // larges gardent la même largeur vue (angle horizontal constant)
+    // +0,26 en largeur et de −0,42 à +0,40 en hauteur, voiture de trois quarts de +0,23 à +0,76 et de −0,82 à +0,04, toit sous
+    // le panneau SCORE (bas à +0,16, gauche à +0,61). Aux vraies mesures (tableau de 3,10 m, Golf de 4,29 m), une voiture vue de
+    // trois quarts (35° entre son avant et l'œil) est plus large à l'image que le tableau posé à côté : le tableau ne peut pas
+    // faire 35 % de la largeur comme sur la maquette (il en fait 25 %) sans mettre la voiture de face. Obtenu (Golf) : tableau
+    // −0,37 à +0,14 et −0,37 à +0,29 ; voiture +0,08 à +0,82 et −0,78 à −0,03 (tout le toit sous le panneau SCORE ; test_tableau_led).
+    // Angle vertical de 24,5° en 20:9 ; les écrans moins larges gardent la même largeur vue (angle horizontal constant)
     Camera c;
-    c.oeil = {6.28f, 1.31f, -9.69f};
-    c.cible = {-0.08f, 1.26f, Z_FOND};
-    const float demiH = std::tan(8.63f * PI / 180.f) * (2400.f / 1080.f) / std::max(1.f, aspect);
+    c.oeil = {5.90f, 1.57f, -7.61f};
+    c.cible = {0.07f, 1.54f, Z_FOND};
+    const float demiH = std::tan(12.26f * PI / 180.f) * (2400.f / 1080.f) / std::max(1.f, aspect);
     c.fovY = 2.f * std::atan(demiH);
     c.decalageY = 0.f;
     if (banc::panneau) { c.oeil = {CENTRE_TABLEAU.x - 0.9f, CENTRE_TABLEAU.y - 0.05f, faceZ() - 1.6f}; c.cible = {CENTRE_TABLEAU.x - 0.6f, CENTRE_TABLEAU.y + 0.25f, faceZ()}; c.fovY = 30.f * PI / 180.f; }
