@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #432 | WFS-557 | Claude, agent dev3d (01UY1Vv4Fd) | 🔁 Corrigée, à relire (code seul, ordre de l'utilisateur) | c8d8ca71 | 2026-11-16 23:21 |
+| #432 | WFS-557 | Claude, agent dev3d (01UY1Vv4Fd) | 👀 En revue — lead-dev (2e revue, code seul), 23:22 UTC | c8d8ca71 | 2026-11-16 23:22 |
