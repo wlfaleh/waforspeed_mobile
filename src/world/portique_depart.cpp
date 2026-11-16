@@ -180,10 +180,15 @@ public:
         const int n = vert ? Course::FEUX_DEPART : PortiqueDepart::feux();   // GO : les 5 colonnes vertes éclairent
         if (n == 0 || length(g_feux.centre - g.camPos) > 250) return;
         FrameParams::Spot& s = fp.spots[fp.spotCount++];
-        // 1,2 m devant le caisson et 0,9 m plus bas (avis de l'agent 3D, PR #431) : la face du caisson n'est pas teintée en entier
-        s.pos = g_feux.centre + g_feux.avant * 1.2f + vec3{0, -0.9f, 0}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 2; s.distance = 22;
-        s.color = vert ? vie::lin(0x19ff5a) : vie::lin(0xff1a1a);
-        s.intensity = 0.25f * (float)n;   // 5 lanternes allumées ≈ un lampadaire (1,1 à 26 m) sur une portée plus courte
+        // projecteur en cône, juste devant et sous le caisson, tourné vers l'avant et le bas (3e avis de l'agent 3D, PR #431) :
+        // la face du caisson reste noire autour des lanternes ; portée 12 m ; couleur portée un peu moins saturée que les lentilles ;
+        // 0,003 par colonne (0,015 à 5 colonnes), réglé au banc : la chaussée mouillée reflète déjà les lentilles, la lueur ajoutée
+        // garde le rouge à 1,3 × le vert et le bleu au plus sur la chaussée derrière la ligne (critère de l'agent 3D)
+        s.pos = g_feux.centre + g_feux.avant * 0.4f + vec3{0, -0.5f, 0};
+        s.target = s.pos + normalize(g_feux.avant + vec3{0, -1, 0});
+        s.angle = 1.05f; s.penumbra = 0.5f; s.decay = 2; s.distance = 12;
+        s.color = vert ? vie::lin(0x30ff70) : vie::lin(0xff3020);
+        s.intensity = 0.003f * (float)n;
         s.rang = 1;                       // éclairage fixe (WFS-450)
         g_lumiere = vert ? 2 : 1;
     }
