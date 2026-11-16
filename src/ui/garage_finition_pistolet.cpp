@@ -17,7 +17,9 @@ constexpr int MARGE = 8;                          // texels mis à zéro autour 
 void ajouterAtlas(uint8_t* rgba, int cote, int yLibre) {
     g_pret = false;
     const int x0 = cote - COTE, y0 = cote - COTE;
-    if (yLibre > y0 - MARGE) { WFS_WARN("Icône du pistolet : atlas de police trop plein (ligne libre %d)", yLibre); return; }
+    // les caractères n'occupent que le canal R : l'icône (G, B, A) peut partager leurs texels, même si la police (Rajdhani, Inter de
+    // WFS-557) remplit l'atlas jusqu'en bas ; yLibre ne sert plus qu'au journal
+    if (yLibre > y0 - MARGE) WFS_LOG("Icône du pistolet : canaux G, B, A sous des caractères (ligne libre %d), sans effet sur le texte", yLibre);
     std::vector<uint8_t> png;
     if (!readAsset("ui/icone-pistolet.png", png)) { WFS_WARN("Icône du pistolet introuvable (ui/icone-pistolet.png)"); return; }
     int w = 0, h = 0, n = 0;

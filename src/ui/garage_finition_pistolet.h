@@ -27,9 +27,10 @@ inline Masque masque(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return {(uint8_t)(v * 255.f + 0.5f), (uint8_t)(part * 255.f + 0.5f), a};
 }
 
-// Accroche du chargement de la police (src/ui/text.cpp) : lit assets/ui/icone-pistolet.png et range ses masques dans le coin bas
-// droit de l'atlas RGBA (côté `cote`), si les caractères s'arrêtent avant (yLibre = 1re ligne libre de l'atlas). Sinon, ou si l'image
-// manque, l'icône reste absente (journal) : dessiner() ne dessine rien et la rangée garde ses échantillons.
+// Accroche du chargement de la police (src/ui/text.cpp) : lit assets/ui/icone-pistolet.png et range ses masques dans les canaux G, B,
+// A du coin bas droit de l'atlas RGBA (côté `cote`) ; le canal R (caractères) n'est jamais touché, la place est donc toujours libre
+// (yLibre = 1re ligne libre des caractères, pour le journal). Si l'image manque, l'icône reste absente (journal) : dessiner() ne
+// dessine rien et la rangée garde ses échantillons.
 void ajouterAtlas(uint8_t* rgba, int cote, int yLibre);
 bool pret();
 // Dessine l'icône dans le carré (x, y, s) de l'interface. teinte[4] : couleur du godet et du jet aux coins haut gauche, haut droit,
