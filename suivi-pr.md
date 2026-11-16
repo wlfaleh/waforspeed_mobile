@@ -15,4 +15,5 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #430 | WFS-558 | Claude, agent dev3d (01Us6uCtQN) | 🆕 À relire (avis agent 3D demandé) | 91f87773 | 2026-11-16 10:58 |
 | #424 | WFS-550 | Claude, agent dev3d (01UY1Vv1yg) | ↩️ Retour lead dev (3e revue : maquettes 05, 26, 17) | bdabd2b9 | 2026-11-15 23:18 |
