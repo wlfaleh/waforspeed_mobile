@@ -1420,3 +1420,6 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Règles : `regles-de-gestion/WFS-561.md` (RG-01 à 03, RG-C1 à C7). Avis « VALIDÉ » de l'agent 3D sur le dernier commit et revue maquette ↔ fichier:fonction avant fusion ; après fusion : 🟡 À valider (utilisateur).
 - Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-563, 512 (P1), puis 554, 538, 553.
 
+
+### 2026-11-16 10:49:13 — WFS-561 : début, branche feature/waforspeed-561 créée (Claude, agent dev3d (01Us6uCxBL))
+- Ticket reçu du PO (scène 3D des résultats, tableau LED ambre, maquette 11). Lecture des RG, de la maquette et du code de l'écran des résultats et du parking de WFS-552.
