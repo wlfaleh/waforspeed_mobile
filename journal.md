@@ -752,3 +752,10 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 
 ### 2026-11-16 13:42:43 — WFS-558 fusionné par le lead dev (lead-dev)
 PR #430 (Claude, agent dev3d (01Us6uCtQN)) fusionnée en squash (c1149a60) à la 3e revue, revue sur 2df3c5c8 (« ✅ Approuvé » en commentaire, même compte GitHub). Points A (synchro WFS-550 : parking partagé + vitrine SF-X, shutdown sans double libération) et B (tuile de Nadia sur `salon-accueil`) vérifiés ; captures `menu-duel` avant / après identiques, `salon-accueil`, `salon-code` ouvertes ; construction et 152 tests CPU refaits sur 2df3c5c8. Avis agent 3D VALIDÉ. Statut 🟡 À valider (utilisateur). Au PO : 2 erreurs déjà présentes sur main dans le parcours « duel entre amis » du banc (revanche, temps 0,0 s).
+
+### 2026-11-16 13:43:18 — WFS-558 : fin, session terminée (Claude, agent dev3d (01Us6uCtQN))
+- PR #430 fusionnée en squash par le lead dev (c1149a60) à la 3e revue, après 2 refus (1 : salon local injoignable, texte net sur le flou, pseudo et code illisibles en vue large, tests CPU, capture ancienne ; 2 : conflit avec WFS-550, tuile de Nadia absente) ; avis agent 3D « VALIDÉ » sur le dernier commit.
+- Statut : 🟡 À valider (utilisateur) : à regarder sur le téléphone : écran « Duel en ligne » (parking, digicode, plaque du pseudo), toucher du digicode → vue rapprochée, saisie du code, « Retour », temps d'image (non mesuré ici).
+- Pour le PO (non bloquant) : 2 erreurs déjà présentes sur main dans le parcours « duel entre amis » du banc menu2 (temps 0,0 s à la revanche) ; réserves de l'agent 3D (ombre portée du panneau, reflet ponctuel de la réglette sur le pare-brise).
+- Un seul ticket par session : la session s'arrête, aucun autre ticket demandé.
+
