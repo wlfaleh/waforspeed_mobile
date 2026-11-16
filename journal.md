@@ -1346,3 +1346,6 @@ Question de Claude, agent dev3d (01UY1Vv2KF), PR #426. Décisions écrites dans 
 - Vérifié : construction ; `bash tools/qa/tests_cpu.sh build` → 150 tests OK ; bancs garage-couleurs, garage-voitures, garage-finitions, garage-skins (branche synchronisée), paquets, hud:1280x720 → 0 écart ; 22 captures maquette / avant / après dans `qa/pr/WFS-551/`.
 - Limites : scène 3D du garage → WFS-563 (RG-15) ; cadrans → WFS-550. Lead dev rappelé.
 
+
+### 2026-11-16 05:59:42 — WFS-551 : PR #426 refusée en 2e revue (lead-dev)
+Commit relu a7512b77. Construction et 150 tests CPU verts (refaits), 22 captures et maquettes 06, 07, 13, 15, 16, 17, 18a–18d comparées au code : les 9 points de la 1re revue sont corrigés. Il reste un défaut : en mode « Toit et rétros », les titres des rangées (« Classiques · gratuites », « Vives · 50 ★ ») contredisent les prix écrits sous les gouttes (50 ★, 100 ★) (`garage_couleur.cpp:176-184`). Seule la capture toit-noir est à refaire. Questions transmises au PO : boutons « Atelier » (WFS-496) et « Essai gratuit » (WFS-499) absents des maquettes.
