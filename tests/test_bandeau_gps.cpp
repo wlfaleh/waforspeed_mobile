@@ -76,7 +76,8 @@ int main(int argc, char** argv) {
     VERIFIE((MONTANTES + JAMBAGES) * NOM_PX <= NOM && NOM_BAS >= 0, "nom de rue %.1f de haut dans une étiquette de %.0f", (MONTANTES + JAMBAGES) * NOM_PX, NOM);
 
     // ---- toutes les consignes, distances et noms de rue possibles, cadre de 150 (largeurs comme bandeau() et nomRue())
-    const float lwC = COTE - 2 * CONSIGNE_X, lwD = COTE - DISTANCE_X - CONSIGNE_X, lwN = COTE - 12;
+    // WFS-557 : le panneau de guidage a changé (minicarte.h, COTE = 149 de haut) ; ces largeurs restent celles du bandeau de 150 de WFS-245
+    const float lwC = 150.f - 2 * CONSIGNE_X, lwD = 150.f - DISTANCE_X - CONSIGNE_X, lwN = 150.f - 12;
     auto mesurer = [&](const std::set<std::string>& textes, float px, float mini, float lw, const char* quoi) {
         int reduits = 0; float plusPetite = px; std::string pire;
         for (const std::string& t : textes) {

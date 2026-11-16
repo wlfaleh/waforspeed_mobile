@@ -434,6 +434,26 @@ private:
         g_etat.objets++;
     }
 
+    // WFS-557 (maquette 17) : icône de virage fine au trait (« ↱ » / « ↰ ») : tige montante, quart de cercle, flèche ouverte ;
+    // faux si la manœuvre n'est pas un virage simple (tout droit, épingle, rond-point, arrivée : flèche() d'avant)
+    static bool iconeVirage(Renderer& r, nav::Manoeuvre m, float cx, float cy, float u) {
+        const int sens = nav::sensDe(m);
+        if (sens == 0 || m == nav::Manoeuvre::EpingleGauche || m == nav::Manoeuvre::EpingleDroite || m == nav::Manoeuvre::RondPoint ||
+            m == nav::Manoeuvre::Arrivee || m == nav::Manoeuvre::Lacets || m == nav::Manoeuvre::Chicane) return false;
+        const float e = 2.6f * u, sx = (float)sens;
+        vec2 p[12]; int n = 0;
+        p[n++] = {cx - sx * 6 * u, cy + 12 * u};
+        for (int i = 0; i <= 8; i++) {   // quart de cercle de rayon 6 centré en (cx, cy − 1)
+            const float a = PI * 0.5f * i / 8;
+            p[n++] = {cx - sx * 6 * u * std::cos(a), cy - 1 * u - 6 * u * std::sin(a)};
+        }
+        p[n++] = {cx + sx * 8 * u, cy - 7 * u};
+        const vec4 b = hex(TEXTE);
+        dessin2d::trait(r, p, n, e, b);
+        const vec2 tete[3] = {{cx + sx * 3.5f * u, cy - 11.5f * u}, {cx + sx * 8 * u, cy - 7 * u}, {cx + sx * 3.5f * u, cy - 2.5f * u}};
+        dessin2d::trait(r, tete, 3, e, b);
+        return true;
+    }
     // ---- WFS-557 (maquette 17) : guidage écrit en bas du panneau : flèche de manœuvre blanche (22) à gauche, distance
     // (Rajdhani gras italique 26,5, ligne de base à 123 du haut, à 49 du bord gauche) et consigne en dessous (Inter, gris clair,
     // ligne de base à 139), réduite jusqu'à tenir sur une ligne
@@ -442,7 +462,7 @@ private:
         const auto& secs = trace::sections(t);
         const nav::Prochaine pr = nav::prochaine(secs, pl.dist, t.length(), c.duelFinish, M);
         const float u = carre.h / COTE, x = carre.x, y = carre.y, w = carre.w;
-        fleche(P, pr.m, pr.sortie, {x + 23.6f * u, y + 121.6f * u}, 22 * u, k * u);
+        if (!iconeVirage(r, pr.m, x + 25 * u, y + 121 * u, u)) fleche(P, pr.m, pr.sortie, {x + 25 * u, y + 120 * u}, 30 * u, k * u);
         const std::string dist = pr.m == nav::Manoeuvre::Aucune ? std::string() : texteDistance(pr.distanceM);
         const std::string cons = texteConsigne(pr), d = dist.empty() ? ui::tr("nav.tout_droit") : dist;
         const float tx = x + 48.6f * u, lw = x + w - 8 * u - tx;

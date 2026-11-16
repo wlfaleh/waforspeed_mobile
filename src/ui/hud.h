@@ -42,6 +42,10 @@ constexpr float BOUTON_ECHELLE = 1.5f;
 // ARRIÈRE 172 × 60, 33,3 entre eux : texte 29 (avant 21), écart icône-texte 10 (avant 9), écart entre les boutons 33,3 (avant 8)
 constexpr float BOUTON_H = 40.f, BOUTON_ICONE = 18.f, BOUTON_MARGE = 14.f, BOUTON_ECART_ICONE = 10.f / 1.5f, BOUTON_TEXTE = 29.f / 1.5f,
                 BOUTON_BIAIS = 8.f, BOUTONS_ECART = 33.3f;
+// poursuite (pas de maquette R19) : le milieu du haut est pris par le score de la poursuite ; texte 21 et écart 8 d'avant WFS-557,
+// pour laisser la place à la carte de guidage
+constexpr float BOUTON_TEXTE_POURSUITE = 14.f, BOUTONS_ECART_POURSUITE = 8.f;
+inline float texteBouton(bool poursuite) { return poursuite ? BOUTON_TEXTE_POURSUITE : BOUTON_TEXTE; }
 // un bouton dessiné : rectangle et mesures (pixels de l'interface, échelle k et BOUTON_ECHELLE comprises)
 struct BoutonHud { float x = 0, y = 0, w = 0, h = 0, icone = 0, marge = 0, ecartIcone = 0, texte = 0, biais = 0; };
 // RG-01 de WFS-429 : rangée [MENU] [CAMÉRA] [SCORE] en haut à droite, BOUTONS_ECART × k entre chaque, centrée en hauteur sur
@@ -50,11 +54,11 @@ struct BoutonHud { float x = 0, y = 0, w = 0, h = 0, icone = 0, marge = 0, ecart
 void rangeeBoutons(float W, float H, const Marges& m, const std::string& libelleCamera, BoutonHud& menu, BoutonHud& camera);
 // mesures d'un bouton (RG-02 : chaque dimension × BOUTON_ECHELLE ; la bordure de 1 px reste à k) ; `largeurTexte` = ui::width du
 // libellé à la taille `texte` (rangeeBoutons, hud.cpp) ; position à 0
-inline BoutonHud mesuresBouton(float k, float largeurTexte) {
+inline BoutonHud mesuresBouton(float k, float largeurTexte, bool poursuite = false) {
     const float e = k * BOUTON_ECHELLE;
     BoutonHud b;
     b.h = BOUTON_H * e; b.icone = BOUTON_ICONE * e; b.marge = BOUTON_MARGE * e; b.ecartIcone = BOUTON_ECART_ICONE * e;
-    b.texte = BOUTON_TEXTE * e; b.biais = BOUTON_BIAIS * e;
+    b.texte = texteBouton(poursuite) * e; b.biais = BOUTON_BIAIS * e;
     b.w = b.marge + b.icone + b.ecartIcone + largeurTexte + b.marge;
     return b;
 }
@@ -64,7 +68,7 @@ inline BoutonHud mesuresBouton(float k, float largeurTexte) {
 // Poursuite : le milieu du haut est pris par le score de la poursuite (40 % de la hauteur de large, poursuite_system.cpp) : la
 // paire se pose juste à sa droite, à la même hauteur.
 inline void placerBoutons(float W, float H, const Marges& m, BoutonHud& menu, BoutonHud& camera, bool poursuite = false) {
-    const float k = H / 720.f, ecart = BOUTONS_ECART * k;
+    const float k = H / 720.f, ecart = (poursuite ? BOUTONS_ECART_POURSUITE : BOUTONS_ECART) * k;
     const float y = m.haut + GOUTTIERE_H * k + (SCORE_H * k - camera.h) / 2;    // centrés sur les 70 px du score sans combo
     const float milieu = (m.gauche + W - m.droite) / 2, total = menu.w + ecart + camera.w;
     menu.x = poursuite ? milieu + 20 * H / 100.f + ecart : milieu - total / 2;   menu.y = y;

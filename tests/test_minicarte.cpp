@@ -32,7 +32,7 @@ int main() {
                           nomsMarges[mi], pours ? "Poursuite" : "Checkpoint");
             if (c.w <= 0) { masquees++; std::printf("place : %s : carte masquée (pas assez de place)\n", quoi); continue; }
             dessinees++;
-            VERIFIE(std::fabs(c.w - c.h * LARGEUR_SUR_HAUT) < 1e-3f && c.h >= COTE_MIN * k - 1e-3f && c.h <= COTE * k + 1e-3f, "%s : hauteur %.1f hors de [%.1f ; %.1f]", quoi, c.h, COTE_MIN * k, COTE * k);
+            VERIFIE(c.w >= c.h - 1e-3f && c.w <= c.h * LARGEUR_SUR_HAUT + 1e-3f && c.h >= COTE_MIN * k - 1e-3f && c.h <= COTE * k + 1e-3f, "%s : hauteur %.1f hors de [%.1f ; %.1f]", quoi, c.h, COTE_MIN * k, COTE * k);
             VERIFIE(c.x >= m.gauche && c.x + c.w <= W - m.droite && c.y >= m.haut && c.y + c.h <= H - m.bas, "%s : carte hors de la zone sûre", quoi);
             VERIFIE(std::fabs(c.x + c.w - (W - m.droite - GOUTTIERE * k)) < 1e-3f, "%s : bord droit pas sur celui du score", quoi);
             VERIFIE(std::fabs(c.y - (m.haut + (pours ? HAUT_POURSUITE : HAUT) * k)) < 1e-3f, "%s : haut à %.1f", quoi, c.y);

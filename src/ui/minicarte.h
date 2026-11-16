@@ -28,7 +28,8 @@ namespace minicarte {
 constexpr float COTE = 149, COTE_MIN = 100, ECART = 8, LARGEUR_SUR_HAUT = 189.f / 149.f;   // RG-02 / RG-03
 constexpr float GOUTTIERE = 23, HAUT = 151, HAUT_POURSUITE = 14, MARGE_INT = 10;
 constexpr float ROUTE = 4;                                   // RG-05 : trait de la route
-constexpr float JOUEUR_L = 12, JOUEUR_W = 9, CONTOUR = 1.5f, DISQUE = 8, DAMIER = 10, CP_L = 16, CP_W = 3;
+// WFS-557 (demande de l'utilisateur du 2026-11-16 : flèche orange de la carte un peu plus grande, maquette 17 : 16 × 14,5) : 18 × 18 (avant : 12 × 9)
+constexpr float JOUEUR_L = 18, JOUEUR_W = 18, CONTOUR = 1.5f, DISQUE = 8, DAMIER = 10, CP_L = 16, CP_W = 3;
 constexpr double GPS_ARRIERE_M = 150, GPS_AVANT_M = 350, GPS_PAS_M = 5;   // RG-06
 constexpr int GPS_POINTS = 101;
 constexpr float JOUEUR_Y = 0.70f;                            // RG-06 : joueur à 70 % de la hauteur intérieure
@@ -86,21 +87,29 @@ inline Obstacles obstacles(float W, float H, const Marges& m, bool poursuite, bo
     return o;
 }
 
-// panneau de la carte (WFS-557 : rectangle COTE × LARGEUR_SUR_HAUT de haut COTE) : bord droit sur celui du score, haut sous le
-// score (ou à 14 k en poursuite) ; la hauteur diminue (la largeur suit) jusqu'à laisser ECART × k avec chaque obstacle ; sous
-// COTE_MIN × k : 0 (pas de carte)
+// panneau de la carte (WFS-557 : COTE de haut, jusqu'à COTE × LARGEUR_SUR_HAUT de large) : bord droit sur celui du score, haut
+// sous le score (ou à 14 k en poursuite) ; la hauteur se calcule comme le carré d'avant (elle diminue jusqu'à laisser ECART × k
+// avec chaque obstacle ; sous COTE_MIN × k : 0, pas de carte), puis la largeur s'étend vers la gauche jusqu'à COTE × LARGEUR_SUR_HAUT
+// tant qu'aucun obstacle ne gêne (au moins le carré : jamais moins de place qu'avant)
 inline Cadre placer(float W, float H, const Marges& m, const Obstacles& o, bool poursuite) {
     const float k = H / 720.f, e = ECART * k;
     const float droite = W - m.droite - GOUTTIERE * k, haut = m.haut + (poursuite ? HAUT_POURSUITE : HAUT) * k;
-    float cote = std::min({COTE * k, (droite - m.gauche) / LARGEUR_SUR_HAUT, H - m.bas - haut});
+    float cote = std::min({COTE * k, droite - m.gauche, H - m.bas - haut});
     for (int i = 0; i < o.n; i++) {
         const Cadre& c = o.c[i];
         const float x0 = c.x - e, x1 = c.x + c.w + e, y0 = c.y - e, y1 = c.y + c.h + e;
         if (droite <= x0 || haut >= y1) continue;            // obstacle à droite ou au-dessus du coin haut droit : jamais touché
-        cote = std::min(cote, std::max((droite - x1) / LARGEUR_SUR_HAUT, y0 - haut));   // à droite de l'obstacle, ou au-dessus
+        cote = std::min(cote, std::max(droite - x1, y0 - haut));   // le carré reste à droite de l'obstacle, ou au-dessus
     }
     if (cote < COTE_MIN * k) return {droite, haut, 0, 0};
-    return {droite - cote * LARGEUR_SUR_HAUT, haut, cote * LARGEUR_SUR_HAUT, cote};
+    float w = std::min(cote * LARGEUR_SUR_HAUT, droite - m.gauche);
+    for (int i = 0; i < o.n; i++) {
+        const Cadre& c = o.c[i];
+        const float x1 = c.x + c.w + e, y0 = c.y - e, y1 = c.y + c.h + e;
+        if (y0 >= haut + cote || y1 <= haut || x1 <= droite - w || c.x - e >= droite) continue;   // hors de la bande du panneau
+        w = std::max(cote, droite - x1);
+    }
+    return {droite - w, haut, w, cote};
 }
 inline bool recoupe(const Cadre& a, const Cadre& b, float ecart) {
     return a.w > 0 && b.w > 0 && a.x < b.x + b.w + ecart && b.x < a.x + a.w + ecart && a.y < b.y + b.h + ecart && b.y < a.y + a.h + ecart;

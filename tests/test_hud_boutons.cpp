@@ -33,8 +33,8 @@ int main() {
                 const Marges m{gaucher ? 0.f : e.encoche, 0, gaucher ? e.encoche : 0.f, 0};
                 // largeurs de texte majorées (Rajdhani Bold ≈ 0,5 em par capitale ; 0,75 em + espacement 0,1 em ici) :
                 // « MENU » et le plus long nom de vue (« COCKPIT », 7 lettres)
-                const float tp = hud::BOUTON_TEXTE * k * hud::BOUTON_ECHELLE;
-                hud::BoutonHud menu = hud::mesuresBouton(k, 4 * 0.85f * tp), cam = hud::mesuresBouton(k, 7 * 0.85f * tp);
+                const float tp = hud::texteBouton(poursuite) * k * hud::BOUTON_ECHELLE;
+                hud::BoutonHud menu = hud::mesuresBouton(k, 4 * 0.85f * tp, poursuite), cam = hud::mesuresBouton(k, 7 * 0.85f * tp, poursuite);
                 hud::placerBoutons(e.W, e.H, m, menu, cam, poursuite);
                 const float xScore = e.W - m.droite - 16 * k - 180 * k, yScore = m.haut + 14 * k;
                 char nom[96];
@@ -44,7 +44,7 @@ int main() {
                 if (!poursuite) VERIFIE(std::fabs((menu.x + cam.x + cam.w) / 2 - (m.gauche + e.W - m.droite) / 2) < 0.01f, "%s : RG-06 : paire au centre", nom);
                 else VERIFIE(menu.x >= (m.gauche + e.W - m.droite) / 2 + 20 * e.H / 100 && cam.x + cam.w <= e.W - m.droite, "%s : RG-06 : poursuite : à droite du score de la poursuite", nom);
                 VERIFIE(cam.x + cam.w + 8 * k <= xScore, "%s : RG-06 : Caméra avant le score", nom);
-                VERIFIE(std::fabs(menu.x + menu.w + hud::BOUTONS_ECART * k - cam.x) < 0.01f, "%s : RG-01 : écart Menu-Caméra", nom);
+                VERIFIE(std::fabs(menu.x + menu.w + (poursuite ? hud::BOUTONS_ECART_POURSUITE : hud::BOUTONS_ECART) * k - cam.x) < 0.01f, "%s : RG-01 : écart Menu-Caméra", nom);
                 VERIFIE(std::fabs(menu.y - cam.y) < 0.01f && std::fabs(cam.y + cam.h / 2 - (yScore + 35 * k)) < 0.01f,
                         "%s : RG-01 : rangée centrée sur le score", nom);
                 VERIFIE(menu.x >= m.gauche && menu.y >= m.haut, "%s : boutons dans la zone sûre", nom);
