@@ -208,18 +208,19 @@ void iconeEffacer(Renderer& r, float cx, float cy, float u, const vec4& c) {
 // choisi), « Ta plaque » (aperçu, bordé d'orange quand il est choisi), phrase d'aide ; « C'est parti » rond (Start/Stop) ;
 // clavier de verre : les 39 premières touches de la table en 3 rangs de 13 (⇧ plus large), ⌫ seule, puis « Espace ».
 void dessiner(Renderer& r, const GameView& g) {
-    const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
+    // unité de la maquette ; écran moins large que 20:9 (16:9) : tout est réduit pour tenir en largeur, et centré
+    const float W = g.uiWidth, H = g.uiHeight, k = std::min(H / 720.f, (W - g.marges.gauche - g.marges.droite) / 1600.f);
     const float op = (float)std::clamp((g.time - g_e.tOuvert) / 0.25, 0.0, 1.0);   // fondu d'entrée de 250 ms
     const Saisie& s = g_e.saisie;
     const bool clignote = std::fmod(g.time - g_e.tOuvert, 1.0) < 0.6;
     verre::fenetreSurEcran(r);   // menu dessous : rien de son interface (verre::couvert)
-    verre::assombrir(r, W, H, 0.62f * op);
-    const float ox = g.marges.gauche, oy = g.marges.haut;
+    verre::assombrir(r, W, H, 0.72f * op);
+    const float ox = g.marges.gauche + (W - g.marges.gauche - g.marges.droite - 1600 * k) / 2, oy = g.marges.haut + (H - g.marges.haut - g.marges.bas - 720 * k) / 2;
     const float x = ox + 56 * k;
     // ---- titre
     verre::surTitre(r, x, oy + 41 * k, 16 * k, ui::tr(g_e.modification ? "profil.surtitre" : "creation.surtitre"));
     const char* titre = g_e.modification ? "profil.modifier_titre" : "creation.titre";   // WFS-482 (RG-07)
-    ui::textBoite(r, x + 2 * k, oy + 49 * k, 470 * k, 60 * k, 60 * k, ui::majuscules(ui::tr(titre)), hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+    ui::textBoite(r, x + 2 * k, oy + 53 * k, 470 * k, 54 * k, 54 * k, ui::majuscules(ui::tr(titre)), hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
     // ---- panneau de gauche : 462 × 258
     verre::Style st; st.rayon = 16 * k; st.lisere = 1.2f * k; st.opacite = op;
     verre::panneau(r, x + 1 * k, oy + 131 * k, 462 * k, 258 * k, st);
@@ -293,7 +294,7 @@ void dessiner(Renderer& r, const GameView& g) {
                 const bool capitale = s.champ() == Champ::Plaque || s.majuscules();
                 const char ch = t.c >= 'a' && t.c <= 'z' && capitale ? (char)(t.c - 'a' + 'A') : t.c;
                 ui::langue::journalTechnique(true);   // touche d'un caractère : rien à traduire
-                { ui::AvecPolice inter(ui::Police::InterMedium); ui::textBoite(r, cx, ty, tw, th, 19 * k, std::string(1, ch), c, ui::CENTRE); }
+                { ui::AvecPolice inter(ui::Police::InterMedium); ui::textBoite(r, cx, ty, tw, th, 21 * k, std::string(1, ch), c, ui::CENTRE); }
                 ui::langue::journalTechnique(false);
                 break;
             }

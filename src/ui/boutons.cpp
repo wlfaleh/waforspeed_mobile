@@ -76,7 +76,7 @@ float bagueChrome(Renderer& r, float x, float y, float w, float h, float op, boo
     else if (appuye) plein(r, xi, yi, wi, hi, Ri, hex(0x2A2E38, op), hex(0x1A1D25, op));
     else plein(r, xi, yi, wi, hi, Ri, hex(0x05060A, op), hex(0x15171D, op));
     // liseré allumé, un peu en retrait du bord du centre
-    const float g = std::max(2.f, h * 0.035f), ep = std::max(1.5f, h * 0.022f);
+    const float g = std::max(2.f, h * 0.035f), ep = std::clamp(h * 0.016f, 1.5f, 3.f);   // WFS-557 : liseré fin des maquettes (01, 19)
     const float xl = xi + g, yl = yi + g, wl = wi - 2 * g, hl = hi - 2 * g, Rl = std::max(0.f, Ri - g);
     vec2 p[MAX_SOMMETS];
     const int n = contourArrondi(p, xl, yl, wl, hl, Rl);
@@ -314,6 +314,16 @@ void icone(Renderer& r, Icone i, float cx, float cy, float s, const vec4& c) {
             return;
         }
     }
+}
+
+void plaque(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op, bool appuye) {
+    const float b = std::max(1.f, h * 0.05f), R = h * 0.08f, bande = h * 0.30f, d = appuye ? 1.5f : 0;
+    lueur(r, x, y, w, h, R, std::max(4.f, h * 0.30f), {1, 1, 1, 0.12f * op});
+    plein(r, x - b, y - b + d, w + 2 * b, h + 2 * b, R + b, hex(0x2A2D35, op), hex(0x15171C, op));
+    plein(r, x, y + d, w, h, R, hex(appuye ? 0xD8D6D0 : 0xF4F3EF, op), hex(appuye ? 0xBDBBB5 : 0xDCDAD4, op));
+    plein(r, x, y + d, bande + R, h, R, hex(0xFF7A1A, op), hex(ACCENT, op));
+    r.uiRect(x + bande, y + d, R, h, hex(appuye ? 0xD8D6D0 : 0xF0EFEB, op));
+    ui::textBoite(r, x + bande + (w - bande) / 2, y + d, w - bande - h * 0.4f, h, h * 0.62f, texte, hex(0x15171C, op), ui::CENTRE, 0.10f);
 }
 
 void verreIcone(Renderer& r, float x, float y, float w, float h, Icone i, const std::string& texte, float op, bool appuye, float px,

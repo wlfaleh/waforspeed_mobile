@@ -85,6 +85,8 @@ static constexpr VkFormat SHADOW_FORMAT = VK_FORMAT_D16_UNORM;
 
 static constexpr VkFormat HDR_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
 static constexpr size_t UI_MAX_VERTS = 6 * 8192;
+// WFS-557 (accroche) : interface pleine : la suite de l'image est perdue ; noté une fois au journal (sinon invisible au banc)
+static bool uiPlein(size_t n) { static bool dit = false; if (n + 6 <= UI_MAX_VERTS) return false; if (!dit) { dit = true; WFS_WARN("interface : %zu quadrilatères, limite atteinte : la suite de l'image est perdue", UI_MAX_VERTS / 6); } return true; }
 static constexpr int QUADS_MAX = 4096;   // WFS-09 : quads transitoires par image (halos, tache des phares)
 
 #if defined(__APPLE__)
@@ -1696,7 +1698,7 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
 void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {
     UiVertex a{x, y, -1, -1, c.x, c.y, c.z, c.w}, b{x + w, y, -1, -1, c.x, c.y, c.z, c.w},
              cc{x + w, y + h, -1, -1, c.x, c.y, c.z, c.w}, d{x, y + h, -1, -1, c.x, c.y, c.z, c.w};
-    if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
+    if (uiPlein(ui_vtx_.size())) return;
     ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});
 }
 
@@ -1722,20 +1724,20 @@ void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, f
     // uv décalés de +2 : le shader d'interface sait qu'il doit lire l'atlas de police ; biais : haut décalé (WFS-48)
     UiVertex a{x + biais, y, u0 + 2, v0, c.x, c.y, c.z, c.w}, b{x + w + biais, y, u1 + 2, v0, c.x, c.y, c.z, c.w},
              cc{x + w, y + h, u1 + 2, v1, c.x, c.y, c.z, c.w}, d{x, y + h, u0 + 2, v1, c.x, c.y, c.z, c.w};
-    if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
+    if (uiPlein(ui_vtx_.size())) return;
     ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});
 }
 
 // WFS-65 : quadrilatère libre (sommets dans l'ordre), couleurs interpolées entre les sommets (vignette, lignes)
 void Renderer::uiQuad(const UiVertex q[4]) {
-    if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
+    if (uiPlein(ui_vtx_.size())) return;
     ui_vtx_.insert(ui_vtx_.end(), {q[0], q[1], q[2], q[0], q[2], q[3]});
 }
 
 void Renderer::uiCircle(float cx, float cy, float r, const vec4& c) {
     UiVertex a{cx - r, cy - r, 0, 0, c.x, c.y, c.z, c.w}, b{cx + r, cy - r, 1, 0, c.x, c.y, c.z, c.w},
              cc{cx + r, cy + r, 1, 1, c.x, c.y, c.z, c.w}, d{cx - r, cy + r, 0, 1, c.x, c.y, c.z, c.w};
-    if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
+    if (uiPlein(ui_vtx_.size())) return;
     ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});
 }
 

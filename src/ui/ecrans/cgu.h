@@ -77,7 +77,10 @@ public:
     // fenêtre tenue par l'écran du premier lancement (ouvert, ou « Accepter » touché mais pas encore traité par image())
     bool tientLaFenetre() const { return mode_ == Mode::Premier && (ouvert() || etat_ == Etat::Accepte); }
     Mode mode() const { return mode_; }
-    bool caseCochee() const { return coche_; }
+    bool caseCochee() const { return coche_; }   // WFS-557 (RG-19) : vrai quand les deux onglets ont été lus jusqu'en bas (plus de case)
+    void choisirOnglet(int o);   // WFS-557 (RG-19) : 0 = Conditions, 1 = Confidentialité
+    int onglet() const { return onglet_; }
+    void refuser();   // WFS-557 (RG-19) : touche Retour d'Android au premier lancement
     // banc d'essai : zones des boutons (centre) et défilement
     struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } };
     const Zone& zoneCase() const { return zCase_; }
@@ -85,18 +88,20 @@ public:
     const Zone& zoneRefuser() const { return zRefuser_; }
     const Zone& zoneFermer() const { return zFermer_; }
     const Zone& zoneTexte() const { return zTexte_; }
+    const Zone& zoneOnglet(int o) const { return zOnglets_[o & 1]; }   // WFS-557
     float defilement() const { return defil_; }
     float defilementMax() const { return defilMax_; }
     int lignesTropLongues() const { return tropLongues_; }   // WFS-508 : lignes plus larges que le cadre à la dernière mise en page
 
 private:
-    struct Ligne { ParagrapheCgu::Style style; std::string texte; float x, y, taille; };
+    struct Ligne { ParagrapheCgu::Style style; std::string texte; float x, y, taille; int police = 0; bool version = false; };
     void mettreEnPage(float largeur, float k);
     Renderer* r_ = nullptr;
     Mode mode_ = Mode::Premier;
     Etat etat_ = Etat::Ferme;
     bool coche_ = false;
-    std::vector<ParagrapheCgu> paras_;
+    std::vector<ParagrapheCgu> paras_, textes_[2];   // paras_ : texte de l'onglet affiché (WFS-557)
+    int onglet_ = 0; bool lu_[2] = {false, false}; float defilOnglet_[2] = {0, 0};
     std::vector<Ligne> lignes_;
     float largeurPage_ = -1, kPage_ = -1, hauteurTexte_ = 0;
     int tropLongues_ = 0;
@@ -106,7 +111,7 @@ private:
     int doigt_ = -1; float yDoigt_ = 0; int cible_ = 0;   // cible du doigt posé : 0 rien, 1 texte, 2 case, 3 accepter, 4 refuser, 5 fermer
     float dp_ = 1;   // WFS-355 : pixels par dp de la dernière image (cibles de 48 dp)
     int imagesLentes_ = 0;   // WFS-355 : images de plus de 0,5 s notées au journal (5 au plus)
-    Zone zCase_, zAccepter_, zRefuser_, zFermer_, zTexte_;
+    Zone zCase_, zAccepter_, zRefuser_, zFermer_, zTexte_, zOnglets_[2];
 };
 
 Cgu& cgu();   // écran unique (premier lancement et Réglages)

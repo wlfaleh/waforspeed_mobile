@@ -53,57 +53,66 @@ std::string lireTexteLangue(bool confidentialite) {
     return lireTexte(fichierTexteCgu(confidentialite, false));
 }
 
-// trait épais de (ax, ay) à (bx, by)
-void trait(Renderer& r, float ax, float ay, float bx, float by, float e, const vec4& c) {
-    const float dx = bx - ax, dy = by - ay, l = std::max(std::sqrt(dx * dx + dy * dy), 1e-3f), nx = -dy / l * e / 2, ny = dx / l * e / 2;
-    const UiVertex q[4] = {{ax + nx, ay + ny, -1, -1, c.x, c.y, c.z, c.w}, {bx + nx, by + ny, -1, -1, c.x, c.y, c.z, c.w},
-                           {bx - nx, by - ny, -1, -1, c.x, c.y, c.z, c.w}, {ax - nx, ay - ny, -1, -1, c.x, c.y, c.z, c.w}};
-    r.uiQuad(q);
-}
-
-void bouton(Renderer& r, const Cgu::Zone& z, float biais, const vec4& fond, const std::string& t, float tp, const vec4& ct, bool vitre) {
-    if (vitre) dessin2d::biseau(r, z.x - 1, z.y - 1, z.w + 2, z.h + 2, biais, dessin2d::uni(BORD));
-    dessin2d::biseau(r, z.x, z.y, z.w, z.h, biais, dessin2d::uni(fond));
-    ui::text(r, z.x + z.w / 2, z.y + (z.h - tp) / 2, tp, t, ct, ui::CENTRE, 0.12f, false);
-}
 
 } // namespace
 
 void Cgu::ouvrir(Renderer& r, Mode m) {
     r_ = &r; mode_ = m; etat_ = Etat::Ouvert; coche_ = false; defil_ = 0; tRefus_ = -1; doigt_ = -1; cible_ = 0;
     // WFS-508 : textes relus à chaque ouverture, dans la langue active (Réglages → Langue puis « Terms of use » : anglais)
-    paras_ = paragraphesMarkdown(lireTexteLangue(false));
-    const std::vector<ParagrapheCgu> conf = paragraphesMarkdown(sansNotesStore(lireTexteLangue(true)));
-    if (!paras_.empty() && !conf.empty()) paras_.push_back({ParagrapheCgu::VIDE, ""});
-    paras_.insert(paras_.end(), conf.begin(), conf.end());
+    // WFS-557 (RG-19, maquette 22) : deux onglets, « Conditions » et « Confidentialité », chacun avec son texte ; « J'accepte »
+    // s'allume quand les deux ont été lus jusqu'en bas (remplace la case « J'ai lu et j'accepte »)
+    textes_[0] = paragraphesMarkdown(lireTexteLangue(false));
+    textes_[1] = paragraphesMarkdown(sansNotesStore(lireTexteLangue(true)));
+    onglet_ = 0; lu_[0] = lu_[1] = false; defilOnglet_[0] = defilOnglet_[1] = 0;
+    paras_ = textes_[0];
     largeurPage_ = -1;
-    WFS_LOG("CGU (WFS-308) : écran ouvert (%s), version %d, langue %s, %zu paragraphes", m == Mode::Premier ? "premier lancement" : "Réglages, lecture seule",
-            VERSION_CGU, ui::langue::code(), paras_.size());
+    WFS_LOG("CGU (WFS-308) : écran ouvert (%s), version %d, langue %s, %zu + %zu paragraphes", m == Mode::Premier ? "premier lancement" : "Réglages, lecture seule",
+            VERSION_CGU, ui::langue::code(), textes_[0].size(), textes_[1].size());
+}
+
+// WFS-557 (RG-19) : onglet affiché (texte remis en page, défilement de l'onglet gardé)
+void Cgu::choisirOnglet(int o) {
+    if (o == onglet_ || o < 0 || o > 1) return;
+    defilOnglet_[onglet_] = defil_;
+    onglet_ = o; paras_ = textes_[o]; defil_ = defilOnglet_[o]; largeurPage_ = -1;
+    WFS_LOG("CGU (WFS-557) : onglet « %s »", o == 0 ? "Conditions" : "Confidentialité");
+}
+
+// WFS-557 (RG-19) : refus par la touche Retour d'Android au premier lancement : même message et même fermeture qu'avant
+void Cgu::refuser() {
+    if (!ouvert() || mode_ != Mode::Premier || etat_ == Etat::Refuse) return;
+    etat_ = Etat::Refuse; tRefus_ = maintenant_;
+    WFS_LOG("CGU (WFS-557) : refus par la touche Retour — %s", ui::tr("cgu.refus").c_str());
 }
 
 // découpe des paragraphes en lignes de la largeur du cadre (mots entiers ; suite d'une puce alignée sur son texte)
 void Cgu::mettreEnPage(float largeur, float k) {
     largeurPage_ = largeur; kPage_ = k; lignes_.clear(); tropLongues_ = 0;
-    // corps de 16 (dp sur téléphone couché : au-dessus du minimum de 14 dp, petit_ecran.h), titres 22 et 17
-    const float corps = 16 * k, titre = 22 * k, sous = 17 * k;
+    // WFS-557 (maquette 22) : titre en Rajdhani italique 22, ligne « Version » en Inter 12 grise, intertitres en Inter Medium 12
+    // (capitales orange clair), texte en Inter 14 ; interligne 1,5
+    const float corps = 14 * k, titre = 22 * k, sous = 12 * k, version = 12 * k;
     float y = 0;
     for (const ParagrapheCgu& p : paras_) {
-        if (p.style == ParagrapheCgu::VIDE) { y += corps * 0.6f; continue; }
-        const float t = p.style == ParagrapheCgu::TITRE ? titre : p.style == ParagrapheCgu::SOUS_TITRE ? sous : corps;
-        const float interligne = t * 1.38f;
+        if (p.style == ParagrapheCgu::VIDE) { y += corps * 0.5f; continue; }
+        const bool estVersion = p.style == ParagrapheCgu::TEXTE && p.texte.rfind("Version ", 0) == 0;
+        const float t = p.style == ParagrapheCgu::TITRE ? titre : p.style == ParagrapheCgu::SOUS_TITRE ? sous : estVersion ? version : corps;
+        const ui::Police police = p.style == ParagrapheCgu::TITRE ? ui::Police::Rajdhani : p.style == ParagrapheCgu::SOUS_TITRE ? ui::Police::InterMedium : ui::Police::Inter;
+        const ui::AvecPolice av(police);
+        const float esp = p.style == ParagrapheCgu::SOUS_TITRE ? 0.14f : 0.f;
+        const float interligne = p.style == ParagrapheCgu::TITRE ? t * 1.15f : estVersion ? t * 1.9f : p.style == ParagrapheCgu::SOUS_TITRE ? t * 1.9f : t * 1.5f;
         const std::string puce = "• ";
         const float retrait = p.style == ParagrapheCgu::PUCE ? ui::width(t, puce) : 0;
-        if (p.style == ParagrapheCgu::SOUS_TITRE && y > 0) y += corps * 0.4f;
+        if (p.style == ParagrapheCgu::SOUS_TITRE && y > 0) y += corps * 0.5f;
         std::string ligne = p.style == ParagrapheCgu::PUCE ? puce : "";
         bool premiere = true;
         size_t i = 0;
+        const std::string s = p.style == ParagrapheCgu::SOUS_TITRE ? ui::majuscules(p.texte) : p.texte;
         auto pousser = [&]() {
             // WFS-508 (RG-06) : un mot plus long que le cadre (adresse) dépasserait : compté pour le banc « textes »
-            if (ui::width(t, ligne) > largeur - (premiere ? 0 : retrait) + 0.5f) tropLongues_++;
-            lignes_.push_back({p.style, ligne, premiere ? 0.f : retrait, y, t});
+            if (ui::width(t, ligne, esp) > largeur - (premiere ? 0 : retrait) + 0.5f) tropLongues_++;
+            lignes_.push_back({p.style, ligne, premiere ? 0.f : retrait, y, t, (int)police, estVersion});
             y += interligne; premiere = false; ligne.clear();
         };
-        const std::string& s = p.texte;
         while (i < s.size()) {
             size_t f = s.find(' ', i);
             if (f == std::string::npos) f = s.size();
@@ -112,7 +121,7 @@ void Cgu::mettreEnPage(float largeur, float k) {
             if (mot.empty()) continue;
             const std::string essai = ligne.empty() || ligne == puce ? ligne + mot : ligne + " " + mot;
             const float dispo = largeur - (premiere ? 0 : retrait);
-            if (!ligne.empty() && ligne != puce && ui::width(t, essai) > dispo) { pousser(); ligne = mot; }
+            if (!ligne.empty() && ligne != puce && ui::width(t, essai, esp) > dispo) { pousser(); ligne = mot; }
             else ligne = essai;
         }
         if (!ligne.empty()) pousser();
@@ -120,6 +129,10 @@ void Cgu::mettreEnPage(float largeur, float k) {
     hauteurTexte_ = y;
 }
 
+// WFS-557 (maquette 22 ; arbitrages du PO du 2026-11-16 : maquette à 100 %, RG-19). Unité k = H / 720 (maquette 1600 × 720).
+// Fenêtre de verre 1078 × 558 ; sur-titre « Avant de rouler », titre ; onglets « Conditions / Confidentialité » en haut à droite ;
+// cadre du texte défilant ; bouton rond « J'accepte » (grisé tant que les deux onglets ne sont pas lus jusqu'en bas) à droite, hors
+// de la fenêtre ; phrase « Fais défiler pour tout lire… » sous la fenêtre. Lecture depuis les Réglages : bouton rond « Fermer ».
 void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double maintenant) {
     maintenant_ = maintenant;
     if (etat_ == Etat::Refuse && tRefus_ >= 0 && maintenant - tRefus_ >= CGU_DELAI_FERMETURE) {
@@ -127,87 +140,76 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
         WFS_LOG("CGU (WFS-308) : refus, fermeture de l'application");
     }
     if (!ouvert() || !ui::fontReady()) return;
-    const bool cp = ui::petitEcran(W, H);
-    const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
+    const float k = H / 720.f;
     dp_ = ui::pixelsParDp(W);
-    // WFS-548 (RG-02, maquette 22) : écran arrêté : scène floutée et assombrie derrière (sans scène : fond --bg presque opaque)
-    if (mode_ == Mode::Premier) r.uiRect(0, 0, W, H, hex(BG));   // 1er lancement : aucune scène derrière, fond --bg comme avant
+    if (mode_ == Mode::Premier) r.uiRect(0, 0, W, H, hex(BG));   // 1er lancement : aucune scène derrière
     else { verre::fenetreSurEcran(r); verre::assombrir(r, W, H, 0.55f); }   // ouvertes depuis les Réglages : menu ou pause dessous, couverts
-    const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
-    const float pw = std::min(zr - zl, 1040 * k), px = zl + (zr - zl - pw) / 2;
-    const float py = m.haut + (cp ? 8 : 24) * k, ph = H - py - m.bas - (cp ? 8 : 24) * k;
-    verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * kb});   // WFS-548 (RG-01) : verre dépoli (plus de liseré cyan)
-    const float x0 = px + 24 * k;
-    const std::string sur = ui::tr(mode_ == Mode::Premier ? "cgu.surtitre.premier" : "cgu.surtitre.reglages", std::to_string(VERSION_CGU));
-    verre::surTitre(r, x0, py + 14 * k, 12 * k, sur);   // WFS-548 (RG-03) : sur-titre gris
-    const float tt = (cp ? 26 : 34) * k;
-    ui::text(r, x0, py + 32 * k, tt, ui::majuscules(ui::tr("cgu.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-    const float haut = py + 32 * k + tt + 12 * k;
-
-    // barre du bas : case et boutons (premier lancement) ou « Fermer » (lecture)
-    const float bh = 50 * kb, tp = (cp ? 18 : 20) * k, by = py + ph - 14 * k - bh;
-    auto largeurBouton = [&](const std::string& t) { return ui::width(tp, t, 0.12f) + 56 * kb; };
-    float xDroite = px + pw - 24 * k;
-    if (mode_ == Mode::Premier) {
-        const std::string ta = ui::majuscules(ui::tr("cgu.accepter")), trf = ui::majuscules(ui::tr("cgu.refuser"));
-        const float wa = largeurBouton(ta), wr = largeurBouton(trf);
-        zAccepter_ = {xDroite - wa, by, wa, bh};
-        zRefuser_ = {zAccepter_.x - 16 * k - wr, by, wr, bh};
-        zFermer_ = {};
-        bouton(r, zRefuser_, 14 * kb, GLASS, trf, tp, hex(TEXTE), true);
-        // RG-03 : « Accepter » actif seulement après la case (inactif : gris, texte atténué)
-        // WFS-355 : teinte plus claire tant que le doigt est posé sur « Accepter » (l'appui se voit)
-        const bool presse = coche_ && doigt_ >= 0 && cible_ == cgu_appui::ACCEPTER;
-        // WFS-549 (RG-01, RG-07) : « J'accepte » en bouton Start/Stop, même rectangle ; grisé tant que la case n'est pas cochée
-        ui::boutons::startStop(r, zAccepter_.x, zAccepter_.y, zAccepter_.w, zAccepter_.h, ta, 1, presse, "", tp, !coche_);
-        const float cs = 28 * k, cy = by + (bh - cs) / 2, tl = (cp ? 16 : 18) * k;
-        const std::string& lib = ui::tr("cgu.case");
-        r.uiRect(x0, cy, cs, cs, coche_ ? hex(ACCENT2) : hex(TEXTE, 0.85f));
-        r.uiRect(x0 + 2 * k, cy + 2 * k, cs - 4 * k, cs - 4 * k, coche_ ? hex(ACCENT2) : hex(SURFACE2));
-        if (coche_) {   // coche en deux traits (la police n'a pas le caractère ✓)
-            trait(r, x0 + cs * 0.22f, cy + cs * 0.52f, x0 + cs * 0.42f, cy + cs * 0.72f, 3.5f * k, hex(BG));
-            trait(r, x0 + cs * 0.40f, cy + cs * 0.72f, x0 + cs * 0.80f, cy + cs * 0.28f, 3.5f * k, hex(BG));
+    const float ox = m.gauche + (W - m.gauche - m.droite - 1600 * k) / 2, oy = m.haut;   // maquette centrée (écrans plus larges)
+    const float px = ox + 261 * k, py = oy + 41 * k, pw = 1078 * k, ph = 558 * k;
+    { verre::Style st; st.rayon = 22 * k; st.lisere = 1.5f * k; verre::panneau(r, px, py, pw, ph, st); }
+    verre::surTitre(r, px + 31 * k, py + 27 * k, 15 * k, ui::tr(mode_ == Mode::Premier ? "cgu.surtitre.premier" : "cgu.surtitre.reglages", std::to_string(VERSION_CGU)));
+    ui::textBoite(r, px + 33 * k, py + 40 * k, 680 * k, 54 * k, 54 * k, ui::majuscules(ui::tr("cgu.titre")), hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+    {   // onglets
+        const float in = 4 * k, tp = 14 * k, pad = 20 * k, h = 44 * k;
+        float ow[2], tot = 2 * in;
+        { ui::AvecPolice inter(ui::Police::InterMedium);
+          for (int o = 0; o < 2; o++) { ow[o] = ui::width(tp, ui::majuscules(ui::tr(o == 0 ? "cgu.onglet.conditions" : "cgu.onglet.confidentialite")), 0.10f) + 2 * pad; tot += ow[o]; } }
+        const float x0 = px + pw - 30 * k - tot, y0 = py + 29 * k;
+        ui::boutons::selecteurFond(r, x0, y0, tot, h);
+        float xo = x0 + in;
+        for (int o = 0; o < 2; o++) {
+            zOnglets_[o] = {xo, y0, ow[o], h};
+            ui::boutons::selecteurChoix(r, xo, y0 + in, ow[o], h - 2 * in, "", o == onglet_);
+            ui::AvecPolice inter(ui::Police::InterMedium);
+            ui::text(r, xo + ow[o] / 2, y0 + (h - tp) / 2, tp, ui::majuscules(ui::tr(o == 0 ? "cgu.onglet.conditions" : "cgu.onglet.confidentialite")),
+                     o == onglet_ ? hex(BG) : hex(0xD7DAE2), ui::CENTRE, 0.10f, false);
+            xo += ow[o];
         }
-        ui::text(r, x0 + cs + 12 * k, by + (bh - tl) / 2, tl, lib, coche_ ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.02f, false);
-        // zone de toucher : case et libellé, 44 dp de haut au moins (petit_ecran.h, TOUCHER_MIN_DP)
-        const float zh = std::max(bh, ui::TOUCHER_MIN_DP * k);
-        zCase_ = {x0 - 8 * k, by + (bh - zh) / 2, cs + 20 * k + ui::width(tl, lib, 0.02f) + 8 * k, zh};
-    } else {
-        const std::string tf = ui::majuscules(ui::tr("cgu.fermer"));
-        const float wf = largeurBouton(tf);
-        zFermer_ = {xDroite - wf, by, wf, bh};
-        zAccepter_ = zRefuser_ = zCase_ = {};
-        bouton(r, zFermer_, 14 * kb, hex(ACCENT), tf, tp, hex(BG), false);
     }
-
+    // bouton rond : « J'accepte » (premier lancement) ou « Fermer » (lecture) ; 146 px, centre (1435, 544)
+    const float d = 146 * k, bx = ox + 1435 * k - d / 2, by = oy + 544 * k - d / 2;
+    zCase_ = zRefuser_ = {};
+    if (mode_ == Mode::Premier) {
+        zAccepter_ = {bx, by, d, d}; zFermer_ = {};
+        const bool presse = coche_ && doigt_ >= 0 && cible_ == cgu_appui::ACCEPTER;
+        ui::boutons::startStop(r, bx, by, d, d, ui::majuscules(ui::tr("cgu.jaccepte")), 1, presse, "", 22 * k, !coche_);
+    } else {
+        zFermer_ = {bx, by, d, d}; zAccepter_ = {};
+        ui::boutons::startStop(r, bx, by, d, d, ui::majuscules(ui::tr("cgu.fermer")), 1, doigt_ >= 0 && cible_ == cgu_appui::FERMER, "", 22 * k);
+    }
+    { ui::AvecPolice inter(ui::Police::Inter);
+      ui::text(r, ox + 286 * k, oy + 644 * k, 14 * k, ui::tr("cgu.aide"), hex(0xA3A8B5), ui::GAUCHE, 0, false); }
     // cadre du texte défilant
-    const float tx = px + 20 * k, ty = haut, tw = pw - 40 * k, th = by - 14 * k - ty, pad = 14 * k;
+    const float tx = px + 31 * k, ty = py + 101 * k, tw = pw - 62 * k, th = 390 * k, pad = 22 * k;
     zTexte_ = {tx, ty, tw, th};
-    { verre::Style st; st.rayon = 10 * k; st.lisere = kb; st.ombre = false; st.force = 0.45f; verre::panneau(r, tx, ty, tw, th, st); }   // WFS-548
-    const float largeur = tw - 2 * pad - 12 * k;
+    { vec2 q[ui::boutons::MAX_SOMMETS]; const int n = ui::boutons::contourArrondi(q, tx, ty, tw, th, 12 * k);
+      dessin2d::polygone(r, q, n, {hex(0x16181E, 0.85f), hex(0x0E1014, 0.90f), ty, ty + th}); }
+    const float largeur = tw - 2 * pad - 16 * k;
     if (std::fabs(largeur - largeurPage_) > 0.5f || std::fabs(k - kPage_) > 1e-4f) mettreEnPage(largeur, k);
-    const float vue = th - 2 * pad;
+    const float vue = th - 2 * pad + 6 * k;
     defilMax_ = std::max(0.f, hauteurTexte_ - vue);
     defil_ = std::clamp(defil_, 0.f, defilMax_);
+    // RG-19 : onglet lu quand son bas a été atteint ; « J'accepte » s'allume quand les deux le sont
+    if (defil_ >= defilMax_ - 1) lu_[onglet_] = true;
+    const bool tout = lu_[0] && lu_[1];
+    if (tout && !coche_) WFS_LOG("CGU (WFS-557) : les deux onglets ont été lus jusqu'en bas : « J'accepte » actif");
+    coche_ = tout;
     for (const Ligne& l : lignes_) {   // lignes entièrement visibles seulement (pas de découpe du texte par l'interface)
         const float y = l.y - defil_;
         if (y < 0 || y + l.taille * 1.2f > vue) continue;
-        // WFS-548 (RG-03, maquette 22) : titre du texte en blanc, intertitres en orange clair (plus de cyan)
-        const vec4 c = l.style == ParagrapheCgu::TITRE ? hex(TEXTE) : l.style == ParagrapheCgu::SOUS_TITRE ? verre::hexa(verre::INTERTITRE) : hex(TEXTE, 0.92f);
-        const std::string t = l.style == ParagrapheCgu::SOUS_TITRE ? ui::majuscules(l.texte) : l.texte;
-        ui::text(r, tx + pad + l.x, ty + pad + y, l.taille, t, c, ui::GAUCHE, l.style == ParagrapheCgu::SOUS_TITRE ? 0.08f : 0.f, false);
+        const vec4 c = l.style == ParagrapheCgu::TITRE ? hex(TEXTE) : l.style == ParagrapheCgu::SOUS_TITRE ? verre::hexa(verre::INTERTITRE) : l.version ? hex(0xA3A8B5) : hex(0xE6E8EE);
+        const ui::AvecPolice av((ui::Police)l.police);
+        ui::text(r, tx + pad + l.x, ty + pad + y, l.taille, l.texte, c, ui::GAUCHE, l.style == ParagrapheCgu::SOUS_TITRE ? 0.14f : 0.f, false, l.style == ParagrapheCgu::TITRE);
     }
-    if (defilMax_ > 0) {   // ascenseur : position et part visible du texte
-        const float bx = tx + tw - 8 * k, hb = std::max(24 * k, vue * vue / hauteurTexte_), yb = ty + pad + (vue - hb) * (defil_ / defilMax_);
-        r.uiRect(bx, ty + pad, 4 * k, vue, hex(TEXTE, 0.08f));
-        r.uiRect(bx, yb, 4 * k, hb, hex(ACCENT2, 0.85f));
+    if (defilMax_ > 0) {   // ascenseur fin
+        const float bxs = tx + tw - 12 * k, hb = std::max(24 * k, vue * vue / hauteurTexte_), yb = ty + pad + (vue - hb) * (defil_ / defilMax_);
+        r.uiRect(bxs, yb, 3 * k, hb, hex(TEXTE, 0.30f));
     }
-
     if (etat_ == Etat::Refuse) {   // RG-04 : message, puis fermeture après CGU_DELAI_FERMETURE
         r.uiRect(0, 0, W, H, hex(BG, 0.94f));
-        const float tm = (cp ? 22 : 30) * k;
-        ui::text(r, W / 2, H / 2 - tm, tm, ui::tr("cgu.refus"), hex(DANGER), ui::CENTRE, 0.02f, false);
-        ui::text(r, W / 2, H / 2 + 16 * k, (cp ? 15 : 17) * k, ui::tr("cgu.fermeture"), hex(MUTED), ui::CENTRE, 0.02f, false);
+        ui::text(r, W / 2, H / 2 - 30 * k, 30 * k, ui::tr("cgu.refus"), hex(DANGER), ui::CENTRE, 0.02f, false);
+        ui::AvecPolice inter(ui::Police::Inter);
+        ui::text(r, W / 2, H / 2 + 16 * k, 17 * k, ui::tr("cgu.fermeture"), hex(MUTED), ui::CENTRE, 0, false);
     }
 }
 
@@ -246,12 +248,13 @@ bool Cgu::toucher(int id, float x, float y, bool down, bool premierDoigt) {
     // pose perdue : seulement au premier lancement (appuis du veilleur) ; en lecture des Réglages, le lever du doigt qui a ouvert
     // l'écran arrive sans pose et ne doit rien toucher (« Fermer » est dessiné à cet endroit sur téléphone)
     if (!poseConnue && mode_ != Mode::Premier) return true;
+    // WFS-557 (RG-19) : onglet touché (au lever, sur l'onglet où le doigt s'est posé)
+    for (int o = 0; o < 2; o++) if (zOnglets_[o].contient(x, y) && cible_ != ca::TEXTE) { doigt_ = -1; cible_ = 0; choisirOnglet(o); return true; }
     const int c = ca::cibleAuLever(poseConnue, cible_, sous);
     WFS_LOG("CGU (WFS-355) : doigt levé (%.0f, %.0f) sur %s%s → %s", x, y, NOMS[sous], poseConnue ? "" : " (pose jamais reçue)", NOMS[c]);
     doigt_ = -1; cible_ = 0;
-    if (c == ca::CASE) { coche_ = !coche_; WFS_LOG("CGU (WFS-308) : case « J'ai lu et j'accepte » %s", coche_ ? "cochée" : "décochée"); }
-    else if (c == ca::ACCEPTER) {
-        if (!coche_) WFS_LOG("CGU (WFS-308) : « Accepter » inactif (case décochée)");
+    if (c == ca::ACCEPTER) {
+        if (!coche_) WFS_LOG("CGU (WFS-557) : « J'accepte » inactif (les deux onglets ne sont pas lus jusqu'en bas)");
         else { etat_ = Etat::Accepte; WFS_LOG("CGU (WFS-308) : « Accepter » (version %d)", VERSION_CGU); }
     } else if (c == ca::REFUSER) { etat_ = Etat::Refuse; tRefus_ = maintenant_; WFS_LOG("CGU (WFS-308) : « Refuser » — %s", ui::tr("cgu.refus").c_str()); }
     else if (c == ca::FERMER) { etat_ = Etat::Ferme; WFS_LOG("CGU (WFS-308) : lecture fermée"); }
@@ -331,18 +334,21 @@ int benchCguTextes(Renderer& r, const std::string& out) {
     capture("cgu-haut", "premier lancement, haut du texte");
     verifier(c.ouvert() && c.defilementMax() > 0, "texte long : il défile (plus haut que le cadre)");
     verifier(c.lignesTropLongues() == 0, "aucune ligne plus large que le cadre");
-    const Cgu::Zone &zc = c.zoneCase(), &zr = c.zoneRefuser(), &za = c.zoneAccepter();
-    verifier(zc.x + zc.w <= zr.x && zr.x + zr.w <= za.x, "case, « Refuser » et « Accepter » côte à côte, sans chevauchement");
+    {   // WFS-557 (RG-19) : onglets, cadre du texte et « J'accepte » sans chevauchement
+        const Cgu::Zone &o1 = c.zoneOnglet(1), &zt = c.zoneTexte(), &za = c.zoneAccepter();
+        verifier(o1.y + o1.h <= zt.y && zt.x + zt.w <= za.x + za.w * 0.2f && o1.x + o1.w <= za.x + za.w, "onglets, texte et « J'accepte » sans chevauchement");
+    }
     defiler(0.5f);
     capture("cgu-milieu", "texte défilé à mi-hauteur");
     verifier(c.defilement() > 0 && c.defilement() < c.defilementMax(), "milieu du texte atteint au doigt");
-    defiler(1.f);
-    {   // case cochée (appui au centre de sa zone) : bouton principal actif
-        const float x = zc.x + zc.w / 2, y = zc.y + zc.h / 2;
-        c.toucher(8, x, y, true); c.toucher(8, x, y, false);
+    defiler(1.f); image("cgu-bas");
+    {   // WFS-557 (RG-19) : onglet « Confidentialité » lu jusqu'en bas aussi : « J'accepte » actif
+        const Cgu::Zone& o = c.zoneOnglet(1);
+        c.toucher(8, o.x + o.w / 2, o.y + o.h / 2, true); c.toucher(8, o.x + o.w / 2, o.y + o.h / 2, false);
+        image("cgu-bas"); defiler(1.f);
     }
-    capture("cgu-bas", "bas du texte, case cochée, bouton principal actif");
-    verifier(c.defilement() >= c.defilementMax() - 1 && c.caseCochee(), "bas du texte atteint, case cochée");
+    capture("cgu-bas", "« Confidentialité », bas du texte, les deux onglets lus : « J'accepte » actif");
+    verifier(c.defilement() >= c.defilementMax() - 1 && c.caseCochee(), "bas des deux textes atteint : « J'accepte » actif");
     c.ouvrir(r, Cgu::Mode::Lecture);
     capture("cgu-lecture", "Réglages : lecture seule, bouton « Fermer »");
     verifier(c.zoneFermer().w > 0, "lecture : bouton « Fermer » présent");
@@ -370,9 +376,9 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
     verifier(cguAMontrer(sauvegarde().actif(), sauvegarde().cgu), "installation neuve → écran des CGU");
     c.ouvrir(r, Cgu::Mode::Premier);
     image();
-    capture("cgu-premier", "premier lancement, case décochée, « Accepter » inactif");
+    capture("cgu-premier", "premier lancement, « J'accepte » grisé (onglets pas encore lus)");
     appui(1, c.zoneAccepter());
-    verifier(c.etat() == Cgu::Etat::Ouvert, "« Accepter » sans la case : rien ne se passe");
+    verifier(c.etat() == Cgu::Etat::Ouvert, "« J'accepte » avant la lecture : rien ne se passe");
     {   // défilement : le doigt remonte de 60 % du cadre
         const Cgu::Zone& z = c.zoneTexte();
         const float x = z.x + z.w / 2, y0 = z.y + z.h * 0.8f;
@@ -383,11 +389,27 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
         verifier(c.defilement() > 0, "le texte défile au doigt");
         capture("cgu-defile", "texte défilé (suite des CGU)");
     }
-    appui(3, c.zoneCase());
-    verifier(c.caseCochee(), "case cochée");
-    capture("cgu-coche", "case cochée, « Accepter » actif (orange)");
-    appui(4, c.zoneRefuser());
-    verifier(c.etat() == Cgu::Etat::Refuse, "« Refuser » → message");
+    // WFS-557 (RG-19) : lire les deux onglets jusqu'en bas (remplace la case « J'ai lu et j'accepte »)
+    auto basDuTexte = [&]() {
+        const Cgu::Zone& z = c.zoneTexte();
+        const float x = z.x + z.w / 2;
+        for (int n = 0; n < 300 && c.defilement() < c.defilementMax() - 1; n++) {
+            const float y0 = z.y + z.h * 0.85f;
+            c.toucher(20, x, y0, true); c.toucher(20, x, y0 - z.h * 0.7f, true); c.toucher(20, x, y0 - z.h * 0.7f, false); image();
+        }
+    };
+    auto lireTout = [&]() {
+        basDuTexte();
+        verifier(!c.caseCochee(), "RG-19 : un seul onglet lu : « J'accepte » encore grisé");
+        appui(21, c.zoneOnglet(1));
+        verifier(c.onglet() == 1, "RG-19 : onglet « Confidentialité » ouvert");
+        basDuTexte();
+    };
+    lireTout();
+    verifier(c.caseCochee(), "RG-19 : les deux onglets lus jusqu'en bas : « J'accepte » actif");
+    capture("cgu-coche", "les deux onglets lus : « J'accepte » allumé");
+    c.refuser(); image();
+    verifier(c.etat() == Cgu::Etat::Refuse, "RG-19 : touche Retour → message du refus");
     capture("cgu-refus", "refus : « Le jeu ne peut pas démarrer sans votre accord »");
     for (int i = 0; i < (int)(CGU_DELAI_FERMETURE * 60) + 6; i++) image();
     verifier(c.etat() == Cgu::Etat::Quitter, "refus → fermeture de l'application");
@@ -401,26 +423,26 @@ int benchCgu(Game& g, Renderer& r, const std::string& out) {
         verifier(!c.ouvert() && !ui::fontReady(), "fenêtre perdue : écran fermé, police libérée");
         r.init(vk);
         verifier(c.demarrer(r) && ui::fontReady(), "fenêtre retrouvée : écran rouvert, police rechargée");
-        capture("cgu-reprise", "après la perte de la fenêtre : texte lisible, case décochée");
+        capture("cgu-reprise", "après la perte de la fenêtre : texte lisible, « J'accepte » grisé");
     }
-    verifier(!c.caseCochee(), "case décochée à la réouverture");
+    verifier(!c.caseCochee(), "« J'accepte » grisé à la réouverture");
     {   // WFS-355 (RG-04) : appuis injectés comme sur le téléphone, débuts ou fins d'appui perdus, bords de la cible de 48 dp
-        const Cgu::Zone& zc = c.zoneCase(); const Cgu::Zone& za = c.zoneAccepter(); const Cgu::Zone& zr = c.zoneRefuser();
+        lireTout();
+        const Cgu::Zone& za = c.zoneAccepter();
         const float dp = ui::pixelsParDp((float)r.width()), ax = za.x + za.w / 2, ay = za.y + za.h / 2;
-        WFS_LOG("CGU (WFS-355) banc : « Accepter » %.0f × %.0f px (%.0f × %.0f dp), cible %.0f dp de haut", za.w, za.h, za.w / dp, za.h / dp, std::max(za.h / dp, 48.f));
-        c.toucher(5, zc.x + zc.w / 2, zc.y + zc.h / 2, false); image();   // lever seul (pose lue par le veilleur et perdue avant WFS-355)
-        verifier(c.caseCochee(), "WFS-355 : case, pose jamais reçue → cochée");
+        WFS_LOG("CGU (WFS-355) banc : « J'accepte » %.0f × %.0f px (%.0f × %.0f dp), cible %.0f dp de haut", za.w, za.h, za.w / dp, za.h / dp, std::max(za.h / dp, 48.f));
         c.toucher(6, ax, ay, true, true); image();
-        capture("cgu-accepter-appuye", "WFS-355 : doigt posé sur « Accepter » : teinte plus claire");
-        c.toucher(6, zc.x + zc.w / 2, zc.y + zc.h / 2, false); image();
-        verifier(c.etat() == Cgu::Etat::Ouvert, "WFS-355 : doigt glissé hors d'« Accepter » → annulé");
-        c.toucher(0, zr.x + zr.w / 2, zr.y + zr.h / 2, true, true); image();   // posé sur « Refuser », lever jamais reçu
-        c.toucher(0, ax, ay + 24 * dp - 2, true, true); image();               // nouvel appui (ACTION_DOWN), bas de la cible de 48 dp
-        c.toucher(0, ax, ay + 24 * dp - 2, false); image();
-        verifier(c.etat() == Cgu::Etat::Accepte, "WFS-355 : lever perdu sur « Refuser » puis « Accepter » au bord bas de la cible de 48 dp → accepté");
+        capture("cgu-accepter-appuye", "WFS-355 : doigt posé sur « J'accepte » : teinte plus claire");
+        const Cgu::Zone& zt = c.zoneTexte();
+        c.toucher(6, zt.x + zt.w / 2, zt.y + zt.h / 2, false); image();
+        verifier(c.etat() == Cgu::Etat::Ouvert, "WFS-355 : doigt glissé hors de « J'accepte » → annulé");
+        c.toucher(0, zt.x + zt.w / 2, zt.y + zt.h / 2, true, true); image();   // posé sur le texte, lever jamais reçu
+        c.toucher(0, ax, za.y + za.h - 2, true, true); image();               // nouvel appui (ACTION_DOWN), bas du bouton
+        c.toucher(0, ax, za.y + za.h - 2, false); image();
+        verifier(c.etat() == Cgu::Etat::Accepte, "WFS-355 : lever perdu sur le texte puis « J'accepte » au bord bas → accepté");
     }
     {   // fenêtre perdue dans le même lot qu'« Accepter » (avant Cgu::image) : chemin de termGraphics d'android_main.cpp
-        verifier(c.tientLaFenetre() && !c.premierLancement(), "« Accepter » pas encore traité : la fenêtre reste tenue par les CGU");
+        verifier(c.tientLaFenetre() && !c.premierLancement(), "« J'accepte » pas encore traité : la fenêtre reste tenue par les CGU");
         // WFS-355 (cause) : la boucle d'android_main.cpp doit encore tourner sans attente pour que Cgu::image traite « Accepter »
         verifier(cgu_appui::boucleSansAttente(false, c.tientLaFenetre(), false), "WFS-355 : « Accepter » touché → boucle Android sans attente (image() suivante)");
         verifier(!cgu_appui::boucleSansAttente(false, c.premierLancement(), false), "WFS-355 : ancienne condition (premierLancement) : boucle bloquée, écran figé — cause du défaut");

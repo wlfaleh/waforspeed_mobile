@@ -86,7 +86,10 @@ bool load(Renderer& r) {
             Glyph g{}; g.adv = adv * fa.scale;
             if (!stbtt_FindGlyphIndex(&fa.info, cp) && cp != 32 && cp != 160 && cp != 0x202F) continue;
             int w = 0, h = 0, xo = 0, yo = 0;
-            unsigned char* sdf = stbtt_GetCodepointSDF(&fa.info, fa.scale, cp, PAD, ONEDGE, (float)ONEDGE / PAD, &w, &h, &xo, &yo);
+            // WFS-557 : Inter (texte courant, 11 à 16 px à l'écran) : bord décalé d'un demi-pixel de l'atlas vers l'extérieur (léger
+            // épaississement), sinon le lissage du shader (ui.frag) efface à moitié les traits d'un pixel (« i », « l », « f »)
+            const unsigned char bordFace = f == 0 ? ONEDGE : (unsigned char)(ONEDGE + ONEDGE / (2 * PAD));
+            unsigned char* sdf = stbtt_GetCodepointSDF(&fa.info, fa.scale, cp, PAD, bordFace, (float)ONEDGE / PAD, &w, &h, &xo, &yo);
             if (sdf) {
                 if (x + w + 1 > ATLAS) { x = 1; y += rowH + 1; rowH = 0; }
                 if (y + h + 1 > ATLAS) { stbtt_FreeSDF(sdf, nullptr); WFS_WARN("Atlas de police plein (police %d)", f); plein = true; break; }

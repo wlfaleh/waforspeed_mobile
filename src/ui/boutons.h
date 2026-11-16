@@ -99,6 +99,8 @@ void icone(Renderer& r, Icone i, float cx, float cy, float s, const vec4& c);
 struct OptionsVerre { float rayon = -1; unsigned bord = 0; const vec4* couleurTexte = nullptr; float espacement = 0.12f; };
 void verreIcone(Renderer& r, float x, float y, float w, float h, Icone i, const std::string& texte, float op = 1, bool appuye = false,
                 float px = 0, const OptionsVerre& o = {});
+// WFS-557 (maquettes 10, 11) : bouton « MENU » en plaque d'immatriculation : plaque claire, bande orange à gauche, texte sombre
+void plaque(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false);
 // bouton de verre neutre (bord clair) : actions secondaires des maquettes (« Crédits », « Conditions d'utilisation »)
 void verre(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
            float px = 0, const vec4* couleurTexte = nullptr);

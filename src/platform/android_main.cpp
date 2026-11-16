@@ -297,7 +297,7 @@ static int32_t onInput(android_app* a, AInputEvent* e) {
     if (AInputEvent_getType(e) == AINPUT_EVENT_TYPE_KEY && AKeyEvent_getKeyCode(e) == AKEYCODE_BACK) {   // WFS-116 : Retour du téléphone
         const int32_t act = AKeyEvent_getAction(e);
         if (act != AKEY_EVENT_ACTION_DOWN && act != AKEY_EVENT_ACTION_UP) return 1;
-        if (!app.ready) return 1;   // chargement : pris et ignoré (RG-03)
+        if (!app.ready) { if (ecrans::cgu().premierLancement() && act == AKEY_EVENT_ACTION_UP) ecrans::cgu().refuser(); return 1; }   // chargement : pris et ignoré (RG-03) ; WFS-557 (RG-19) : CGU du 1er lancement : Retour = refus
         return retourSysteme(app.game, act == AKEY_EVENT_ACTION_DOWN, AKeyEvent_getRepeatCount(e)) ? 1 : 0;
     }
     if ((ecrans::chargement().enErreur() || ((ecrans::cgu().premierLancement() || ecrans::paquets().tientLaFenetre()) && !app.ready)) && AInputEvent_getType(e) == AINPUT_EVENT_TYPE_MOTION) {   // WFS-146 (RG-10) : bouton de l'écran d'erreur ; WFS-308 : CGU ; WFS-306 : paquets

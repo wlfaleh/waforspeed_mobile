@@ -249,23 +249,19 @@ private:
     }
 
     // renderDuelResult : « Victoire » / « ne place », temps, classement, « Revanche » et « Menu »
+    // WFS-557 (maquette 33) : mise en page commune des fins R19 (course_system.h : panneauFinR19 …)
     void resultat(Renderer& r, float W, float H, float u) {
+        (void)u;
         const duel::Session& s = g_session;
         const auto rows = s.results();
         int rank = 1; bool roule = false; size_t presents = 0;   // WFS-122 : les adversaires partis ne roulent plus
         for (size_t i = 0; i < rows.size(); i++) { if (rows[i].me) rank = (int)i + 1; if (!rows[i].done && !rows[i].parti) roule = true; if (!rows[i].parti) presents++; }
-        verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
-        const float pw = 64 * u, ph = (34 + 6.5f * rows.size()) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
-        verre::panneau(r, px0, py0, pw, ph, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli
-        score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
+        const FinR19 f = panneauFinR19(r, W, H);
         // WFS-506 (RG-03) : titres et résultats par ui::tr
         const std::string& sur = ui::tr(presents == 1 ? (rows.size() > 2 ? "duel.sur.partis" : "duel.sur.parti")
                                         : roule ? (presents > 2 ? "duel.sur.continue" : "duel.sur.roule") : "duel.sur.termine");
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, verre::hexa(verre::SUR_TITRE), ui::CENTRE, 0.16f, false);   // WFS-548 (RG-03) : gris
-        const std::string titre = presents == 1 ? ui::tr("fin.arrive") : textes::titrePlace(rank);   // WFS-146 (RG-06) : « 2e PLACE », jamais « 2E »
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, titre, rank == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
-        ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(s.myFinish()), TEXTE, ui::CENTRE, 0.f, false, true);
-        float y = py0 + 24 * u;
+        const std::string titre = presents == 1 ? ui::tr("fin.arrive") : rank == 1 ? ui::tr("fin.victoire") : textes::titrePlace(rank);   // maquette 33 : « VICTOIRE »
+        enTeteFinR19(r, f, sur, titre, rank == 1 ? ui::ORANGE : TEXTE, ui::chrono(s.myFinish()));
         const double lead = rows[0].done ? rows[0].ft : -1;
         for (size_t i = 0; i < rows.size(); i++) {
             const auto& row = rows[i];
@@ -275,23 +271,13 @@ private:
             else if (row.ft >= 9e9) tm = ui::tr("c5.arrive");
             else if (i == 0 || lead < 0) tm = ui::chrono(row.ft / 1000);
             else tm = "+" + ui::decimal((row.ft - lead) / 1000, 1) + " s";
-            // WFS-548 (RG-05, maquette 33) : chaque ligne sur une tuile de verre ; ta ligne bordée et écrite en orange (toi)
-            { verre::Style st; st.rayon = 1.2f * u; st.lisere = std::max(1.f, 1.2f * H / 720.f); st.ombre = false; st.force = 0.6f; st.bord = row.me ? verre::TOI : 0;
-              verre::panneau(r, px0 + 3.5f * u, y - 1.2f * u, pw - 7 * u, 5.8f * u, st); }
-            const vec4 c = row.me ? verre::hexa(verre::TOI) : TEXTE;
-            { const textes::NomPropre nomPropre; ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + nomLigne(row), c, ui::GAUCHE, 0.f, false); }   // WFS-506
-            ui::text(r, px0 + pw - 5 * u, y, 3.4f * u, tm, c, ui::DROITE, 0.f, false);
-            y += 6.5f * u;
+            ligneFinR19(r, f, (int)i, std::to_string(i + 1) + ". " + nomLigne(row), tm, row.me);
         }
-        // boutons : la paire est centrée (WFS-57) ; zones de toucher = rectangles dessinés
-        const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
-        revanche_ = {bx, by, bw, bh}; menu_ = {bx + bw + gap, by, bw, bh};
-        g_zones[0] = bx; g_zones[1] = by; g_zones[2] = bw; g_zones[3] = bh;
-        g_zonesMenu[0] = bx + bw + gap; g_zonesMenu[1] = by; g_zonesMenu[2] = bw; g_zonesMenu[3] = bh;
         const bool attend = s.status() == duel::Status::Ready;
-        // WFS-549 (RG-01, RG-02) : « Revanche » en bouton Start/Stop (enfoncé pendant l'attente), « Retour » en autocollant ; mêmes rectangles
-        ui::boutons::startStop(r, revanche_.x, revanche_.y, bw, bh, ui::tr(attend ? "duel.pret" : "duel.revanche"), 1, attend, "", 3.4f * u);
-        ui::boutons::autocollant(r, menu_.x, menu_.y, bw, bh, ui::tr("duel.retour"), 1, false, 3.4f * u);
+        float zr[4], zb[4];
+        boutonsFinR19(r, f, ui::majuscules(ui::tr(attend ? "duel.pret" : "duel.revanche")), attend, zr, zb);   // « Revanche » enfoncé pendant l'attente
+        revanche_ = {zb[0], zb[1], zb[2], zb[3]}; menu_ = {zr[0], zr[1], zr[2], zr[3]};
+        for (int i = 0; i < 4; i++) { g_zones[i] = zb[i]; g_zonesMenu[i] = zr[i]; }
     }
 
     Renderer* r_ = nullptr;
