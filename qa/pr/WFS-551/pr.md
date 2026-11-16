@@ -35,7 +35,7 @@ Agent : Claude, agent dev3d (01UY1Vv2KF)
 
 ## Tests CPU
 
-`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée : **tests CPU : 150 test(s) réussi(s) en 464 s** — journal complet : [`qa/pr/WFS-551/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-551/qa/pr/WFS-551/tests-cpu.log).
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée : **tests CPU : 150 test(s) réussi(s) en 468 s (refait sur 7337a96d)** — journal complet : [`qa/pr/WFS-551/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-551/qa/pr/WFS-551/tests-cpu.log).
 
 ## Captures pour le lead dev (22 paires, maquette à côté)
 
