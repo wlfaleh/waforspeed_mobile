@@ -1,7 +1,7 @@
 # WFS-557 — Vérification des écrans R19 fusionnés (WFS-548, 549, 552) contre les maquettes
 
 Agent : Claude, agent dev3d (01UY1Vv4Fd). Maquettes : `references/maquettes-R19/`. Arbitrages du PO : `regles-de-gestion/WFS-557.md`
-(RG-06 à RG-22 : maquette à 100 %, boutons compris ; Inter en 2e police ; éléments sans place ; scènes 3D et images des modes hors périmètre).
+(RG-06 à RG-23 : maquette à 100 %, boutons compris ; Inter en 2e police ; éléments sans place ; scènes 3D et images des modes hors périmètre).
 
 Méthode (RG-01) : chaque écran capturé au banc PC (lavapipe, même rendu que la CI) en **1600 × 720** (même format 20:9 que les
 maquettes, 2/3 de 2400 × 1080), puis mis côte à côte avec la maquette : maquette en haut, jeu en bas (`cote-a-cote/`). Colonne
@@ -11,7 +11,7 @@ maquettes, 2/3 de 2400 × 1080), puis mis côte à côte avec la maquette : maqu
 |---|---|---|---|---|
 | 01 menu | menu principal | `src/ui/ecrans/menu.cpp` | colonne Market / Profil / Crédits, sous-titres, « Ta voiture », aide, choix en pilules | **menu : WFS-550** (arbitrage du PO, RG-16 transféré). Le bouton rond « Réglages » du menu est aussi à WFS-550 (`reglages.cpp : dessinerEngrenage` sur sa branche). Reste ici : le cadrage 3D de WFS-552 (`menu_parking_cadrage.cpp : cadrage`, voiture ≈ 21 % plus grande, plus basse et plus à gauche, comme la maquette) |
 | 02 choix du mode | « Choisis ton mode » | `src/game/modes_ecran.cpp : ChoixMode::drawUi` | titre centré, cartes plates sans image, rangées Distance / Difficulté sous les cartes, « Continuer » | conforme : titre et « Étape 1 sur 3 » en haut à gauche, 3 cartes inclinées, nom du mode choisi en orange, « Retour / Menu principal » autocollant, « Suivant » rond ; Distance / Difficulté dans la carte « Course à 5 » seulement (RG-21). **Images des modes : provisoire (scène floutée), WFS-562** (RG-22) |
-| 03 choix de la carte | terrain | `src/ui/ecrans/terrain.cpp` | — | hors périmètre : fichier de WFS-551 (en cours, contrôlé à sa PR) |
+| 03 choix de la carte | choix de la carte | `src/ui/ecrans/terrain.cpp : Terrain::drawUi` | voir 18 | remplacée par les maquettes 18a à 18c (même écran, version plus récente : étoiles en haut à droite, Midi / Nuit en bas) ; RG-23 |
 | 04 duel en ligne | accueil du duel | `src/ui/ecrans/salon.cpp : dessinerAccueil` | boutons en biseau | « Retour / Menu principal » autocollant et « Créer / Duel » rond, aux places de la maquette (RG-20). **Scène 3D : hors périmètre, WFS-558** |
 | 05 cadeau du jour | cadeau | `src/ui/ecrans/cadeau_jour.cpp` | — | hors périmètre : WFS-550 |
 | 06, 07, 13, 15, 16 garage | garage | `src/ui/garage_*.cpp` | — | hors périmètre : WFS-550 / 551 |
@@ -25,7 +25,8 @@ maquettes, 2/3 de 2400 × 1080), puis mis côte à côte avec la maquette : maqu
 | 24 Réglages, Conduite | Réglages | même | même | conforme (icônes des onglets gardées comme sur la maquette 14) |
 | 25 Réglages, Son | Réglages | même | même | conforme |
 | 17, 17b HUD | HUD | `src/ui/hud.cpp` | — | hors périmètre : WFS-551 |
-| 18, 18a à 18d cartes | terrain, paquets | `terrain.cpp`, `paquets*.cpp` | — | hors périmètre : WFS-551 |
+| 18a, 18b, 18c choix de la carte | choix de la carte (à télécharger, téléchargement, installée) | `src/ui/ecrans/terrain.cpp : Terrain::drawUi, arrondirCoins` ; `src/ui/ecrans/paquets.cpp : dessinerPaquetCarte, etiquette, boutonVerre, nuageTrait, anneauProgres` | fusionné par WFS-551 sans la mise en page : titre centré, flèches, cartes voisines absentes, boutons en biseau, pas de solde d'étoiles ni de quartiers, étiquettes et boîtes de téléchargement trop petites | conforme (RG-23) : « Choisis ta carte » + « Étape 3 sur 3 · carte n / 4 » (Inter), solde d'étoiles en pilule, carte 1180 × 440 bordée et halo orange quand elle est prête, cartes voisines 150 × 340 (touchables), nom, description Inter, « km · N quartiers » et pastilles des quartiers, points, Midi / Nuit en verre, « Retour / Choix de la voiture » autocollant, « Rouler » rond (grisé « Carte à télécharger ») ; étiquettes « À télécharger » / « ✓ Installée », « ☁ Télécharger · N Mo · Wi-Fi conseillé », panneau de progression 430 × 70 (anneau, Mo, Annuler), « 🗑 Supprimer · libère N Mo ». **Image de la carte : vignette provisoire** (la maquette montre une vue 3D de la carte) |
+| 18d mise à jour et installation | étape des paquets | `src/ui/ecrans/paquets_etape.cpp` | — | fait par WFS-551 (fenêtre, barres, total, astuce, « Plus tard ») ; non retouché ici |
 | 19 pause | pause | `src/ui/ecrans/pause.cpp : dessinerPause, dessinerStats` ; `reglages.cpp : dessinerBouton` | 3 boutons en rangée, pas de stats, sur-titre sans mode ni carte, « Réglages » cyan en biseau | conforme : fenêtre 830 × 390, « Course en pause · Checkpoint · Ville néon », ligne de stats (temps, CP n sans total en Checkpoint : RG-17, points), « Reprendre » rond, « ↺ Recommencer » et « ⇥ Quitter la course » (bord rouge) en verre, « ⚙ Réglages » en verre |
 | 20 création du profil | « Crée ton pilote » | `src/ui/ecrans/creation_profil.cpp : dessiner, champ, dessinerApercuPlaque` | champ « Plaque » à part, clavier 10 colonnes, « C'est parti » en biseau, champ cyan | conforme : « Première course », champ Pseudo bordé d'orange, « Ta plaque » (aperçu orange, touchable pour la modifier : RG-14), aide, « C'est parti » rond, clavier de verre 3 × 13 + ⌫ + Espace |
 | 21 profil | Profil | `src/ui/ecrans/profil.cpp : dessiner` | grande fenêtre, plaque à droite, records en liste, « Modifier » orange et « Retour » en bas | conforme : en-tête et plaque à côté du nom, « ✎ Modifier » en verre en haut à droite, 6 tuiles, panneau Records, panneau Dernières courses en cartes (« · record » : RG-15), autocollant « Retour / Menu principal » |
@@ -47,3 +48,5 @@ maquettes, 2/3 de 2400 × 1080), puis mis côte à côte avec la maquette : maqu
 - Maquette 20 : touches de 62 × 52 px (≈ 4,7 mm sur le téléphone) au lieu des 9 mm de WFS-481 ; zones de toucher jointives ≥ 44 px (RG-07).
 - Écrans 16:9 (1280 × 720) : création du profil, Market, choix du mode et salon sont réduits pour tenir en largeur et centrés.
 - Interface : limite de 8 192 quadrilatères par image ; un dépassement est maintenant noté au journal (`renderer.cpp`, accroche de 4 lignes).
+- Maquette 18b : le sous-titre de la progression garde « Tu peux rouler sur une autre carte pendant ce temps » sans le temps restant
+  (« encore 12 s ») : le temps restant est déjà affiché sur l'étape des paquets (18d) ; image de chaque carte : vignette provisoire.
