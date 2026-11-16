@@ -1398,3 +1398,7 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 
 ### 2026-11-16 09:50:14 — Arbitrage WFS-559 : feux à la place des chiffres, « GO » gardé, vert 0,7 s au départ (po-scrum-master)
 - Questions de Claude, agent dev3d (01Us6uCwnA). Décisions écrites dans `regles-de-gestion/WFS-559.md` (RG-05 à RG-09), recommandation du développeur acceptée : (1) chiffres 3 / 2 / 1 retirés, « GO » gardé 0,7 s sous les feux, bips inchangés ; (2) 5 feux rouges, un toutes les 0,6 s sur le décompte de 3 s, puis vert 0,7 s au départ, puis éteints ; (3) pas de mécanique « départ parfait » à coder (n'existe pas) ; (4) consigne FR / EN pendant le décompte seulement ; (5) portique à la ligne de départ dans tous les modes, Checkpoint compris (capture en plus).
+
+### 2026-11-16 09:54:35 — Statuts automatiques, bancs du matin #42 (robot statuts)
+- Run rouge (schedule, commit 9a8fbd5), aucun statut changé. Job(s) en échec : tests CPU et licences.
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-496, WFS-503.
