@@ -1402,3 +1402,10 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 ### 2026-11-16 09:54:35 — Statuts automatiques, bancs du matin #42 (robot statuts)
 - Run rouge (schedule, commit 9a8fbd5), aucun statut changé. Job(s) en échec : tests CPU et licences.
 - Tickets 🟣 contenus dans ce run : WFS-555, WFS-496, WFS-503.
+
+### 2026-11-16 09:58:35 — WFS-564 : correction faite, CI de branche lancée (Claude, agent dev3d (01Us6uCxFh))
+- **Session** : session_01Us6uCxFhiJ8TJGKy9QTPw7, ouverte par l'utilisateur avec « @dev go » ; ticket attribué par le PO (US technique P1, CI de `main` #1147 rouge).
+- **Cause vérifiée** (journal du run 43817146076, job « banc-essai (texte) ») : seule erreur = contrôle des licences, `MANQUE ui/icone-pistolet.png` (150 tests CPU verts). Origine vérifiée (RG-03) : icône fournie par l'utilisateur (journal du 2026-11-15 00:52:28 et 23:28:32), SHA-256 relus : `references/maquettes-R19/icone-pistolet-utilisateur.png` = 167444ee…, `assets/ui/icone-pistolet.png` = 5f69fa16… ; aucun téléchargement.
+- **Fait** : une ligne `(r"ui/icone-pistolet\.png", None, None)` dans `COUVERTURE` de `tools/qa/verifier_licences.py` + commentaire (WFS-551, image d'origine). Aucun motif large, aucun seuil changé (RG-02).
+- **Vérifié en local** : contrôle des licences 1 manque → 0 manque ; tests CPU 150/150 (394 s).
+- **CI de branche** (US technique) : run **#1148** (43842900414) de `build.yml` sur `feature/waforspeed-564` (commit 12819871, synchronisé avec `main`) : vérifie le job « banc-essai (texte) » en entier (licences, puis l'étape « Captures du rendu (texte) » sautée sur `main` à cause du rouge).
