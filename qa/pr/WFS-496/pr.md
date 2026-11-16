@@ -68,17 +68,17 @@ Agent : Claude, agent dev3d (01Us6uCwHf)
 
 ## Tests CPU
 
-Commit testé : `f57a6fee` (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build`, code de sortie 0 :
+Commit testé : `c8a1afcf` (branche synchronisée avec `main`), `bash tools/qa/tests_cpu.sh build`, code de sortie 0 :
 
 ```
 [OK] test_atelier (0 s)
 [OK] test_ville_sol (2 s)
 [OK] test_virages_fleches (0 s)
 [OK] test_voitures_retirees (0 s)
-tests CPU : 149 test(s) réussi(s) en 378 s
+tests CPU : 149 test(s) réussi(s) en 381 s
 ```
 
-## Captures pour le lead dev (21 après, 1 paire avant / après)
+## Captures pour le lead dev (25 après, 1 paire avant / après ; 🔁 = refait pour la 2e revue)
 
 Dossier : [`qa/pr/WFS-496`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496) — produit par `tools/qa/captures_pr.sh WFS-496 atelier garage`, sélection ciblée.
 
@@ -91,17 +91,21 @@ Dossier : [`qa/pr/WFS-496`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `atelier-deux-doigts` : deux doigts : flamme en cours de rotation et d'agrandissement (20°, 140 %) | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-deux-doigts.jpg?raw=true) |
 | `atelier-calques` : 3 calques sur le flanc gauche, flamme choisie | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-calques.jpg?raw=true) |
 | `atelier-vue-droite` : vue droite : éclair posé, en miroir | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-vue-droite.jpg?raw=true) |
-| `atelier-vue-dessus` : vue de dessus : bande double sur le capot, liste des 5 calques | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-vue-dessus.jpg?raw=true) |
+| `atelier-vue-dessus` : 🔁 remarque 3 : bande du dessus ancrée sur le toit — vue de dessus : bande double sur le toit, liste des 5 calques | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-vue-dessus.jpg?raw=true) |
 | `atelier-verrou` : motif d'un pack non possédé : message, rien posé | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-verrou.jpg?raw=true) |
 | `atelier-liste-masque` : liste : calque masqué (« Afficher »), non cuit | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-liste-masque.jpg?raw=true) |
 | `atelier-max` : 21e autocollant : « 20 calques au maximum » | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-max.jpg?raw=true) |
-| `atelier-confirmation` : « Quitter » après changement : « Quitter sans valider ? » | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-confirmation.jpg?raw=true) |
+| `atelier-confirmation` : 🔁 point 1 : « Quitter » après changement : « Quitter sans valider ? » | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-confirmation.jpg?raw=true) |
 | `atelier-garage-apres` : « Valider » : retour au garage, la 208 porte ses 5 autocollants | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-garage-apres.jpg?raw=true) |
-| `atelier-garage-gt86` : GT86 au garage : étoile, lettre A, bande noire sur le capot, numéro à l'arrière | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-garage-gt86.jpg?raw=true) |
-| `atelier-parcours-course` : parcours : la 208 en course de jour après Choisir → Rouler | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-parcours-course.jpg?raw=true) |
+| `atelier-garage-gt86` : GT86 au garage : étoile, lettre A, bande double sur le toit, numéro à l'arrière | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-garage-gt86.jpg?raw=true) |
+| `atelier-parcours-course` : 🔁 point 3 : parcours de jour, bande sur le toit visible — parcours : la 208 en course de jour après Choisir → Rouler | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-parcours-course.jpg?raw=true) |
 | `atelier-relance-garage` : après relance du jeu : habillage gardé | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-relance-garage.jpg?raw=true) |
-| `atelier-course-gt86-jour` : course de jour, GT86 (numéro orange à l'arrière) | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-course-gt86-jour.jpg?raw=true) |
+| `atelier-course-gt86-jour` : 🔁 point 4 : bande double sur le toit — course de jour, GT86 (numéro orange à l'arrière) | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-course-gt86-jour.jpg?raw=true) |
 | `atelier-course-gt86-nuit` : course de nuit, GT86 | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-course-gt86-nuit.jpg?raw=true) |
 | `atelier-course-p208-nuit` : course de nuit, 208 | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-course-p208-nuit.jpg?raw=true) |
+| `atelier-menu-retour` : 🔁 point 2 : garage → « Retour » → menu : la 208 du parking reprend son habillage | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-menu-retour.jpg?raw=true) |
+| `atelier-garage-abarth` : 🔁 point 4 : 500 au garage : étoile et lettre A (miroir, deux flancs), bande double sur le toit | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-garage-abarth.jpg?raw=true) |
+| `atelier-course-abarth-jour` : 🔁 point 4 : course de jour, 500 : bande double blanche sur le toit lisible | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-course-abarth-jour.jpg?raw=true) |
+| `atelier-course-abarth-nuit` : 🔁 point 4 : course de nuit, 500 | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-course-abarth-nuit.jpg?raw=true) |
 | `atelier-en-atelier` : English: decal workshop | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-en-atelier.jpg?raw=true) |
-| `atelier-en-confirmation` : English: « Leave without applying? » | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-en-confirmation.jpg?raw=true) |
+| `atelier-en-confirmation` : 🔁 point 1 : English: « Leave without applying? » | — (nouvel écran) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-496/qa/pr/WFS-496/apres-atelier-en-confirmation.jpg?raw=true) |
