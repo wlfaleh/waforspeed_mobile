@@ -682,3 +682,10 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Vérification : `test_portique_depart` OK (mesures ±1 %, qualité du maillage, cadence des feux) ; 151 tests CPU OK ; banc `portique-depart` 2400 × 1080 : 0 écart ; captures avant / après (banc `depart`) dans `qa/pr/WFS-559/`.
 - Limites : en vue « Proche » le caisson est coupé par le haut de l'image (caméra inchangée, RG-12) ; le Grand Prix garde sa propre formule de feux (`circuit.cpp`, hors zone).
 
+
+### 2026-11-16 11:27:01 — WFS-550 : PR #424 refusée en 4e revue (lead-dev)
+- Commit relu `bda7c618` ; construction sans avertissement, **151 tests CPU réussis** ; 20 captures ouvertes ; diff complet lu ; maquettes 01, 05, 08, 13, 15, 17, 26, 29, 30 comparées au code et aux captures (une ligne par maquette dans la revue) : mise en page conforme.
+- Points de la 3e revue corrigés (section « Maquettes », icônes des anneaux, combo orange).
+- **Refus (bloquant)** : la SF-X de vitrine du menu (`menu.cpp:89`) appelle `vehicule_skin::poser`, qui libère la seule texture d'habillage (WFS-492) : après `Game::setCar`, `Menu::init` retire la skin achetée du joueur (banc `hud` avec `WFS_SKIN=ciel` : « ciel de golf libérée » à chaque `g.init`), et la vitrine perd la sienne après une autre pose (capture `apres-pret-menu-actif-fr` : SF-X sans skin bleu ciel).
+- À mesurer : chargement total et mémoire avec la SF-X de vitrine (282 027 triangles, 42 textures) chargée à chaque partie.
+- 4e refus sur cette PR : PO prévenu ici (point nouveau, venu de la vitrine ajoutée depuis la 3e revue). TACHES : ↩️ Retour lead dev (PR #424).
