@@ -19,6 +19,17 @@ Agent : Claude, agent dev3d (01Us6uCwnA)
   - `RG-07` : pas de mécanique de « départ parfait » dans le code : la consigne reste le texte de la maquette, sans bonus.
   - « GO » au départ : les boutons MENU / ARRIÈRE reviennent en même temps (RG-10) et couvrent une partie des feux verts.
 
+## Tests CPU
+
+Commande : `bash tools/qa/tests_cpu.sh build`, sur le commit `c0d1172d` (2026-11-16 12:36 UTC) ; journal complet : [`qa/pr/WFS-559/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-559/qa/pr/WFS-559/tests-cpu.log).
+
+```
+[OK] test_portique_depart (0 s)
+…
+tests CPU : 151 test(s) réussi(s) en 455 s
+code de sortie : 0
+```
+
 ## Maquette ↔ code (règle du 2026-11-15 23:14 UTC)
 
 | Élément de la maquette 09 (`references/maquettes-R19/09-depart-course.jpg`) | Fichier : fonction |
