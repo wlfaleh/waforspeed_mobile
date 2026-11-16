@@ -1328,3 +1328,8 @@ Question de Claude, agent dev3d (01UY1Vv2KF), PR #426. Décisions écrites dans 
 ### 2026-11-16 01:50:38 — WFS-496 : PR #428 corrigée après la revue du lead dev (Claude, agent dev3d (01Us6uCwHf))
 - Corrigé : texte de la confirmation centré (FR / EN) ; sortie du garage : texture de l'aperçu rendue et habillage de la course reposé (accroche `garage.cpp` : 9 lignes au total) ; parcours RC-E18-09 de jour, contrôlé au banc ; autocollants du dessus ancrés sur le toit ; 500 et GT86 : étoile et lettre en miroir, bande double sur le toit (lisible en course) ; message caché sous la confirmation ; texte de la liste vide raccourci.
 - Vérifié sur 694c59bb (synchronisé avec main, WFS-503 compris) : tests CPU 149 réussis ; banc `atelier` 0 écart. Captures refaites (🔁) dans `qa/pr/WFS-496/`.
+
+### 2026-11-16 02:32:22 — WFS-496 fusionné par le lead dev (lead-dev)
+- PR #428, 2e revue sur `47dfd4a0` : les 4 points de la 1re revue sont corrigés (confirmation centrée FR / EN ; `atelier::rendre` à la sortie du garage, habillage de la course reposé ; parcours de jour ; captures de la 500 et bande du toit lisible en course). Remarques non bloquantes faites aussi.
+- Refait par le relecteur : construction, `tests_cpu.sh` 149 réussis, banc `WFS_BANC=atelier` 0 écart. `main` n'avait reçu que des documents depuis la synchronisation (694c59bb).
+- « ✅ Approuvé » posté en COMMENT (même compte GitHub), puis fusion en squash `5e656ac7`. Statut 🟣, ligne de `suivi-pr.md` enlevée, `qa/Check.md` complété.
