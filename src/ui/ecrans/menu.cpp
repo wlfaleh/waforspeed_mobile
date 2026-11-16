@@ -175,7 +175,7 @@ public:
         auto glisse = [&](int n, float& dx) { const float e = ease((t - 0.04f * n) / 0.32f); dx = -36 * kb * (1 - e); return e * op; };
         float dx;
         float a = glisse(0, dx);
-        dessinerLogoLigne(r, gl + 50 * kb + dx, 36 * kb, 42 * kb, a);
+        dessinerLogoLigne(r, gl + 50 * kb + dx, 30 * kb, 50 * kb, a);
         // panneau sombre à coin coupé (haut droit), du bord gauche à 570
         a = glisse(1, dx);
         {
@@ -202,7 +202,7 @@ public:
             const float x = gl + 32 * kb + dx, y = 440 * kb, w = 500 * kb, h = 156 * kb;
             g_zones[SHOWROOM] = {x, y, w, h, 0, true};
             manette::focus(g_zones[SHOWROOM]);
-            ui::boutons::piluleChrome(r, x, y, w, h, ui::majuscules(ui::tr("menu.r19.garage")), a, presse_ == SHOWROOM, 50 * kb);
+            ui::boutons::piluleChrome(r, x, y, w, h, ui::majuscules(ui::tr("menu.r19.garage")), a, presse_ == SHOWROOM, 60 * kb);
         }
         // RECORD (bas gauche) : libellé gris espacé, valeur en grand ; le toucher ouvre le Profil (records, maquette 21)
         a = glisse(5, dx);

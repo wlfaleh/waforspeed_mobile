@@ -136,7 +136,7 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
     const float w = 380 * kb, h = 81 * kb, x = droite - w, y = haut - 12 * kb - h;
     verre::Style st; st.rayon = h / 2; st.lisere = 1.5f * kb; st.bord = cas == Cas::Expire ? DANGER : ACCENT2;
     verre::panneau(r, x, y, w, h, st);
-    const float bp = 15 * k, bw = bouton.empty() ? 0 : ui::width(bp, ui::majuscules(ui::tr(bouton.c_str())), 0.1f) + 36 * kb, bh = 34 * kb;
+    const float bp = 15 * kb, bw = bouton.empty() ? 0 : ui::width(bp, ui::majuscules(ui::tr(bouton.c_str())), 0.1f) + 36 * kb, bh = 34 * kb;
     if (presse && bw <= 0) {   // appuyé : voile cyan dans la carte
         vec2 c[verre::NP_CONTOUR];
         verre::contourArrondi(x, y, w, h, h / 2, c);
@@ -151,11 +151,11 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, bool presse) {
     jauges::anneauGradue(r, cx, cy, ra, 5 * kb, fr, 1, -jauges::PI_J * 0.17f, 0, false);
     voitureDeFace(r, cx, cy, 22 * kb, hex(TEXTE, 0.95f));
     const float xt = x + 88 * kb;
-    { const textes::NomPropre np; verre::surTitre(r, xt, y + 9 * kb, 12.5f * k, titre); }   // nom de la voiture : inchangé en anglais
+    { const textes::NomPropre np; verre::surTitre(r, xt, y + 9 * kb, 12.5f * kb, titre); }   // nom de la voiture : inchangé en anglais
     if (!grand.empty()) {
-        const float gp = 32 * k;
+        const float gp = 32 * kb;
         ui::text(r, xt, y + 20 * kb, gp, grand, hex(TEXTE), ui::GAUCHE, 0, false, true);
-        ui::text(r, xt + ui::width(gp, grand) + 8 * kb, y + 20 * kb + gp * 0.30f, 21 * k, suite, hex(TAG), ui::GAUCHE, 0, false, true);
+        ui::text(r, xt + ui::width(gp, grand) + 8 * kb, y + 20 * kb + gp * 0.30f, 21 * kb, suite, hex(TAG), ui::GAUCHE, 0, false, true);
     }
     if (!aide.empty()) garage::texteEtoiles(r, xt, grand.empty() ? y + 34 * kb : y + 56 * kb, (grand.empty() ? 15 : 13) * k, aide, hex(grand.empty() ? TEXTE : MUTED), ui::GAUCHE);
     g_bandeau = {x, y, w, h};
