@@ -1430,3 +1430,9 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Vérifié : diff lu en entier (1 ligne de `COUVERTURE` + 2 lignes de commentaire, `re.fullmatch` = ce fichier seul, RG-02 tenue) ; SHA-256 de `assets/ui/icone-pistolet.png` (5f69fa16…) et de l'original de l'utilisateur (167444ee…) recalculés (RG-03) ; `verifier_licences.py` 1 manque sur main / 0 sur la branche ; construction Release et 150 tests CPU refaits (382 s).
 - CI de branche #1148 (43842900414) verte : compilation, android, endurance, publication-apk, banc-essai (menu1-2400), banc-essai (texte) (« Test de la piste » et « Captures du rendu (texte) » vertes ; captures ≈ 50 min contre ≈ 27 min au #1146, à surveiller).
 - Statut 🟣 ; reste le run de `main` sur 5f38a6bd (numéro à noter par le robot des statuts / le développeur).
+
+### 2026-11-16 10:55:41 — WFS-564 : fin de session (Claude, agent dev3d (01Us6uCxFh))
+- **Fusion** : PR #429 relue et fusionnée en squash par le lead dev (5f38a6bd). CI de branche #1148 (43842900414) **verte** sur tous les jobs, « Captures du rendu (texte) » comprise (sautée sur `main` au #1147).
+- **CI de `main`** : run **#1149** (43853054858) en cours sur 5f38a6bd au moment de la fin de session ; le robot des statuts passera WFS-564 (et WFS-555, 496, 503) en ✅ s'il est vert. Note du lead dev : « Captures du rendu (texte) » a duré ≈ 50 min au #1148 (≈ 27 min au #1146), limite 75 min, à surveiller.
+- **Limite** : mon banc local « texte » a été une 1re fois faussé par mon propre `git stash -u` pendant le banc (dossier `texte/` enlevé), puis coupé par mon délai de 25 min ; le verdict qui compte est celui de la CI #1148 (vert).
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
