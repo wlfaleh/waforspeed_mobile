@@ -1,5 +1,6 @@
 // WaForSpeed — météo (ticket WFS-18, épic E2) : voir meteo.h.
 #include "meteo.h"
+#include "../ui/resultats_parking.h"   // WFS-561 (accroche) : écran des résultats sous terre
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -65,6 +66,7 @@ public:
         cockpit::PareBriseVu& pb = cockpit::pareBriseVu();
         const bool vitre = pb.vu && etatCockpit().actif; pb.vu = false;   // WFS-334 : intérieur dessiné à cette image
         if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course || diag::actif(diag::SANS_PLUIE)) return;   // WFS-419 : diagnostic « sans pluie »
+        if (resultats3d::affiche()) return;   // WFS-561 (accroche) : résultats dans le parking souterrain : pas de pluie à l'intérieur
         const auto t0 = std::chrono::steady_clock::now();
         preparer(g);
         if (gouttes_.empty() && !neige_) return;
