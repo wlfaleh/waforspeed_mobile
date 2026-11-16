@@ -256,7 +256,8 @@ const unsigned TEXTE = 0xF2F4F8, BG = 0x0A0B10;
 // bouton visible : vraie course en cours (comme le bouton « Menu » de WFS-39 : pas de fin, pas de scène du banc sans règles)
 bool boutonVisible(const GameView& g) {
     const Course* c = activeCourse();
-    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif();   // WFS-22 : masqué à la manette
+    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif()   // WFS-22 : masqué à la manette
+           && c->state != RaceState::Count;   // WFS-559 (accroche, RG-10) : caché pendant le décompte (maquette R19 09 : feux du portique visibles)
 }
 
 class Camera : public System {

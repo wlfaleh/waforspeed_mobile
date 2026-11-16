@@ -60,6 +60,12 @@ struct Course {
     static double checkpointBonusWeb(int n) { return std::max(5.0, 11.0 - (n - 1) * 0.4); }   // règle du jeu web (WFS-12)
     // texte du compte à rebours à afficher (« 3 », « 2 », « 1 », « GO », ou vide)
     std::string countText() const;
+    // WFS-559 (RG-06) : feux du portique de départ pilotés par le décompte : feux rouges allumés (0 avant le 1er « 3 », puis un
+    // toutes les 0,6 s : le feu n à clock ≥ −3 + 0,6 (n − 1), le 5e à −0,6 s ; 0 hors décompte) ; feux verts pendant le « GO »
+    static constexpr int FEUX_DEPART = 5;
+    static constexpr double FEU_PAS_S = 0.6;
+    int feuxRouges() const;
+    bool feuxVerts() const { return state == RaceState::Play && goShown > 0; }
 };
 
 // course automatique de référence (même scénario que tests/course_web.cjs) : pas de 1/120 s, plein gaz,
