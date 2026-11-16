@@ -1,0 +1,9 @@
+branche compilée 23:02:49
+1/4 compilation de la branche feature/waforspeed-555
+2/4 captures « après »
+  banc chargement 
+3/4 compilation de origin/main et captures « avant »
+  banc chargement 
+4/4 réduction des captures dans qa/pr/WFS-555
+5 capture(s) « après » dans qa/pr/WFS-555 (README.md, pr.md)
+DUREE_A=242 s
