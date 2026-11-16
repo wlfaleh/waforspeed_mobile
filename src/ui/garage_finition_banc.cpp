@@ -61,7 +61,7 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
         if (!g.init(r, id, "ville")) { WFS_ERR("garage-finitions : chargement impossible (%s)", id); return false; }
         ouvert = true; g.setAutopilot(false); g.camMode = 0;
         for (int i = 0; i < 30; i++) g.update(1.0 / 60);
-        g.allerA(Ecran::Garage); images(45);
+        g.allerA(Ecran::Garage); images(45); choisirOnglet(ONGLET_FINITION); images(2);   // WFS-551 : onglet « Finition »
         return garageEnCours() != nullptr;
     };
     // ordre affiché (0..7) d'une finition du catalogue
@@ -89,7 +89,9 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
     };
     auto bouton = [&](const char* nom) { float x, y; if (!garageBouton(nom, x, y)) return false; toucher(x, y); images(4); return true; };
     auto voiture = [&](const char* id) {
+        choisirOnglet(ONGLET_VOITURE); images(2);   // WFS-551 : flèches seulement sur l'onglet « Voiture » (maquettes 13, 15)
         for (int i = 0; i < CAR_COUNT && garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), id) != 0; i++) { bouton("suivant"); images(45); }
+        choisirOnglet(ONGLET_FINITION); images(2);
         return garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), id) == 0;
     };
     auto possede = [&](const char* car, const char* id) { const perso::Objet* o = perso::objet(id); return o && perso::possede(s, *o, car); };
@@ -144,7 +146,7 @@ int benchGarageFinitions(Game& g, Renderer& r, const std::string& out) {
         g.setAutopilot(true); images(300); g.setAutopilot(false);
         verifier(g.ecran() == Ecran::Course && r.finitionJoueur() == vf::CHROME, "« Choisir » → « Rouler » : la 500 roule en Chromé");
         capture("parcours-abarth-course", "parcours : la 500 Chromé en course après « Choisir » et « Rouler »");
-        g.allerA(Ecran::Garage); images(30);
+        g.allerA(Ecran::Garage); images(30); choisirOnglet(ONGLET_FINITION); images(2);   // WFS-551 : onglet « Finition »
         verifier(garageVoitureAffichee() && std::strcmp(garageVoitureAffichee(), "abarth") == 0, "retour au garage : la 500, toujours Chromé");
         capture("parcours-abarth-retour-garage", "retour au garage après la course : 500 Chromé");
     }

@@ -23,6 +23,7 @@
 #include "../../third_party/stb/stb_image.h"   // WFS-235 : banc (lecture des captures, part cachée par l'intérieur)
 #include "cars.h"
 #include "commandes_tactiles.h"   // WFS-98 : dessin2d (biseau à bords lissés)
+#include "../ui/verre.h"   // WFS-551 (RG-06) : boutons de verre du HUD
 #include "course.h"
 #include "course_system.h"
 #include "game.h"
@@ -250,13 +251,7 @@ vec3 lin(unsigned h) {   // couleur hexadécimale → linéaire (comme hexColor 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 // jetons :root du jeu web (codes sRGB), comme le bouton « Menu » (WFS-39)
 const unsigned TEXTE = 0xF2F4F8, BG = 0x0A0B10;
-const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.10f};
-
-// parallélogramme (clip-path de .cam-btn) : haut décalé à droite de `biais` ; WFS-98 (RG-08) : un seul polygone à bords
-// lissés (dessin2d), plus de bandes
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
-}
+// WFS-551 (RG-06) : le bouton est en verre (verre::panneau) : plus de parallélogramme ni de jetons GLASS / BORD ici
 
 // bouton visible : vraie course en cours (comme le bouton « Menu » de WFS-39 : pas de fin, pas de scène du banc sans règles)
 bool boutonVisible(const GameView& g) {
@@ -361,15 +356,15 @@ public:
         hud::rangeeBoutons(g.uiWidth, g.uiHeight, g.marges, t, menu, b);
         const float x = b.x, y = b.y, w = b.w, h = b.h, ic = b.icone;
         g_bouton = {x, y, w, h};
-        biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, b.biais, BORD);
-        biseau(r, x, y, w, h, b.biais, GLASS);
+        // WFS-551 (RG-06, maquettes 17 et 17b) : verre comme le GPS (coins arrondis, liseré clair), nom de la vue active, en haut au centre
+        verre::panneau(r, x, y, w, h, {h * 0.22f, 1.5f * k, 1, false});
         const vec4 c = hex(TEXTE);
         const float ix = x + b.marge, iy = y + (h - ic) / 2, u = ic / 24;   // icône appareil photo (path de #camBtn, 24 × 24)
         r.uiRect(ix + 3 * u, iy + 7 * u, 18 * u, 12 * u, c);
         r.uiRect(ix + 8.6f * u, iy + 5 * u, 6.8f * u, 2 * u, c);
         r.uiCircle(ix + 12 * u, iy + 13.5f * u, 3.3f * u, hex(BG, 0.9f));
         ui::textBoite(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), ui::width(b.texte, t, 0.1f), b.texte, b.texte, nom, c,
-                      ui::GAUCHE, 0.1f, false);
+                      ui::GAUCHE, 0.1f, false, true);
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {

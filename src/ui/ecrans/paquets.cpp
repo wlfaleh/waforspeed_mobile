@@ -25,6 +25,7 @@
 #include "../petit_ecran.h"
 #include "../text.h"
 #include "../boutons.h"   // WFS-549 : boutons au modèle R19
+#include "../verre.h"   // WFS-551 (RG-07) : verre des boutons et des étiquettes de la vignette
 
 namespace wfs {
 namespace ecrans {
@@ -35,6 +36,7 @@ const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6
 const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.97f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
 constexpr double ASTUCE_S = 7.0;            // RG-04 : 6 à 8 s
 constexpr double TEMPS_RESTANT_APRES_S = 5.0;
+void nuage(Renderer& r, float cx, float cy, float u, const vec4& c);   // WFS-551 (RG-07) : icône de téléchargement
 
 
 void bouton(Renderer& r, const EtapePaquets::Zone& z, float k, bool principal, const std::string& t, float tp) {
@@ -134,17 +136,21 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
     if (!ui::fontReady()) return;
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
-    if (!menu_) dessinerChargement(r, W, H, 1.f, ui::tr("chargement.etape.paquets"), false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
+    // WFS-551 (maquette 18d) : au démarrage, plus le logo de l'écran de chargement derrière : fond sombre et doux (aucune scène n'est
+    // encore chargée, le flou n'a rien à montrer), seule la fenêtre se lit
+    if (!menu_) { r.uiRect(0, 0, W, H, hex(BG)); dessin2d::couronne(r, W * 0.5f, H * 0.42f, 0, std::max(W, H) * 0.6f, hex(0x1B1E28, 0.9f), hex(BG, 0)); }
     const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes » (après le fond de l'écran de chargement)
-    r.uiRect(0, 0, W, H, hex(BG, menu_ ? 0.72f : 0.82f));   // au menu (RG-06) : voile sur le menu
+    // WFS-551 (maquette 18d, revue du lead dev) : au menu, la scène du jeu floutée et assombrie derrière la fenêtre, jamais l'interface
+    // du menu (verre::fenetreSurEcran : le menu ne dessine plus son interface tant que la fenêtre est ouverte)
+    if (menu_) { verre::fenetreSurEcran(r); verre::assombrir(r, W, H, 0.55f); }
     const float pw = std::min(W - m.gauche - m.droite - 32 * k, 760 * k), px = m.gauche + (W - m.gauche - m.droite - pw) / 2;
     const float ph = (cp ? 300 : 340) * k, py = std::max(m.haut + 8 * k, (H - ph) / 2);
-    r.uiRect(px, py, pw, ph, SURFACE);
-    r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));
+    // WFS-551 (RG-07, maquette 18d) : fenêtre de verre aux coins arrondis (plus de liseré cyan ni de sur-titre), nuage orange devant le titre
+    verre::panneau(r, px, py, pw, ph, {16 * k, 1.5f * k});
     const float x0 = px + 28 * k, lw = pw - 56 * k;
-    ui::text(r, x0, py + 18 * k, 12 * k, ui::majuscules(ui::tr("chargement.etape.paquets")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
     const float tt = (cp ? 24 : 30) * k;
-    ui::text(r, x0, py + 36 * k, tt, ui::majuscules(ui::tr("paquets.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+    nuage(r, x0 + 14 * k, py + 36 * k + tt * 0.45f, 26 * k, hex(ACCENT));
+    ui::text(r, x0 + 36 * k, py + 36 * k, tt, ui::majuscules(ui::tr("paquets.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
     float y = py + 36 * k + tt + 22 * k;
     const float tc = (cp ? 16 : 18) * k, ts = (cp ? 14 : 15) * k, bh = 50 * kb, tb = (cp ? 18 : 20) * k;
     const float by = py + ph - 22 * k - bh;
@@ -175,10 +181,17 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
     }
     case Etat::Telechargement: {
         const float p = taille_ > 0 ? (float)recus_ / (float)taille_ : 0.f;
-        { const textes::NomPropre np; ui::text(r, x0, y, tc, nom_ + " — " + texteMo(recus_) + " / " + texteMo(taille_), hex(TEXTE), ui::GAUCHE, 0.f, false); }
+        // WFS-551 (RG-07, maquette 18d) : nom à gauche, Mo reçus / Mo du paquet à droite, au-dessus de chaque barre
+        { const textes::NomPropre np; ui::text(r, x0, y, tc, nom_, hex(TEXTE), ui::GAUCHE, 0.f, false); }
+        ui::text(r, x0 + lw, y, ts, texteMo(recus_) + " / " + texteMo(taille_), hex(MUTED), ui::DROITE, 0.f, false);
         barre(r, x0, y + tc + 8 * k, lw, 6 * k, p);
         y += tc + 26 * k;
-        ui::text(r, x0, y, ts, ui::tr("paquets.total", texteMo(recus_), texteMo(taille_)), hex(MUTED), ui::GAUCHE, 0.f, false);   // une seule carte pour l'étape 1
+        {   // « Total — a / b » : libellé à gauche, valeurs à droite (même texte, coupé au tiret)
+            const std::string tot = ui::tr("paquets.total", texteMo(recus_), texteMo(taille_));
+            const size_t c = tot.find(" — ");
+            ui::text(r, x0, y, ts, c == std::string::npos ? tot : tot.substr(0, c), hex(MUTED), ui::GAUCHE, 0.f, false);   // une seule carte pour l'étape 1
+            if (c != std::string::npos) ui::text(r, x0 + lw, y, ts, tot.substr(c + 5), hex(MUTED), ui::DROITE, 0.f, false);
+        }
         barre(r, x0, y + ts + 8 * k, lw, 4 * k, p);
         y += ts + 26 * k;
         std::string etat;
@@ -280,13 +293,72 @@ void bloc(Renderer& r, float x, float y, float w, float h, float k) {
     dessin2d::biseau(r, x, y, w, h, 10 * k, dessin2d::uni(SURFACE));
     r.uiRect(x + 10 * k, y, w - 20 * k, 2 * k, hex(ACCENT2));
 }
+// WFS-551 (RG-07, maquettes 18a à 18c) : petit nuage (téléchargement), centré en (cx, cy), largeur u (interface 2D)
+void nuage(Renderer& r, float cx, float cy, float u, const vec4& c) {
+    r.uiCircle(cx - u * 0.22f, cy + u * 0.06f, u * 0.22f, c);
+    r.uiCircle(cx + u * 0.05f, cy - u * 0.08f, u * 0.28f, c);
+    r.uiCircle(cx + u * 0.28f, cy + u * 0.08f, u * 0.20f, c);
+    r.uiRect(cx - u * 0.22f, cy + u * 0.06f, u * 0.50f, u * 0.22f, c);
+}
+// WFS-551 (RG-07) : étiquette de verre en haut à gauche de la vignette (« À télécharger », « ✓ Installée »), sous le badge « Choisi »
+void etiquette(Renderer& r, float x, float y, float k, const std::string& t, const vec4& c, bool coche) {
+    const float px = 12 * k, w = ui::width(px, t, 0.14f) * 1.08f + 44 * k, h = 26 * k;   // marge large : capitales accentuées
+    verre::panneau(r, x, y, w, h, {h / 2, 1.2f * k, 1, false});
+    const float ix = x + 16 * k, iy = y + h / 2;
+    if (coche) { const vec2 p[3] = {{ix - 5 * k, iy}, {ix - 1.5f * k, iy + 4 * k}, {ix + 5 * k, iy - 4 * k}}; dessin2d::trait(r, p, 3, 2 * k, c); }
+    else nuage(r, ix, iy - 1 * k, 13 * k, c);
+    ui::text(r, x + 28 * k, y + (h - px) / 2, px, t, c, ui::GAUCHE, 0.14f, false);
+}
+// WFS-551 (RG-07, maquette 18b) : anneau de progression cyan → orange (p de 0 à 1), pourcentage au centre
+void anneauProgres(Renderer& r, float cx, float cy, float R, float k, float p) {
+    const float ep = 3.5f * k, pp = std::clamp(p, 0.f, 1.f);
+    dessin2d::arc(r, cx, cy, R, ep, 0, 2 * PI - 0.001f, {1, 1, 1, 0.14f});
+    constexpr int SEG = 32;
+    for (int i = 0; i < SEG && (float)i / SEG < pp; i++)
+        dessin2d::arc(r, cx, cy, R, ep, 2 * PI * i / SEG, 2 * PI * std::min(pp, (float)(i + 1) / SEG), verre::degradeMarque((float)i / (SEG - 1)));
+    ui::text(r, cx, cy - 6 * k, 12 * k, std::to_string((int)std::lround(pp * 100)) + " %", hex(TEXTE), ui::CENTRE, 0, false);
+}
+// WFS-551 (RG-07) : bouton de verre à icône (nuage ou corbeille), titre et sous-titre facultatif
+void boutonVerre(Renderer& r, const EtapePaquets::Zone& z, float k, const std::string& titre, const std::string& sous, bool corbeille, float tp, bool actif) {
+    verre::panneau(r, z.x, z.y, z.w, z.h, {12 * k, 1.5f * k, 1, true});
+    const float ix = z.x + 22 * k, iy = z.y + z.h / 2;
+    const vec4 ci = actif ? hex(ACCENT) : hex(MUTED);
+    if (corbeille) {   // corbeille : couvercle, cuve
+        r.uiRect(ix - 6 * k, iy - 6 * k, 12 * k, 2 * k, hex(TEXTE));
+        r.uiRect(ix - 2 * k, iy - 8 * k, 4 * k, 2 * k, hex(TEXTE));
+        r.uiRect(ix - 4.5f * k, iy - 3 * k, 9 * k, 10 * k, hex(TEXTE));
+    } else {
+        nuage(r, ix, iy - 2 * k, 20 * k, ci);
+        const vec2 f[3] = {{ix - 3 * k, iy + 3 * k}, {ix + 0.5f * k, iy + 7 * k}, {ix + 4 * k, iy + 3 * k}};   // flèche vers le bas
+        dessin2d::trait(r, f, 3, 1.6f * k, hex(BG));
+    }
+    const float x0 = z.x + 40 * k, lw = z.w - 50 * k;
+    if (sous.empty()) ui::textBoite(r, x0, z.y, lw, z.h, tp, titre, hex(TEXTE), ui::GAUCHE, 0.04f, false);
+    else {
+        ui::textBoite(r, x0, z.y + 4 * k, lw, z.h * 0.55f, tp, ui::majuscules(titre), hex(TEXTE), ui::GAUCHE, 0.08f, false, true);
+        ui::textBoite(r, x0, z.y + z.h * 0.52f, lw, z.h * 0.40f, tp * 0.72f, sous, hex(MUTED), ui::GAUCHE, 0, false);
+    }
+}
 } // namespace
 
+bool carteATelecharger(const std::string& c) {
+    const EtatCarte::Etat e = cartesPaquets().etat(c).etat;
+    return e == EtatCarte::Disponible || e == EtatCarte::Attente || e == EtatCarte::Telechargement || e == EtatCarte::Coupure || e == EtatCarte::Echec;
+}
+
+// WFS-551 (RG-07, maquettes 18a à 18c) : carte pas téléchargée = image grisée (voile gris, la couleur ne transparaît presque plus) ;
+// pendant le téléchargement, la couleur revient de gauche à droite derrière un trait lumineux ; installée = couleur pleine
 void assombrirCarte(Renderer& r, const std::string& c, float x, float y, float w, float h) {
     const EtatCarte e = cartesPaquets().etat(c);
-    if (e.etat == EtatCarte::Disponible || e.etat == EtatCarte::MiseAJour || e.etat == EtatCarte::Attente ||
-        e.etat == EtatCarte::Telechargement || e.etat == EtatCarte::Coupure || e.etat == EtatCarte::Echec)
-        r.uiRect(x, y, w, h, hex(BG, 0.48f));
+    if (!carteATelecharger(c)) return;
+    float p = 0;
+    if (e.etat == EtatCarte::Telechargement || e.etat == EtatCarte::Coupure) p = e.taille > 0 ? std::clamp((float)e.recus / (float)e.taille, 0.f, 1.f) : 0.f;
+    const float xr = x + w * p, k = h / 300.f;
+    if (xr < x + w) r.uiRect(xr, y, x + w - xr, h, {0.20f, 0.21f, 0.23f, 0.80f});   // gris : 20 % de la couleur reste visible
+    if (p > 0 && p < 1) {   // trait lumineux cyan à la limite
+        r.uiRect(xr - 6 * k, y, 12 * k, h, hex(ACCENT2, 0.12f));
+        r.uiRect(xr - 1 * k, y, 2 * k, h, hex(ACCENT2, 0.95f));
+    }
 }
 
 void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, float w, float h, float k, double t) {
@@ -326,43 +398,48 @@ void dessinerPaquetCarte(Renderer& r, const std::string& c, float x, float y, fl
     const float px0 = x + w - m;   // panneaux calés en haut à droite (le badge « Choisi » est en haut à gauche)
     switch (e.etat) {
     case EtatCarte::Disponible: case EtatCarte::MiseAJour: case EtatCarte::Echec: {
-        const char* cle = e.etat == EtatCarte::MiseAJour ? "paquets.bouton_maj" : e.etat == EtatCarte::Echec ? "paquets.bouton_reessayer" : "paquets.bouton_telecharger";
-        const std::string l = ui::tr(cle, texteMo(e.taille));
-        const float bw = largeur(cle, texteMo(e.taille));
-        u.z[0] = {px0 - bw, y + m, bw, bh};
-        bouton(r, u.z[0], k, cp.reseau() != 2, l, tp);
+        // WFS-551 (RG-07, maquette 18a) : bouton de verre « ☁ Télécharger » et, dessous, la taille réelle du paquet · Wi-Fi conseillé ;
+        // étiquette « À télécharger » en haut à gauche (pas pour une mise à jour : la carte est installée, en couleur)
+        if (e.etat != EtatCarte::MiseAJour) etiquette(r, x + 16 * k, y + 52 * k, k, ui::majuscules(ui::tr("paquets.etiquette_telecharger")), hex(TEXTE), false);
+        const char* cle = e.etat == EtatCarte::MiseAJour ? "paquets.bouton_maj" : e.etat == EtatCarte::Echec ? "paquets.bouton_reessayer" : "paquets.telecharger";
+        std::string wifi = ui::tr("paquets.wifi");
+        if (!wifi.empty() && wifi.back() == '.') wifi.pop_back();
+        const std::string l = e.etat == EtatCarte::Disponible ? ui::tr(cle) : ui::tr(cle, texteMo(e.taille));
+        const std::string sous = e.etat == EtatCarte::Disponible ? texteMo(e.taille) + " · " + wifi : std::string();
+        const float bw = std::max(largeur(cle, texteMo(e.taille)), ui::width(tp * 0.72f, sous) + 40 * k) + 30 * k, bhv = sous.empty() ? bh : bh + 10 * k;
+        u.z[0] = {px0 - bw, y + m, bw, bhv};
+        boutonVerre(r, u.z[0], k, l, sous, false, tp, cp.reseau() != 2);
         if (e.etat == EtatCarte::Echec) ui::text(r, px0, y + m + bh + 8 * k, ts, ui::tr("paquets.abime"), hex(DANGER), ui::DROITE, 0.f, true);
         break;
     }
     case EtatCarte::Attente: case EtatCarte::Telechargement: case EtatCarte::Coupure: {
-        const float pw = pwMax, px = px0 - pw, py = y + m, ph = 20 * k + tp + 12 * k + 6 * k + 14 * k + ts + 12 * k + bh + 16 * k;
-        bloc(r, px, py, pw, ph, k);
-        const float x0 = px + 20 * k, lw = pw - 40 * k;
+        // WFS-551 (RG-07, maquette 18b) : panneau de verre en haut à droite : anneau de progression cyan → orange (pourcentage),
+        // Mo reçus / Mo du paquet (valeurs réelles), « Tu peux rouler sur une autre carte pendant ce temps » ou la coupure, Annuler
+        etiquette(r, x + 16 * k, y + 52 * k, k, ui::majuscules(ui::tr("paquets.etiquette_telecharger")), hex(TEXTE), false);
+        const float pw = pwMax, px = px0 - pw, py = y + m, ph = 16 * k + bh + 16 * k;
+        verre::panneau(r, px, py, pw, ph, {14 * k, 1.5f * k, 1, true});
+        const float R = (ph - 24 * k) / 2, acx = px + 14 * k + R, acy = py + ph / 2;
+        anneauProgres(r, acx, acy, R, k, e.taille > 0 ? (float)e.recus / (float)e.taille : 0.f);
+        const float wa = largeur("paquets.annuler");
+        u.z[1] = {px + pw - 16 * k - wa, py + (ph - bh) / 2, wa, bh};
+        const float x0 = acx + R + 14 * k, lw = u.z[1].x - 10 * k - x0;
         std::string l1;
         if (e.etat == EtatCarte::Attente) l1 = ui::tr("paquets.attente", e.nom, texteMo(e.taille));
-        else l1 = e.nom + " — " + texteMo(e.recus) + " / " + texteMo(e.taille);
-        { const textes::NomPropre np; ui::text(r, x0, py + 20 * k, tp, l1, hex(TEXTE), ui::GAUCHE, 0.f, false); }   // nom de la carte, tailles
-        barre(r, x0, py + 20 * k + tp + 12 * k, lw, 6 * k, e.taille > 0 ? (float)e.recus / (float)e.taille : 0.f);
-        const float y2 = py + 20 * k + tp + 12 * k + 6 * k + 14 * k;
-        if (e.etat == EtatCarte::Coupure) ui::text(r, x0, y2, ts, ui::tr("paquets.coupure"), hex(ACCENT), ui::GAUCHE, 0.f, false);
-        else {
-            const auto& a = astuces();
-            const size_t i = (size_t)std::max(0.0, t / ASTUCE_S) % a.size();
-            std::string s = a[i];
-            while (s.size() > 4 && ui::width(ts, s) > lw) { s.resize(s.size() - 4); while (!s.empty() && ((unsigned char)s.back() & 0xC0) == 0x80) s.pop_back(); if (!s.empty()) s.pop_back(); s += "…"; }
-            ui::text(r, x0, y2, ts, s, hex(TEXTE, 0.85f), ui::GAUCHE, 0.f, false);
-        }
-        const float wa = largeur("paquets.annuler");
-        u.z[1] = {px + pw - 20 * k - wa, py + ph - 16 * k - bh, wa, bh};
-        ui::boutons::autocollant(r, u.z[1].x, u.z[1].y, u.z[1].w, u.z[1].h, ui::majuscules(ui::tr("paquets.annuler")), 1, false, tp);   // WFS-549 (RG-02)
-        ui::text(r, x0, u.z[1].y + (bh - ts) / 2, ts, ui::tr("paquets.rouler_pendant"), hex(ACCENT2), ui::GAUCHE, 0.f, false);
+        else l1 = texteMo(e.recus) + " / " + texteMo(e.taille);
+        { const textes::NomPropre np; ui::textBoite(r, x0, py + 16 * k, lw, tp + 4 * k, tp + 2 * k, l1, hex(TEXTE), ui::GAUCHE, 0.f, false, true); }
+        const float y2 = py + 16 * k + tp + 10 * k;
+        if (e.etat == EtatCarte::Coupure) ui::textBoite(r, x0, y2, lw, ts + 4 * k, ts, ui::tr("paquets.coupure"), hex(ACCENT), ui::GAUCHE, 0.f, false);
+        else ui::textBoite(r, x0, y2, lw, ts + 4 * k, ts, ui::tr("paquets.rouler_pendant"), hex(MUTED), ui::GAUCHE, 0.f, false);
+        ui::boutons::verre(r, u.z[1].x, u.z[1].y, u.z[1].w, u.z[1].h, ui::majuscules(ui::tr("paquets.annuler")), 1, false, tp);
         break;
     }
     case EtatCarte::Installee: {
+        // WFS-551 (RG-07, maquette 18c) : couleur pleine, étiquette « ✓ Installée » cyan, « Supprimer » en verre avec corbeille
+        etiquette(r, x + 16 * k, y + 52 * k, k, ui::majuscules(ui::tr("paquets.etiquette_installee")), hex(ACCENT2), true);
         const std::string l = ui::tr("paquets.bouton_supprimer", texteMo(e.surDisque));
-        const float bw = largeur("paquets.bouton_supprimer", texteMo(e.surDisque));
+        const float bw = largeur("paquets.bouton_supprimer", texteMo(e.surDisque)) + 30 * k;
         u.z[1] = {px0 - bw, y + m, bw, bh};
-        bouton(r, u.z[1], k, false, l, tp);
+        boutonVerre(r, u.z[1], k, l, "", true, tp, true);
         break;
     }
     default: break;
@@ -810,6 +887,16 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         imageMulti(30);
         verifier(cp.etat(co).etat == EtatCarte::Telechargement, "barre de progression sur la vignette");
         captureJeu("paquets-terrain-progression", "Corniche : barre, octets reçus, astuce, « Annuler » (jour)");
+        // WFS-551 (RG-07) : suite d'images du téléchargement : la couleur revient de gauche à droite (≈ 35 %, puis ≈ 60 %). Les octets
+        // reçus de la source factice sont ensuite remis à leur valeur d'avant : la suite du banc (course sur la Ville pendant le
+        // téléchargement, contrôles de WFS-307) se déroule exactement comme avant
+        {
+            const long long recusAvant = sm.k(co).recus;
+            imageMulti(80); captureJeu("paquets-terrain-progression-2", "Corniche en téléchargement : la couleur revient (≈ 35 %)");
+            imageMulti(80); captureJeu("paquets-terrain-progression-3", "Corniche en téléchargement : la couleur revient (≈ 60 %)");
+            sm.k(co).recus = recusAvant;
+            imageMulti(1);
+        }
         // RG-03 : course sur la Ville pendant le téléchargement (la Ville est déjà chargée : pas de reconstruction)
         rouler("ville", false);
         verifier(g.ecran() != Ecran::Terrain && chargements == 0, "« Rouler » sur la Ville (déjà chargée, jour) pendant le téléchargement : pas de reconstruction");
@@ -841,11 +928,21 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
         verifier(!fs::exists(cheminPaquet(co, carte::FormatTexture::ASTC), ec) && cp.etat(co).etat == EtatCarte::Disponible, "Corniche supprimée → de nouveau « Télécharger »");
         imageMulti(4);
         captureJeu("paquets-terrain-apres-suppression", "Corniche supprimée : « X libérés », de nouveau « Télécharger »");
+        // WFS-551 (RG-07) : carte de nouveau à télécharger : « Rouler » éteint, l'appui ne lance rien
         rouler(co.c_str(), false);
+        verifier(g.ecran() == Ecran::Terrain && chargements == 1, "Corniche supprimée : « Rouler » éteint, aucune course lancée (WFS-551 RG-07)");
+        // secours de WFS-306 toujours en place : la même demande que « Rouler » (terrain.cpp, comme bench_changement_carte.cpp), faite
+        // directement, construit la Corniche par le code
+        auto demander = [&] {
+            Game::demandes().carte = co.c_str(); Game::demandes().nuit = false; cible = co;
+            if (cp.changee(co.c_str())) { Game::demandes().recharger = true; cp.prise(co.c_str()); }   // WFS-307 (RG-08), comme terrain.cpp
+            imageMulti(4);
+        };
+        demander();
         verifier(chargements == 2 && !paquetLu, "course suivante sur la Corniche : relue, construite par le code (secours)");
         // même carte, paquet inchangé : aucune reconstruction
         g.allerA(Ecran::Terrain); imageMulti(2);
-        rouler(co.c_str(), false);
+        demander();
         verifier(chargements == 2, "même carte, paquet inchangé : pas de reconstruction");
         Game::demandes().debutChargement = nullptr;
         cp.lier(nullptr, formats, 0);
