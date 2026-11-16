@@ -1248,3 +1248,13 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Vérifié en local (lavapipe, branche synchronisée avec `main`) : `tests_cpu.sh build` 148 réussis, 0 échec ; banc `cadeau-gains` 0 écart en FR et en EN. Parcours RC-E19-07 : menu (0 ★) → cadeau +28 ★ → menu 28 ★ → 2e appui sans gain → cadeau coloris Cyan (208) → garage, pastille sans cadenas → « Choisir » (0 ★ débité) → terrain → course de jour et de nuit en Cyan → cadeau skin Camouflage → garage sans cadenas → relance (sauvegarde relue) : tout gardé.
 - Captures : `qa/pr/WFS-503/` (24 après, 4 paires avant / après du banc `cadeau`).
 - Limites : pas de badge « Nouveau » (WFS-556) ; le banc ne garde que la chance du type voulu pour obtenir chaque gain (tirage inchangé).
+
+### 2026-11-16 00:29:31 — WFS-496 : atelier d'autocollants, PR #428 ouverte (Claude, agent dev3d (01Us6uCwHf))
+- Fait : écran « Atelier » ouvert depuis le garage (bouton « ATELIER » sous « MARKET ») : 5 vues + rotation au doigt, bibliothèque (6 familles, 10 gratuits, cadenas et prix des packs), glisser = placer, deux doigts = tourner / agrandir, ± 5°, ± 5 %, miroir, 28 couleurs, supprimer, annuler / refaire (20 pas), 20 calques (monter, descendre, masquer), « Valider » (gardé + cuit par WFS-495), « Quitter » avec confirmation, touche Retour = Quitter ; FR / EN.
+- Choix (RG-02) : gratuits = bande-large, bande-double, chiffre-1 à 3, flamme-1, eclair-1, etoile-1, lettre-a, lettre-b ; autres motifs dans les packs de `configgame.h` (numeros, bandes, flammes, etoiles), non posables tant que le pack n'est pas possédé (vente : WFS-497).
+- Fichiers (zone E8) : `src/ui/ecrans/atelier.*`, `atelier_calques.*`, `atelier_banc.cpp`, `tests/test_atelier.cpp`, `assets/textes/fr.txt` / `en.txt` (clés `atelier.*`).
+- **Accroches annoncées (≤ 10 lignes chacune)** : `src/ui/garage.cpp` (8 lignes : bouton, touchers, caméra, aperçu, voiture fixe), `src/game/game.cpp` (2 : `WFS_AUTOCOLLANTS` sinon calques de l'atelier), `src/ui/garage_skin.cpp` (2 : retour au menu), `src/game/sauvegarde.*` (4 : clé `autocollants-<voiture>`), `src/platform/desktop_main.cpp` (2 : banc), `CMakeLists.txt` (1 : test).
+- Vérifié en local (lavapipe, branche synchronisée avec `main`) : tests CPU 149 réussis (dont `test_atelier`, 41 cas) ; banc `atelier` 0 écart (parcours RC-E18-09 garage → atelier → 5 calques → Valider → course de jour → retour → relance, 3 voitures jour et nuit, anglais, touche Retour) ; cuisson 43 à 56 ms sur PC, au garage seulement.
+- Captures : `qa/pr/WFS-496/` (21 après, 1 paire avant / après du garage).
+- Limites : blanc des autocollants gris-bleu sous les projecteurs du garage (rendu WFS-495) ; autocollants des flancs peu visibles de la caméra de poursuite.
+
