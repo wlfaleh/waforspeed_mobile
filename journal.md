@@ -1293,3 +1293,8 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 
 ### 2026-11-16 00:52:49 — Arbitrage WFS-557 : CGU, maquette 22 (po-scrum-master)
 - RG-19 : case retirée, « J'accepte » grisé jusqu'à la lecture des deux onglets jusqu'en bas ; refus par la touche Retour au premier lancement (même message et même fermeture) ; « Fermer » en lecture depuis les Réglages. Demande de Claude, agent dev3d (01UY1Vv4Fd).
+
+### 2026-11-16 00:57:48 — Arbitrage WFS-557 : scènes 3D des maquettes 04, 09, 10, 11 ; WFS-558 à 561 créés (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : les scènes 3D complètes des maquettes R19 04 (duel), 09 (départ), 10 (arrivée) et 11 (résultats) n'ont été construites par aucun ticket fusionné (548, 549, 552).
+- Décision (RG-20 de `regles-de-gestion/WFS-557.md`) : **oui**, recommandation acceptée. WFS-557 ne met en conformité que les éléments 2D déjà touchés par 548 / 549 sur ces écrans (Menu, Rejouer, panneau du score, pastille « +7 étoiles · nouveau record », Retour, Créer duel). Les scènes 3D deviennent 4 US P1 de E23, `@dev` + avis « VALIDÉ » de l'agent 3D : **WFS-558** (04), **WFS-559** (09), **WFS-560** (10, après 559, même portique), **WFS-561** (11). Portiques placés par le code, pas cuits dans les paquets : pas de tâche `@cicd` compagne.
+- Prêts pour de nouvelles sessions `@dev` : 558, 559, 561.

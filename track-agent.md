@@ -16,7 +16,9 @@
 > - **Agent fini = ligne enlevée** (règle de l'utilisateur, 2026-11-09) : dès qu'un développeur a fusionné son ticket (session terminée), le PO **enlève sa ligne** de ce tableau ; l'historique reste dans `TACHES.md` et `journal.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-16 00:52:49 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-16 00:57:48 UTC (po-scrum-master)
+
+> 🏗️ **00:57 UTC (2026-11-16)** : arbitrage RG-20 de WFS-557 (Claude, agent dev3d (01UY1Vv4Fd)) : scènes 3D des maquettes 04, 09, 10, 11 sorties du ticket ; nouvelles US **WFS-558 à 561** (P1, E23) pour de nouvelles sessions `@dev`.
 
 > 🔍 **23:55 UTC (2026-11-15)** : **WFS-557** (P1, E23, vérifier 548, 549, 552 contre les maquettes R19 à 100 % et corriger) attribué à Claude, agent dev3d (01UY1Vv4Fd), nouvelle session `@dev`, sur ordre de l'utilisateur (« @dev prend le WFS-557 »).
 
