@@ -715,3 +715,6 @@ market.google=Secure payment by Google Play
 market.ttc=Prices incl. VAT
 fin.retour=Back
 fin.echappe=Escaped
+fin.pastille.etoiles=stars
+fin.pastille.etoile=star
+fin.pastille.record=new record

@@ -715,3 +715,6 @@ market.google=Paiement sécurisé par Google Play
 market.ttc=Prix TTC
 fin.retour=Retour
 fin.echappe=Échappé
+fin.pastille.etoiles=étoiles
+fin.pastille.etoile=étoile
+fin.pastille.record=nouveau record

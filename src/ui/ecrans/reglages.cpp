@@ -2,6 +2,7 @@
 #include "../../render/qualite_auto.h"   // WFS-104
 #include "creation_profil.h"   // WFS-481 (accroche) : écran « Crée ton pilote » ouvert
 #include "reglages.h"
+#include "../../game/course5.h"   // WFS-557 : choixModeOuvert (maquette 02)
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -410,6 +411,7 @@ public:
         const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
         g_dpAppui = ui::pixelsParDp(W);   // WFS-290 : cible des boutons en dp
         if (!g_ouvert && verre::couvert()) { g_bouton = {}; return; }   // WFS-548 : sous une fenêtre de verre (Profil, Market…) : pas de bouton
+        if (!g_ouvert && g.ecran == Ecran::Menu && choixModeOuvert()) { g_bouton = {}; return; }   // WFS-557 (maquette 02) : pas de « Réglages » sur le choix du mode
         if (!g_ouvert) { dessinerBouton(r, g, W, k, H / 720.f); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
         g_creditsVisible = g.ecran == Ecran::Menu;   // WFS-549 (RG-06) : « Crédits » au menu principal (l'écran Crédits est celui du menu)
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous

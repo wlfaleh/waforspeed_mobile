@@ -31,7 +31,8 @@
 #include "../ui/ecrans/terrain.h"     // WFS-125 : banc (« Rouler »)
 #include "../ui/garage.h"             // WFS-125 : banc (« Choisir »)
 #include "poursuite.h"                // WFS-125 : banc (poursuite)
-#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
+#include "../ui/verre.h"
+#include "commandes_tactiles.h"   // WFS-557 : pastille de la fin (dessin2d)   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
 
 namespace wfs {
 
@@ -294,6 +295,27 @@ private:
         static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
         ui::boutons::startStop(r, rejouer_.x, rejouer_.y, d, d, libRejouer(), 1, false, "", 17 * k);
         ui::boutons::plaque(r, menu_.x, menu_.y, menu_.w, menu_.h, libMenu(), 1, false);
+        {   // pastille « ★ +7 étoiles ▲ nouveau record » en haut à gauche (maquette 10, RG-20)
+            const score_fin::Etat& e = score_fin::etat();
+            if (e.pret && e.etoiles >= 0) {
+                const float px0 = ox + 42 * k, py0 = 30 * k, tp = 13 * k;
+                std::string t1 = "+" + ui::nombre(e.etoiles) + " " + ui::tr(e.etoiles > 1 ? "fin.pastille.etoiles" : "fin.pastille.etoile");
+                const std::string t2 = e.nouveauRecord ? ui::tr("fin.pastille.record") : std::string();
+                ui::AvecPolice inter(ui::Police::InterMedium);
+                const float w1 = ui::width(tp, t1, 0), w2 = t2.empty() ? 0 : ui::width(tp, t2, 0) + 16 * k + 10 * k;
+                const float pw = 18 * k + 12 * k + w1 + w2 + 18 * k, ph = 32 * k;
+                verre::Style st; st.rayon = 8 * k; st.lisere = 1 * k; st.ombre = false; st.force = 0.7f;
+                verre::panneau(r, px0, py0, pw, ph, st);
+                score_fin::dessinerEtoile(r, px0 + 18 * k + 5 * k, py0 + ph / 2, 5.5f * k, ui::ORANGE);
+                ui::text(r, px0 + 18 * k + 12 * k, py0 + (ph - tp) / 2, tp, t1, vec4{0.95f, 0.96f, 0.97f, 1}, ui::GAUCHE, 0, false, true);
+                if (!t2.empty()) {
+                    const float xt = px0 + 30 * k + w1 + 12 * k;
+                    const vec2 tri[3] = {{xt + 5 * k, py0 + ph / 2 - 5 * k}, {xt + 10 * k, py0 + ph / 2 + 4 * k}, {xt, py0 + ph / 2 + 4 * k}};
+                    dessin2d::polygone(r, tri, 3, dessin2d::uni(vec4{0.37f, 0.84f, 0.91f, 1}));
+                    ui::text(r, xt + 16 * k, py0 + (ph - tp) / 2, tp, t2, vec4{0.37f, 0.84f, 0.91f, 1}, ui::GAUCHE, 0, false, true);
+                }
+            }
+        }
     }
     bool nouveauRecord_ = false;
     bool restartReq_ = false;
