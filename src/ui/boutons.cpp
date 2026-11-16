@@ -183,6 +183,75 @@ void piluleChrome(Renderer& r, float x, float y, float w, float h, const std::st
         ui::textBoite(r, xt, yt + px * 1.05f, lt, px * 0.55f, px * 0.5f, sousTitre, hex(0xC9CDDA, op), ui::GAUCHE, 0, false, false);
 }
 
+// WFS-557 : voiture à hayon vue de profil, au trait (maquette 01 : 117 × 47 dans la pilule « GARAGE »), centrée en (cx, cy)
+void iconeHayon(Renderer& r, float cx, float cy, float w, float ep, const vec4& c) {
+    const float u = w / 117.f, x0 = cx - w / 2, y0 = cy - 23.5f * u;   // repère de la maquette : 0..117 en x, 0..47 en y
+    auto P = [&](float x, float y) { return vec2{x0 + x * u, y0 + y * u}; };
+    const vec2 caisse[] = {P(14, 40), P(4, 40), P(2, 33), P(3, 25), P(10, 21), P(30, 17), P(44, 5), P(54, 2), P(80, 2), P(96, 6),
+                           P(113, 17), P(115, 26), P(114, 36), P(110, 40), P(96, 40)};
+    dessin2d::trait(r, caisse, (int)(sizeof caisse / sizeof caisse[0]), ep, c);
+    const vec2 bas[2] = {P(36, 40), P(74, 40)};
+    dessin2d::trait(r, bas, 2, ep, c);
+    const float rr = 10 * u;
+    for (float xr : {25.f, 85.f}) {   // roues : passage de roue (arc) et jante (anneau)
+        dessin2d::arc(r, P(xr, 40).x, P(xr, 40).y, rr + 2 * u, ep, -90 * PI / 180, 90 * PI / 180, c);
+        dessin2d::anneau(r, P(xr, 40).x, P(xr, 40).y, rr * 0.62f - ep / 2, rr * 0.62f + ep / 2, c);
+    }
+}
+
+void rondMenu(Renderer& r, float cx, float cy, float k, const std::string& titre, const std::string& sousTitre, float op, bool appuye) {
+    const float R = 117 * k, Ri = 105 * k, Ra = 98 * k, D = PI / 180;   // bague (maquette 01 : 117 / 105), anneau orange (98)
+    // ombre portée, puis halo blanc au-dessus et en haut à gauche (lumière du plafond sur le chrome)
+    dessin2d::couronne(r, cx, cy + 6 * k, R - 6 * k, R + 16 * k, {0, 0, 0, 0.55f * op}, {0, 0, 0, 0});
+    dessin2d::couronne(r, cx - 4 * k, cy - 12 * k, R - 10 * k, R + 20 * k, {1, 1, 1, 0.30f * op}, {1, 1, 1, 0});
+    // bague chrome : gris acier ; reflets fondus (haut blanc pur, droite, bas : arête blanche fine), côtés plus sombres
+    dessin2d::anneau(r, cx, cy, Ri, R, hex(0x55565A, op));
+    dessin2d::anneau(r, cx, cy, Ri, R, hex(0x2E2F33, 0.35f * op), 215 * D, 300 * D);
+    for (int i = 0; i < 8; i++) {   // reflet du haut : 8 couches de plus en plus courtes (bouts fondus)
+        const float demi = (78 - 8 * i) * D;
+        dessin2d::anneau(r, cx, cy, Ri + 1.5f * k, R - 1.5f * k, {1, 1, 1, 0.20f * op}, -demi - 10 * D, demi - 10 * D);
+    }
+    for (int i = 0; i < 4; i++) {   // éclat à droite et liseré blanc du bas
+        dessin2d::anneau(r, cx, cy, Ri + 3 * k, R - 3 * k, {0.92f, 0.92f, 0.94f, 0.12f * op}, (64 + 5 * i) * D, (112 - 5 * i) * D);
+        dessin2d::anneau(r, cx, cy, R - 4.5f * k, R - 1.5f * k, {1, 1, 1, 0.16f * op}, (140 + 8 * i) * D, (230 - 8 * i) * D);
+    }
+    dessin2d::arc(r, cx, cy, R - 0.6f * k, 1.2f * k, 0, 2 * PI, hex(0xA2A3A7, 0.8f * op));    // arête extérieure
+    dessin2d::arc(r, cx, cy, Ri + 0.6f * k, 1.4f * k, 0, 2 * PI, hex(0x151618, 0.95f * op));  // arête intérieure sombre
+    // centre gris foncé (#2A2B2D), un peu plus clair en bas, plus clair à l'appui
+    dessin2d::disqueRadial(r, cx, cy, Ri, cx, cy - 30 * k, Ri * 1.15f, hex(appuye ? 0x3A3B3F : 0x2D2E31, op), hex(appuye ? 0x2E2F33 : 0x1F2023, op));
+    dessin2d::couronne(r, cx, cy + Ri * 0.65f, 0, Ri * 0.45f, hex(0x4A4B4E, 0.30f * op), hex(0x4A4B4E, 0));
+    // anneau orange fin (#F59A45), plus pâle en haut
+    dessin2d::arc(r, cx, cy, Ra, 2.6f * k, 0, 2 * PI, hex(appuye ? 0xFFB070 : 0xF59A45, op));
+    dessin2d::arc(r, cx, cy, Ra, 2.6f * k, -30 * D, 30 * D, hex(0xF2C9B3, 0.8f * op));
+    // icône (−39), titre crème centré à −6, sous-titre gris centré à +22
+    iconeMarche(r, cx, cy - 39 * k, 24 * k, hex(appuye ? 0xFFB088 : 0xF28C5A, op));
+    ui::textBoite(r, cx, cy - 6 * k - 18 * k, 2 * Ra - 16 * k, 36 * k, 36 * k, titre, hex(0xEAD8D0, op), ui::CENTRE, 0.02f, false, true);
+    if (!sousTitre.empty()) ui::textBoite(r, cx, cy + 22 * k - 12 * k, 2 * Ra - 30 * k, 24 * k, 24 * k, sousTitre, hex(0xC6C7CC, op), ui::CENTRE, 0.03f, false, true);
+}
+
+void piluleMenu(Renderer& r, float x, float y, float w, float h, float k, const std::string& texte, float op, bool appuye) {
+    const float R = h / 2;
+    lueur(r, x, y + 6 * k, w, h, R, 16 * k, {0, 0, 0, 0.55f * op});                     // ombre portée
+    lueur(r, x, y - 3 * k, w, h * 0.45f, R * 0.45f, 12 * k, {1, 1, 1, 0.14f * op});        // halo du plafond au-dessus
+    plein(r, x, y, w, h, R, hex(0x9A9DA1, op), hex(0x3C3F44, op));                        // bague chrome
+    plein(r, x + 4 * k, y + 4 * k, w - 8 * k, h - 8 * k, R - 4 * k, hex(0x6E7176, op), hex(0x2F3236, op));
+    bord(r, x, y, w, h, R, 1.2f * k, hex(0x1A1B1D, 0.85f * op));
+    bord(r, x + 1.5f * k, y + 1.5f * k, w - 3 * k, h - 3 * k, R - 1.5f * k, 1.6f * k, hex(0xC9CBCE, 0.55f * op));               // arête claire
+    plein(r, x + R * 0.85f, y + 2.5f * k, w - 1.7f * R, 3 * k, 1.5f * k, hex(0xFFFFFF, 0.9f * op), hex(0xFFFFFF, 0.9f * op));     // reflet blanc du haut
+    plein(r, x + R * 0.9f, y + h - 6.5f * k, w - 1.8f * R, 2 * k, 1 * k, hex(0xD1D2D4, 0.55f * op), hex(0xD1D2D4, 0.55f * op));  // éclat du bas
+    // fond noir bleuté et liseré cyan néon (maquette : 33 à gauche, 22 en haut, 26 à droite, 27 en bas)
+    const float xi = x + 33 * k, yi = y + 22 * k, wi = w - 59 * k, hi = h - 49 * k, Rt = hi / 2;
+    plein(r, xi - 3 * k, yi - 3 * k, wi + 6 * k, hi + 6 * k, Rt + 3 * k, hex(0x15171A, op), hex(0x0B0C0E, op));   // gorge
+    plein(r, xi, yi, wi, hi, Rt, hex(appuye ? 0x24303A : 0x1B2023, op), hex(appuye ? 0x14191E : 0x080C0F, op));
+    lueur(r, xi, yi, wi, hi, Rt, 8 * k, hex(ACCENT2, (appuye ? 0.50f : 0.32f) * op));
+    bord(r, xi, yi, wi, hi, Rt, 1.8f * k, hex(0xADE6ED, op));
+    // voiture à hayon au trait cyan (lueur puis trait clair), « GARAGE » gris clair en italique (maquette : x 253, centre y 520)
+    const float vx = x + 141 * k, vy = y + 84 * k;
+    iconeHayon(r, vx, vy, 117 * k, 6 * k, hex(0x00B8CC, 0.30f * op));
+    iconeHayon(r, vx, vy, 117 * k, 2.6f * k, hex(0x8FE3EE, op));
+    ui::textBoite(r, x + 223 * k, y + 77 * k - 31 * k, w - 250 * k, 62 * k, 62 * k, texte, hex(0xD2D3D5, op), ui::GAUCHE, 0.03f, false, true);
+}
+
 void prix(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op, bool appuye, float px, bool grise) {
     const float R = std::min(h * 0.28f, 14.f * h / 44.f);
     if (px <= 0) px = h * 0.42f;

@@ -79,6 +79,12 @@ void autocollant(Renderer& r, float x, float y, float w, float h, const std::str
 // RG-03 : pilule chrome (liseré cyan, petite voiture dessinée au trait à gauche)
 void piluleChrome(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
                   float px = 0, const std::string& sousTitre = "");
+// WFS-557 (maquette 01 mesurée au pixel, ordre de l'utilisateur du 2026-11-16) : boutons du menu principal, k = unité maquette
+// (1600 × 720). rondMenu : centre (cx, cy), bague chrome brillante de 103 k de rayon (reflet blanc en haut, lueur au-dessus),
+// centre gris foncé, anneau orange fin de 81 k, icône, titre crème et sous-titre gris. piluleMenu : bague chrome, fond noir bleuté,
+// liseré cyan néon, voiture au trait cyan et texte gris clair (« GARAGE »).
+void rondMenu(Renderer& r, float cx, float cy, float k, const std::string& titre, const std::string& sousTitre, float op = 1, bool appuye = false);
+void piluleMenu(Renderer& r, float x, float y, float w, float h, float k, const std::string& texte, float op = 1, bool appuye = false);
 // RG-04 : bouton de prix orange, texte sombre (le texte peut contenir « ★ », dessinée par l'appelant s'il le faut)
 void prix(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
           float px = 0, bool grise = false);

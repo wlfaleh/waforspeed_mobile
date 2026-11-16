@@ -80,7 +80,7 @@ void dessiner(Renderer& r, const GameView& g, float bx, float by, float bh, floa
     const float W = g.uiWidth, H = g.uiHeight, kb = bh / 44.f;    // même unité que le bouton (44 px en 720 p)
     const float k = ui::petitEcran(W, H) ? ui::unitePetitEcran(W, H) : H / 720.f;
     g_dp = ui::pixelsParDp(W);
-    const float tp = 15 * k, pad = 16 * kb, re = tp * 0.48f, ecart = 8 * kb;
+    const float tp = 18 * k, pad = 22 * kb, re = tp * 0.50f, ecart = 10 * kb;   // WFS-557 (maquette 01 : pilule 102 × 45, « 1 250 » de 18 px)
     const std::string t = score_fin::nombreEtoiles(soldeMontre(g.time), anglais());
     const float tw = ui::width(tp, t, 0.06f), w = pad + 2 * re + ecart + tw + pad;
     const float x = bx - std::max(12 * kb, 10 * g_dp) - w, y = by, h = bh;   // ≥ 10 dp : les cibles élargies (4 dp) ne se touchent pas

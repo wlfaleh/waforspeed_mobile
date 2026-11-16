@@ -211,34 +211,38 @@ public:
         {
             const float x1 = gl + 570 * kb + dx, y0 = 152 * kb, y1 = 616 * kb, coin = 46 * kb;
             const vec2 p[5] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}, {x1, y1}, {0, y1}};
-            dessin2d::polygone(r, p, 5, dessin2d::Teinte{hex(0x1B1D22, 0.94f * a), hex(0x0C0D10, 0.96f * a), y0, y1});
+            dessin2d::polygone(r, p, 5, dessin2d::Teinte{hex(0x232427, 0.95f * a), hex(0x111214, 0.96f * a), y0, y1});   // WFS-557 : gris neutre (maquette 01)
             const vec2 bordHaut[3] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}};
-            dessin2d::trait(r, bordHaut, 3, 2 * kb, vec4{1, 1, 1, 0.22f * a});
+            dessin2d::trait(r, bordHaut, 3, 2.5f * kb, vec4{1, 1, 1, 0.38f * a});
             const vec2 bordDroit[2] = {{x1, y0 + 14 * kb + coin}, {x1, y1}};
             dessin2d::trait(r, bordDroit, 2, 1.5f * kb, vec4{1, 1, 1, 0.10f * a});
+            // WFS-557 (maquette 01) : tranche droite du panneau, plus claire (le panneau est un boîtier vu de trois quarts)
+            const vec2 tranche[4] = {{x1 - 7 * kb, y0 + 14 * kb + coin - 3 * kb}, {x1, y0 + 14 * kb + coin}, {x1, y1}, {x1 - 7 * kb, y1 - 3 * kb}};
+            dessin2d::polygone(r, tranche, 4, dessin2d::Teinte{hex(0x3A3B3E, 0.95f * a), hex(0x26272A, 0.95f * a), y0, y1});
         }
         // deux boutons ronds (rayon 116, centres à 152 et 426, hauteur 316) et la pilule « GARAGE » (32 à 532, 440 à 596)
-        const float rb = 116 * kb;
+        const float rb = 117 * kb;   // WFS-557 : bague de 117 de rayon (maquette 01)
         for (int i = 0; i < 2; i++) {
             a = glisse(2 + i, dx);
-            const float cx = gl + (i == 0 ? 152 : 426) * kb + dx, cy = 316 * kb;
+            const float cx = gl + (i == 0 ? 152 : 426) * kb + dx, cy = 318 * kb;
             g_zones[i] = {cx - rb, cy - rb, 2 * rb, 2 * rb, 0, true};
             manette::focus(g_zones[i]);   // WFS-22
-            ui::boutons::startStop(r, cx - rb, cy - rb, 2 * rb, 2 * rb, ui::majuscules(ui::tr("menu.r19.course")), a, presse_ == i,
-                                   ui::majuscules(ui::tr(i == 0 ? "menu.r19.solo" : "menu.r19.en_ligne")), 31 * kb);
+            // WFS-557 (maquette 01 mesurée au pixel, ordre de l'utilisateur du 2026-11-16) : bague chrome brillante, centre gris
+            ui::boutons::rondMenu(r, cx, cy, kb, ui::majuscules(ui::tr("menu.r19.course")), ui::majuscules(ui::tr(i == 0 ? "menu.r19.solo" : "menu.r19.en_ligne")),
+                                  a, presse_ == i);
         }
         a = glisse(4, dx);
         {
-            const float x = gl + 32 * kb + dx, y = 440 * kb, w = 500 * kb, h = 156 * kb;
+            const float x = gl + 30 * kb + dx, y = 443 * kb, w = 503 * kb, h = 162 * kb;   // WFS-557 : place mesurée sur la maquette 01
             g_zones[SHOWROOM] = {x, y, w, h, 0, true};
             manette::focus(g_zones[SHOWROOM]);
-            ui::boutons::piluleChrome(r, x, y, w, h, ui::majuscules(ui::tr("menu.r19.garage")), a, presse_ == SHOWROOM, 60 * kb);
+            ui::boutons::piluleMenu(r, x, y, w, h, kb, ui::majuscules(ui::tr("menu.r19.garage")), a, presse_ == SHOWROOM);
         }
         // RECORD (bas gauche) : libellé gris espacé, valeur en grand ; le toucher ouvre le Profil (records, maquette 21)
         a = glisse(5, dx);
         {
             const float x = gl + 46 * kb + dx, y = H - gb - 82 * kb;
-            ui::text(r, x, y, 12 * kb, ui::majuscules(ui::tr("menu.record")), hex(MUTED, a), ui::GAUCHE, 0.22f, false);
+            { ui::AvecPolice inter(ui::Police::InterMedium); ui::text(r, x, y, 13 * kb, ui::majuscules(ui::tr("menu.record")), hex(0xB8BCC8, a), ui::GAUCHE, 0.22f, false); }   // WFS-557 : Inter Medium (maquette 01)
             const std::string v = g_best > 0 ? ui::nombre(g_best) : "—";
             ui::text(r, x, y + 16 * kb, 34 * kb, v, hex(presse_ == TA_VOITURE ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false, true);
             const float zw = std::max(110 * kb, ui::width(34 * kb, v) + 20 * kb);

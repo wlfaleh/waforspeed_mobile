@@ -456,14 +456,15 @@ private:
         if (g_presse == P_BOUTON) dessin2d::disqueRadial(r, cx, cy, d / 2, cx, cy, d / 2, hex(ACCENT2, 0.25f), hex(ACCENT2, 0.15f));
         // engrenage au trait : anneau, 8 dents, moyeu
         const vec4 c{242 / 255.f, 244 / 255.f, 248 / 255.f, 0.95f};
-        const float ra = d * 0.17f, ep = std::max(1.3f, d * 0.05f);
+        // WFS-557 (maquette 01 au zoom) : engrenage fin et petit (≈ 16 px sur 45) : anneau, 8 dents courtes, moyeu en point
+        const float ra = d * 0.11f, ep = std::max(1.1f, d * 0.03f);
         dessin2d::anneau(r, cx, cy, ra - ep / 2, ra + ep / 2, c);
         for (int i = 0; i < 8; i++) {
             const float an = i * 0.785398f, sx = std::sin(an), sy = -std::cos(an);
-            const vec2 dent[2] = {{cx + sx * (ra + ep * 0.4f), cy + sy * (ra + ep * 0.4f)}, {cx + sx * (ra + ep * 1.7f), cy + sy * (ra + ep * 1.7f)}};
-            dessin2d::trait(r, dent, 2, ep * 1.3f, c);
+            const vec2 dent[2] = {{cx + sx * (ra + ep * 1.2f), cy + sy * (ra + ep * 1.2f)}, {cx + sx * (ra + ep * 2.8f), cy + sy * (ra + ep * 2.8f)}};
+            dessin2d::trait(r, dent, 2, ep, c);
         }
-        dessin2d::anneau(r, cx, cy, ra * 0.35f - ep / 2, ra * 0.35f + ep / 2, c);
+        dessin2d::anneau(r, cx, cy, 0, ra * 0.35f, c);
     }
     // WFS-557 (maquette 19, arbitrage du PO du 2026-11-16) : en pause, « ⚙ RÉGLAGES » en bouton de verre arrondi, 155 × 51, à 31 px
     // du bord droit et 22 px du haut ; zone de toucher : la cible de 48 dp (dansCible). Au menu : bouton de WFS-550 (maquette 01).
