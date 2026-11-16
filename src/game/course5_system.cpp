@@ -32,7 +32,8 @@
 #include "trace_cartes.h"
 #include "virages_banc.h"   // WFS-327 : épingles des lacets (banc ; WFS-379 : Campagne)
 #include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
-#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
+#include "../ui/verre.h"
+#include "../ui/resultats_parking.h"   // WFS-561 (accroche) : résultats dans le parking, tableau LED (maquette 11)   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
 
 namespace wfs {
 
@@ -78,7 +79,8 @@ public:
         }
         if (nouveau == Ecran::Course) rejouer_ = false;
     }
-    void update(double, const GameView&) override {
+    void update(double, const GameView& g) override {
+        if (actif_ && fini_ && overT_ >= 0.9 && g.player && g.ecran == Ecran::Course) resultats3d::demander(tableau3d(lignes(*g.player)));   // WFS-561 (accroche, RG-04)
         if (!r_) return;
         for (const course5::Ordinateur& o : os_) {   // modèles complets des 4 voitures (chargés une fois)
             if (models_.count(o.car)) continue;
@@ -230,7 +232,21 @@ public:
         const auto ls = lignes(*g.player);
         const bool fin = fini_ && overT_ >= 0.9;
         if (!fin) tableau(r, g, u, ls);   // WFS-548 : le tableau de course n'est plus dessiné sous le résultat (maquette 31)
-        if (fin && !verre::couvert()) resultat(r, W, H, u, ls);   // WFS-548 : rien sous la fenêtre d'achat
+        if (fin && !verre::couvert()) { if (resultats3d::affiche()) resultat3d(r, g); else resultat(r, W, H, u, ls); }   // WFS-561 : scène 3D, sinon fenêtre 2D (repli, RG-08)
+    }
+    // WFS-561 (accroche, RG-04 à RG-06) : maquette 11 : tableau LED des 5 pilotes (scène 3D), score en haut à droite, Menu et Rejouer
+    resultats3d::Tableau tableau3d(const std::vector<course5::Ligne>& ls) const {
+        resultats3d::Tableau t; t.titre = resultats3d::titreRang(course5::position(ls), ftJoueur_);
+        const double tete = !ls.empty() && ls[0].fini ? ls[0].ft : -1;
+        for (size_t i = 0; i < ls.size(); i++) t.lignes.push_back(resultats3d::ligneClassement((int)i + 1, ls[i].nom, ls[i].moi, ls[i].fini, ls[i].ft, tete, std::max(0.0, ls[i].d) * M / 1000));
+        return t;
+    }
+    void resultat3d(Renderer& r, const GameView& g) {
+        resultats3d::poserScore(g.uiWidth, g.uiHeight, g.marges.droite);
+        float zm[4], zb[4];
+        static textes::Capitales libRejouer{"fin.rejouer"};
+        resultats3d::boutons(r, g.uiWidth, g.uiHeight, g.marges.gauche, g.marges.droite, libRejouer(), false, zm, zb);
+        rejouerZ_ = {zb[0], zb[1], zb[2], zb[3]}; menuZ_ = {zm[0], zm[1], zm[2], zm[3]};
     }
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Course) return false;

@@ -782,4 +782,7 @@ resultats.led.temps=TIME
 resultats.led.ecart=GAP
 resultats.toi=YOU · {1}
 resultats.titre={1} · {2}
+resultats.led.semees=SHAKEN OFF
+resultats.led.chocs=HITS
+resultats.led.score=SCORE
 resultats.rang1=1st

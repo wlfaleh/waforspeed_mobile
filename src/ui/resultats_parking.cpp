@@ -21,6 +21,7 @@
 #include "../game/game.h"
 #include "../game/score_fin.h"
 #include "../game/textes_course.h"
+#include "boutons.h"
 #include "../game/track.h"
 #include "../game/player.h"
 #include "../render/renderer.h"
@@ -387,6 +388,16 @@ void poserScore(float W, float H, float margeDroite) {
     // son bloc à droite du rectangle donné (écart 2,5 % de H, bord 1,5 %) : rectangle fictif qui finit juste avant
     const float u = H / 100.f, cw = 0.40f * H, x1 = W - margeDroite - 1.5f * u - cw - 2.5f * u;
     score_fin::poser(0, 0.153f * H, std::max(1.f, x1), 0.5f * H);
+}
+
+void boutons(Renderer& r, float W, float H, float margeGauche, float margeDroite, const std::string& action, bool actionAppuyee, float menu[4], float bouton[4]) {
+    const float k = H / 720.f, ox = (W - 1600 * k) / 2, d = 110 * k;
+    // maquette 11 (image 2000 × 900 → unités 1600 × 720) : plaque de x 68 à 312, y 592 à 644 ; rond centré en (1440, 580)
+    menu[0] = std::max(margeGauche + 16 * k, ox + 70 * k); menu[1] = 596 * k; menu[2] = 200 * k; menu[3] = 44 * k;
+    bouton[0] = std::min(W - margeDroite - 16 * k - d, ox + 1440 * k - d / 2); bouton[1] = 580 * k - d / 2; bouton[2] = d; bouton[3] = d;
+    static textes::Capitales libMenu{"fin.menu"};
+    ui::boutons::plaque(r, menu[0], menu[1], menu[2], menu[3], libMenu(), 1, false);
+    ui::boutons::startStop(r, bouton[0], bouton[1], d, d, action, 1, actionAppuyee, "", 17 * k);
 }
 
 WFS_SYSTEM(Scene, 408)   // interface (400-499) : après le score (405) dont elle laisse le panneau, avant le HUD (420)

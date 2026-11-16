@@ -48,6 +48,9 @@ led::Ligne ligneClassement(int rang, const std::string& nom, bool moi, bool fini
                            const std::string& texte = "");
 // maquette 11 : panneau du score (score_fin) en haut à droite, à la place de la fenêtre 2D des modes
 void poserScore(float W, float H, float margeDroite);
+// maquette 11 : « MENU » en plaque en bas à gauche, bouton rond (Rejouer, Revanche) en bas à droite ; boutons de WFS-557 (taille
+// des maquettes 10 et 11 : plaque 200 × 44, rond de 110, unités 1600 × 720) ; rectangles touchables écrits dans menu[4], bouton[4]
+void boutons(Renderer& r, float W, float H, float margeGauche, float margeDroite, const std::string& action, bool actionAppuyee, float menu[4], float bouton[4]);
 
 // ---- placement (repère du parking de WFS-552 : celui de la voiture, mètres, y vers le haut, avant de la voiture vers −Z,
 // voile du fond en z = +2,75) ; calcul seul, testé par tests/test_tableau_led.cpp

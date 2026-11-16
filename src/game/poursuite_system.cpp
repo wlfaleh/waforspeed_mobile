@@ -33,6 +33,7 @@
 #include "game.h"
 #include "player.h"
 #include "poursuite.h"
+#include "../ui/resultats_parking.h"   // WFS-561 (accroche) : résultats dans le parking, tableau LED (maquette 11)
 #include "police_bandes.h"   // WFS-460 : bandes « POLICE » posées sur la tôle
 #include "camera_vue.h"      // WFS-460 (banc) : vues Cockpit et Poursuite
 #include "../render/vehicule_mesure.h"   // WFS-460 : triangles de la peinture relus dans le .wfm
@@ -239,6 +240,7 @@ public:
         if (nouveau == Ecran::Course) rejouer_ = false;
     }
     void update(double, const GameView& g) override {
+        if (actif_ && fini_ && overT_ >= 0.9 && g.ecran == Ecran::Course) resultats3d::demander(tableau3d());   // WFS-561 (accroche, RG-04)
         if (actif_ && policeCar_ != policeCar(g.player) && modele_.ok) { r_->vk().waitIdle(); r_->destroy(modele_); modele_ = Model{}; modeleEssaye_ = false;
             if (bandesMesh_.indexCount) { r_->destroy(bandesMesh_); bandesMesh_ = Mesh{}; } }   // WFS-460 : bandes de l'ancien modèle
         if (actif_) policeCar_ = policeCar(g.player);
@@ -485,7 +487,7 @@ public:
         if (!actif_ || !ui::fontReady() || g.ecran != Ecran::Course || !g.player) return;
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         const Course* c = activeCourse();
-        if (fini_ && overT_ >= 0.9) { if (!verre::couvert()) resultat(r, W, H, u); return; }   // WFS-548 : rien sous la fenêtre d'achat
+        if (fini_ && overT_ >= 0.9) { if (!verre::couvert()) { if (resultats3d::affiche()) resultat3d(r, g); else resultat(r, W, H, u); } return; }   // WFS-561 : scène 3D, sinon fenêtre 2D (repli, RG-08)
         if (!c || c->state == RaceState::Over) return;
         // RG-06 : en haut au centre : score (100 → 1), police (nombre de voitures), bandeau de surprise
         const float cx = (g.marges.gauche + W - g.marges.droite) / 2, y0 = g.marges.haut + 2 * u, pw = 40 * u, ph = 15.5f * u;
@@ -834,6 +836,28 @@ private:
     // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu » ;
     // WFS-141 (RG-03, ANO-59) : boutons parallélogrammes et liseré orange de la fin Checkpoint (biseauFin) ; tailles des
     // boutons et des textes inchangées (ordre permanent de l'utilisateur du 2026-11-06)
+    // WFS-561 (accroche, RG-04 à RG-06) : maquette 11 : lignes réelles de la Poursuite (toi, polices semées, chocs, score : les
+    // valeurs de la fenêtre 2D de la maquette 32), score en haut à droite, Menu et Rejouer
+    resultats3d::Tableau tableau3d() const {
+        resultats3d::Tableau t;
+        const bool v = etat_.gagne;
+        t.titre = resultats3d::titreMot(ui::tr(v ? "fin.victoire" : "police.arrete"), ftJoueur_);
+        const std::string nom = sauvegarde().actif() ? sauvegarde().nick : ui::tr("c5.pilote");
+        led::Ligne moi = resultats3d::ligneClassement(1, nom, true, true, ftJoueur_, -1, 0, v ? std::string() : ui::tr("police.arrete"));
+        if (!v) moi.pos = "—";
+        t.lignes.push_back(moi);
+        t.lignes.push_back({"", ui::tr("resultats.led.semees"), std::to_string(policeMobiles()), ""});
+        t.lignes.push_back({"", ui::tr("resultats.led.chocs"), std::to_string(etat_.chocsTrafic) + "/" + std::to_string(etat_.chocsGlissiere) + "/" + std::to_string(etat_.chocsPolice), ""});
+        t.lignes.push_back({"", ui::tr("resultats.led.score"), std::to_string(etat_.score), ""});
+        return t;
+    }
+    void resultat3d(Renderer& r, const GameView& g) {
+        resultats3d::poserScore(g.uiWidth, g.uiHeight, g.marges.droite);
+        float zm[4], zb[4];
+        static textes::Capitales libRejouer{"fin.rejouer"};
+        resultats3d::boutons(r, g.uiWidth, g.uiHeight, g.marges.gauche, g.marges.droite, libRejouer(), false, zm, zb);
+        rejouerZ_ = {zb[0], zb[1], zb[2], zb[3]}; menuZ_ = {zm[0], zm[1], zm[2], zm[3]};
+    }
     void resultat(Renderer& r, float W, float H, float u) {
         verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
         const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
