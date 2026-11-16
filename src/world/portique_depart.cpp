@@ -41,8 +41,8 @@ public:
         Material acier; acier.color = {0.56f, 0.57f, 0.58f, 1}; acier.metal = 1; acier.rough = 0.6f;
         Material noir; noir.color = {0.035f, 0.035f, 0.038f, 1}; noir.rough = 0.5f; noir.flags = MAT_DOUBLE;   // bague, visière : coques minces
         Material eteint; eteint.color = {0.05f, 0.008f, 0.008f, 1}; eteint.rough = 0.12f;
-        Material rouge = eteint; rouge.color = {0.6f, 0.05f, 0.04f, 1}; rouge.emissive = vie::lin(0xff1a1a) * 4.f;   // LED rouge 625 nm
-        Material vert = eteint; vert.color = {0.05f, 0.6f, 0.2f, 1}; vert.emissive = vie::lin(0x19ff5a) * 4.f;      // LED verte 525 nm
+        Material rouge = eteint; rouge.color = {0.6f, 0.05f, 0.04f, 1}; rouge.emissive = vie::lin(0xff1a1a) * 2.f;   // LED rouge 625 nm
+        Material vert = eteint; vert.color = {0.05f, 0.6f, 0.2f, 1}; vert.emissive = vie::lin(0x19ff5a) * 2.f;      // LED verte 525 nm
         mats_[ALU] = r.makeMaterial(alu, nullptr, nullptr, nullptr);
         mats_[ACIER] = r.makeMaterial(acier, nullptr, nullptr, nullptr);
         mats_[NOIR] = r.makeMaterial(noir, nullptr, nullptr, nullptr);
@@ -70,7 +70,9 @@ public:
         const int n = feux(nullptr);
         if (n == 0 || length(feuxMonde_ - g.camPos) > 250) return;
         FrameParams::Spot& s = fp.spots[fp.spotCount++];
-        s.pos = feuxMonde_; s.target = feuxMonde_ + vec3{0, -1, 0}; s.angle = PI; s.decay = 2; s.distance = 16;
+        // lumière 1,2 m devant le caisson et 0,9 m plus bas (avis de l'agent 3D, PR #431) : elle éclaire le treillis, les pieds et
+        // la chaussée sans teinter toute la face du caisson (visières et bagues restent lisibles)
+        s.pos = feuxMonde_ + avant_ * 1.2f + vec3{0, -0.9f, 0}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 2; s.distance = 22;
         s.color = vert() ? vie::lin(0x19ff5a) : vie::lin(0xff1a1a);
         s.intensity = 0.25f * (float)n;   // 5 lanternes allumées ≈ un lampadaire (1,1 à 26 m) sur une portée plus courte
     }
@@ -159,7 +161,7 @@ private:
         int tri = 0;
         for (int k = 0; k < NB_PIECES - 1; k++) { pieces_[k] = maillage(md.pieces[k]); tri += md.pieces[k].triangles(); }
         for (int k = 0; k < NB_FEUX; k++) { lentilles_[k] = maillage(md.lentilles[k]); tri += md.lentilles[k].triangles(); }
-        origine_ = p.o;
+        origine_ = p.o; avant_ = Z;
         feuxMonde_ = p.o + X * md.centreFeux.x + Y * md.centreFeux.y + Z * md.centreFeux.z;
         construit_ = true;
         WFS_LOG("portique de départ (WFS-559) : ouverture %.2f m, hauteur libre %.2f m, %d triangles, feux à %.2f m", md.ouverture, md.hauteurLibre, tri, md.centreFeux.y);
@@ -168,7 +170,7 @@ private:
     bool actif_ = false, construit_ = false;
     Material mats_[NB_PIECES - 1]{}, eteint_{}, rouge_{}, vert_{};
     Mesh pieces_[NB_PIECES - 1]{}, lentilles_[NB_FEUX]{};
-    vec3 origine_{}, feuxMonde_{};
+    vec3 origine_{}, feuxMonde_{}, avant_{};   // avant_ : vers les voitures qui arrivent (face des feux)
 };
 
 } // namespace
