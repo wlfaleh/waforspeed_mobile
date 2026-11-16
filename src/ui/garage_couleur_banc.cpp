@@ -46,7 +46,7 @@ int benchGarageCouleurs(Game& g, Renderer& r, const std::string& out) {
     int doigt = 50;
     auto toucher = [&](float x, float y) { const int id = doigt++; g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); images(3); };
     auto toucherZone = [&](Zone z) {   // copie : toucher redessine l'écran (zones réécrites)
-        if (z.w > 0) toucher(z.x + z.w / 2, z.y + z.h / 2); return z.w > 0; };
+        if (z.w > 0) { toucher(z.x + z.w / 2, z.y + z.h / 2); } return z.w > 0; };
     auto fermer = [&]() { if (ouvert) g.shutdown(); ouvert = false; };
     auto ouvrirGarage = [&](const char* id) {
         fermer();
