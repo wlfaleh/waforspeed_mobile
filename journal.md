@@ -715,3 +715,9 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Revue complète de `ce6a0e6b` : 18 captures après, 7 avant et 4 zooms ouverts ; maquette 09 comparée au code (6 lignes conformes, écart : lueur verte du GO) ; diff entier lu ; branche construite, `tests_cpu.sh build` : 151 tests réussis.
 - Refus pour : (1) section « Tests CPU » et `qa/pr/WFS-559/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) `PortiqueDepart::ambiance` (portique_depart.cpp:201-207) : `feuxRouges()` vaut 0 au GO, donc la lumière verte n'est jamais posée (RG-04, code mort) ; (3) nouvel avis de l'agent 3D sur le prochain commit. Seules les 2 captures de nuit au GO sont à refaire.
 - Revue postée en COMMENT (même compte GitHub) : https://github.com/wlfaleh/waforspeed_mobile/pull/431
+
+### 2026-11-16 12:38:08 — WFS-550 fusionné par le lead dev (lead-dev)
+- PR #424, 5e revue sur `2684ab7e` : les 2 points de la 4e revue sont corrigés (deux emplacements de skin, joueur et vitrine du menu ; vitrine chargée seulement au menu) et les remarques sont nettoyées.
+- Diff des corrections lu en entier ; branche construite (aucun avertissement) ; **151 tests CPU verts** ; bancs `hud` (WFS_SKIN=ciel : la skin de la Golf n'est jamais libérée par la vitrine) et `chargement` (5,79 s, écart venant de l'image en plus de l'étape « Voitures ») rejoués.
+- 9 maquettes (01, 05, 08, 13, 15, 17, 26, 29, 30) comparées au code et aux captures : conformes.
+- Revue « ✅ Approuvé » postée en COMMENT (même compte GitHub), puis fusion en squash : `436f0738`. Statut 🟣 ; ligne dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
