@@ -8,6 +8,7 @@
 #include "boutique.h"
 #include "personnalisation.h"
 #include "pret.h"   // WFS-502
+#include "skin_offerte.h"   // WFS-503 : donnerSkin
 
 namespace wfs::cadeau {
 
@@ -244,6 +245,36 @@ Resultat tirer(const ConfigJeu::Cadeau& c, const Entree& e, int& sansRare, Mulbe
     return r;
 }
 
+// ---------------------------------------------------------------- gain donné (WFS-503)
+bool donner(Sauvegarde& s, const Resultat& r) {
+    switch (r.gain) {
+        case Gain::Etoiles:   // RG-01 : au portefeuille de WFS-498
+            if (r.etoiles <= 0) return false;
+            boutique::crediter(s, r.etoiles, "cadeau");
+            return true;
+        case Gain::Coloris: {   // RG-02 : possédé par cette voiture (possede-<voiture>), pas appliqué : le joueur le choisit au garage
+            const perso::Objet* o = perso::objet(r.objet);
+            if (!o || (o->type != perso::Type::Couleur && o->type != perso::Type::Finition) || !perso::disponible(*o, r.voiture) ||
+                perso::possede(s, *o, r.voiture)) return false;
+            s.possede[r.voiture].insert(o->id);
+            s.cadeau.nouveaux.insert(r.voiture + ":" + o->id);
+            WFS_LOG("cadeau du jour : coloris %s donné à %s (à choisir au garage)", o->id, r.voiture.c_str());
+            return true;
+        }
+        case Gain::Skin:   // RG-03 : skin de la voiture, « cadeau seulement » comprise, pas posée d'office
+            if (!skins::donnerSkin(s, r.voiture, r.objet)) return false;
+            s.cadeau.nouveaux.insert(r.voiture + ":" + r.objet);
+            return true;
+        default:   // voiture prêtée : pret::recevoir (WFS-502), fait par ouvrir
+            return !r.voiture.empty();
+    }
+}
+
+bool estNouveau(const Sauvegarde& s, const std::string& voiture, const std::string& objet) {
+    return s.cadeau.nouveaux.count(voiture + ":" + objet) > 0;
+}
+void vu(Sauvegarde& s, const std::string& voiture, const std::string& objet) { s.cadeau.nouveaux.erase(voiture + ":" + objet); }
+
 // ---------------------------------------------------------------- ouvrir (RG-08)
 std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e, uint32_t graine) {
     const Etat et = etat(s.cadeau, t);
@@ -252,6 +283,8 @@ std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e,
         return std::nullopt;
     }
     const EtatCadeau avant = s.cadeau;   // remis tel quel si la sauvegarde ne peut pas être écrite
+    const long long etoilesAvant = s.etoiles;   // WFS-503 : solde et possessions remis aussi (aucun gain sans sauvegarde écrite)
+    const auto possedeAvant = s.possede;
     Mulberry32 h(graine);
     const Resultat r = tirer(config().cadeau, e, s.cadeau.sansRare, h);
     EtatCadeau& c = s.cadeau;
@@ -261,12 +294,15 @@ std::optional<Resultat> ouvrir(Sauvegarde& s, const Instant& t, const Entree& e,
     c.total = std::min(c.total + 1, 1000000000LL);
     c.dernier = r.texte();
     if (r.gain == Gain::Voiture) pret::recevoir(c, r.voiture, t.epoch);   // WFS-502 (RG-01) : écrit avec le cadeau, jamais perdu
+    else if (!donner(s, r)) WFS_ERR("cadeau du jour : gain %s impossible à donner (déjà possédé ?)", r.texte().c_str());   // WFS-503
     // RG-08 : écrit AVANT de rendre le gain : pas de 2e cadeau si le jeu est tué pendant l'animation. Écriture faite ici, sur le
     // thread principal, après les écritures en attente (attendre) : on sait si elle a réussi. Échec → rien n'est donné, état remis.
     if (s.actif() && !s.chemin().empty()) {
         s.attendre();
         if (!ecrireAtomique(s.chemin(), s.texte())) {
             s.cadeau = avant;
+            s.etoiles = etoilesAvant;
+            s.possede = possedeAvant;
             WFS_ERR("cadeau du jour : sauvegarde impossible (%s) : cadeau non ouvert, il reste disponible", s.chemin().c_str());
             return std::nullopt;
         }

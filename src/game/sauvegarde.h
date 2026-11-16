@@ -68,6 +68,7 @@ struct EtatCadeau {
     long long pretRestantVu = 0;   // WFS-502 (RG-04) pret-restant-vu : dernier temps restant vu (s) : le temps restant ne remonte jamais
     std::string pretAvant;     // WFS-502 (RG-05) pret-avant : voiture choisie avant le prêt (rendue à la fin si la prêtée était choisie)
     std::string pretMessage;   // WFS-502 (RG-01, RG-05) pret-message : « expire;<voiture> » ou « fin;<voiture> », montré une fois au menu
+    std::set<std::string> nouveaux;   // WFS-503 (RG-02) cadeau-nouveaux=<voiture>:<objet>|… : objets gagnés pas encore vus au garage (badge : WFS-556)
     std::map<std::string, std::string> inconnues;   // autres clés cadeau-* / pret-* (version plus récente) : gardées telles quelles
 };
 
