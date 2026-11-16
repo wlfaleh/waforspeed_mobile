@@ -98,7 +98,7 @@ public:
     void init(Renderer& r, const GameView&) override {
         if (g_prete || std::getenv("WFS_RESULTATS_SANS_3D")) return;
         if (!parking_.pret() && !parking_.init(r)) { WFS_ERR("résultats (WFS-561) : parking refusé : fenêtres 2D des modes (repli)"); return; }
-        if (!construire(r)) { liberer(r); parking_.shutdown(r); WFS_ERR("résultats (WFS-561) : mémoire graphique refusée : fenêtres 2D des modes (repli)"); return; }
+        if (!construire(r)) { liberer(r); WFS_ERR("résultats (WFS-561) : mémoire graphique refusée : fenêtres 2D des modes (repli)"); return; }
         g_prete = true;
         WFS_LOG("résultats (WFS-561) : scène préparée : parking %zu triangles, tableau %zu triangles, %d points au plus", parking_.triangles(), trianglesTableau_, POINTS_MAX);
     }
@@ -107,7 +107,7 @@ public:
     void update(double, const GameView&) override { g_pas++; g_actifPas = g_pas - g_pasDemande <= 4; }
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         g_affiche = false;
-        if (!g_prete || !g_actifPas || g.ecran != Ecran::Course || !g.car || !g.player || !g.track) return false;
+        if (!g_prete || !parking_.pret() || !g_actifPas || g.ecran != Ecran::Course || !g.car || !g.player || !g.track) return false;
         voiture_ = matriceVoiture(g) * parkingDepuisVoiture();   // repère du parking (la voiture y est arrêtée en biais, POSE_VOITURE)
         parking_.regler(fp, s, g, *g.car, voiture_);   // lumière du parking (réglettes, ambiance), comme le menu
         const float aspect = g.uiWidth / std::max(1.f, g.uiHeight);
@@ -336,7 +336,7 @@ private:
         if (!sommetsR_.empty()) r.updateMesh(reflets_[courant_], sommetsR_, indicesR_); else reflets_[courant_].indexCount = 0;
     }
 
-    ecrans::parking::Parking parking_;
+    ecrans::parking::Parking& parking_ = ecrans::parking::commun();   // WFS-558 : instance unique partagée avec le menu et le duel (RG-C5)
     Mesh mesh_[NB_MATS]{};
     Material mat_[NB_MATS]{};
     Mesh points_[2]{}, reflets_[2]{};
