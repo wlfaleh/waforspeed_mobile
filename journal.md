@@ -1395,3 +1395,21 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 
 ### 2026-11-16 09:47:31 — Arbitrage WFS-558 : digicode à vraie taille avec vue rapprochée, pavé 6 × 6, listes dans le panneau de verre (po-scrum-master)
 - Questions de Claude, agent dev3d (01Us6uCtQN). Décisions écrites dans `regles-de-gestion/WFS-558.md` (RG-05 à RG-08) : (1) option A, digicode à vraie taille + glissement de caméra (≈ 0,4 s) vers le digicode au toucher, « Retour » ramène d'abord au cadrage large ; option B (×4) refusée (RG-02, DA-realisme 99 %) ; (2) pavé 6 × 6 de 15 mm au pas de 19 mm : 2-9, A-Z sans I L O, ⌫ (×2) et OK (×3), une lettre par appui + 150 ms ; (3) pseudo sur la plaque 3D seulement ; « Salons qui t'attendent » et « Derniers adversaires » dans le panneau de verre, seulement s'ils ne sont pas vides ; salon = maquette 23 sur le parking flouté. Écarts à la maquette acceptés par le PO : taille du digicode dans le cadrage large, pavé alphanumérique. Recommandations du développeur acceptées.
+
+### 2026-11-16 09:50:14 — Arbitrage WFS-559 : feux à la place des chiffres, « GO » gardé, vert 0,7 s au départ (po-scrum-master)
+- Questions de Claude, agent dev3d (01Us6uCwnA). Décisions écrites dans `regles-de-gestion/WFS-559.md` (RG-05 à RG-09), recommandation du développeur acceptée : (1) chiffres 3 / 2 / 1 retirés, « GO » gardé 0,7 s sous les feux, bips inchangés ; (2) 5 feux rouges, un toutes les 0,6 s sur le décompte de 3 s, puis vert 0,7 s au départ, puis éteints ; (3) pas de mécanique « départ parfait » à coder (n'existe pas) ; (4) consigne FR / EN pendant le décompte seulement ; (5) portique à la ligne de départ dans tous les modes, Checkpoint compris (capture en plus).
+
+### 2026-11-16 09:54:35 — Statuts automatiques, bancs du matin #42 (robot statuts)
+- Run rouge (schedule, commit 9a8fbd5), aucun statut changé. Job(s) en échec : tests CPU et licences.
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-496, WFS-503.
+
+### 2026-11-16 09:58:35 — WFS-564 : correction faite, CI de branche lancée (Claude, agent dev3d (01Us6uCxFh))
+- **Session** : session_01Us6uCxFhiJ8TJGKy9QTPw7, ouverte par l'utilisateur avec « @dev go » ; ticket attribué par le PO (US technique P1, CI de `main` #1147 rouge).
+- **Cause vérifiée** (journal du run 43817146076, job « banc-essai (texte) ») : seule erreur = contrôle des licences, `MANQUE ui/icone-pistolet.png` (150 tests CPU verts). Origine vérifiée (RG-03) : icône fournie par l'utilisateur (journal du 2026-11-15 00:52:28 et 23:28:32), SHA-256 relus : `references/maquettes-R19/icone-pistolet-utilisateur.png` = 167444ee…, `assets/ui/icone-pistolet.png` = 5f69fa16… ; aucun téléchargement.
+- **Fait** : une ligne `(r"ui/icone-pistolet\.png", None, None)` dans `COUVERTURE` de `tools/qa/verifier_licences.py` + commentaire (WFS-551, image d'origine). Aucun motif large, aucun seuil changé (RG-02).
+- **Vérifié en local** : contrôle des licences 1 manque → 0 manque ; tests CPU 150/150 (394 s).
+- **CI de branche** (US technique) : run **#1148** (43842900414) de `build.yml` sur `feature/waforspeed-564` (commit 12819871, synchronisé avec `main`) : vérifie le job « banc-essai (texte) » en entier (licences, puis l'étape « Captures du rendu (texte) » sautée sur `main` à cause du rouge).
+
+### 2026-11-16 10:00:41 — WFS-559 : 2e arbitrage, boutons MENU / ARRIÈRE cachés pendant le décompte (po-scrum-master)
+- **Question** de Claude, agent dev3d (01Us6uCwnA) : en vue « Arrière » (caméra 6,3 m / 35°, WFS-105), le caisson des feux tombe derrière les boutons du HUD MENU et ARRIÈRE ; la maquette 09 ne les a pas.
+- **Décision** : option (a), recommandation du développeur acceptée. RG-10 : pendant le décompte seulement (≈ 3 s, voiture immobile), MENU et ARRIÈRE ni dessinés ni touchables, retour au départ (taille et place inchangées, WFS-429). RG-11 : accroche ≤ 10 lignes annoncée au journal dans le fichier du HUD ; WFS-550 en PR #424 touche le HUD : synchroniser avec `main`. RG-12 : caméra inchangée, option (b) refusée. RG-13 : caisson à 5 colonnes de 0,9 m (≈ 4,6 m), lanternes Ø 200 mm à visière, 2 par colonne, accepté. Captures en plus : Checkpoint et Course à 5, décompte puis départ.
