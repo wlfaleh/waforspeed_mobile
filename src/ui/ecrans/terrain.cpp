@@ -27,6 +27,8 @@
 #include "../../world/zones.h"        // WFS-96 : noms des quartiers
 #include "../../world/cartes_v2/paquet_carte.h"   // WFS-307 : empreinte attendue de chaque carte
 #include "paquets.h"                  // WFS-307 : paquets des cartes (télécharger, supprimer)
+#include "../../game/boutique.h"   // WFS-557 : solde d'étoiles (maquette 18)
+#include "../garage_achat.h"      // WFS-557 : étoile dessinée (garage::etoile)
 #include "../../world/cartes_v2/carte_donnees.h"   // WFS-343 : cartes lues des paquets
 
 namespace wfs {
@@ -88,15 +90,6 @@ Moment g_moment = Moment::Nuit;
 // WFS-375 (RG-01, RG-02, ordre de l'utilisateur) : deux modes seulement, JOUR = midi (soleil haut, quelle que soit l'heure du
 // téléphone) et NUIT = nuit ; plus de défilement des moments de WFS-208 (aube, dorée, réelle… restent pour les bancs de lumière)
 Moment modeSimple(bool nuit) { return nuit ? Moment::Nuit : Moment::Midi; }
-
-// chevron < ou > (path « M15 4 7 12l8 8 » du web) : WFS-147 (QA tour 1, B) : un trait lissé de s / 6 d'épaisseur
-// (3 dp pour la flèche de 18 dp), bouts ronds, au lieu de petits carrés en escalier ; couleur opaque (pas de
-// recouvrement visible aux jointures)
-void chevron(Renderer& r, float cx, float cy, float s, int dir, const vec4& c) {
-    const float a = 0.25f * s * dir, h = 0.5f * s;
-    const vec2 p[3] = {{cx - a, cy - h}, {cx + a, cy}, {cx - a, cy + h}};
-    dessin2d::trait(r, p, 3, s / 6, c);
-}
 
 // WFS-147 (ANO-42) : formes d'un seul tenant (plus de bandes), reprises de WFS-102 (1ddd3b6) : dégradé vertical,
 // polygone coupé à [x0, x1], ellipse
@@ -316,153 +309,137 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Terrain || g.sceneDediee || !ui::fontReady()) return;
         const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
-        // WFS-147 (RG-01, RG-02, RG-06, ANO-19) : sur téléphone couché, mise en page propre au terrain, dessinée en dp
-        // (k = pixels par dp), d'après la mise en page petit écran de WFS-102 (6d3ed61) : en-tête et barre resserrés,
-        // informations de la carte rapprochées, textes ≥ 14 dp, libellés 12 dp, boutons de 48 dp
-        const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
-        const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
+        // WFS-557 (maquettes 18a à 18d, 03 ; RG-23, ordre de l'utilisateur : traité dans WFS-557). Unité k = H / 720 (maquette
+        // 1600 × 720), réduite en 16:9 pour tenir en largeur. « CHOISIS TA CARTE » et « Étape 3 sur 3 · carte n / N » en haut à
+        // gauche, solde d'étoiles en haut à droite ; grande carte arrondie au centre (halo orange quand elle est installée) avec,
+        // à gauche et à droite, les cartes voisines (toucher = carte précédente / suivante) ; nom, description, longueur,
+        // quartiers en pastilles ; points sous la carte ; « Retour / Choix de la voiture » en autocollant et « Midi / Nuit » en bas
+        // à gauche ; « Rouler » rond en bas à droite. Image de la carte : illustration du jeu, provisoire (vue aérienne : RG-23).
+        const float W = g.uiWidth, H = g.uiHeight, k = std::min(H / 720.f, (W - g.marges.gauche - g.marges.droite) / 1600.f);
         const Marges& mg = g.marges;
-        const float zl = mg.gauche + (cp ? 24 : 32) * k, zr = W - mg.droite - (cp ? 24 : 32) * k, zw = zr - zl;
-        r.uiRect(0, 0, W, H, hex(BG, 0.94f));   // .screen--maps : fond nuit, la scène à peine visible derrière
-        // ---------- .maps-head : sur-titre, titre, index « 01 / 04 » ----------
-        const float hy = mg.haut + (cp ? 12 : 26) * k;
-        ui::text(r, zl, hy, (cp ? 12 : 13) * k, ui::majuscules(ui::tr("terrain.surtitre")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
-        ui::text(r, zl, hy + (cp ? 18 : 20) * k, (cp ? 28 : 44) * k, ui::majuscules(ui::tr("terrain.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        char idx[16]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
-        char totc[16]; std::snprintf(totc, sizeof totc, " / %02d", nbCartes());
-        const std::string tot = totc;
-        ui::text(r, zr, hy + (cp ? 22 : 30) * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
-        ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + (cp ? 14 : 22) * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);
-        // ---------- vignette de la carte (mapCard) ----------
-        // WFS-168 (RG-01) : taille des boutons, des flèches et de Jour / Nuit d'avant WFS-147 (unité kb = H / 720, comme à
-        // 349f7d0) ; la mise en page (vignette, barre) reste celle de WFS-147 : les boutons se calent en bas de leur barre
-        const float kb = H / 720.f, bhPage = (cp ? 48 : 56) * k;
-        const float bh = 56 * kb, by = H - mg.bas - (cp ? 12 : 24) * k - bh;
-        const float bas = by + bh - bhPage, haut = hy + (cp ? 56 : 84) * k;
-        const float chMax = bas - (cp ? 18 : 34) * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * (cp ? 2.4f : 1.9f)), ch = std::min(chMax, cw / 1.6f);
-        // petit écran : vignette plus large que haute (2,4 : 1) pour que les quartiers tiennent sur une ligne
-        const float cx0 = zl + (zw - cw) / 2, cy0 = haut;
+        const float ox = mg.gauche + (W - mg.gauche - mg.droite - 1600 * k) / 2, oy = mg.haut + (H - mg.haut - mg.bas - 720 * k) / 2;
+        r.uiRect(0, 0, W, H, hex(BG, 0.96f));   // fond nuit
+        // ---------- en-tête ----------
+        ui::text(r, ox + 46 * k, oy + 26 * k, 64 * k, ui::majuscules(ui::tr("terrain.titre")), hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+        {
+            char sous[64]; std::snprintf(sous, sizeof sous, "%d / %d", g_index + 1, nbCartes());
+            ui::AvecPolice inter(ui::Police::Inter);
+            ui::text(r, ox + 44 * k, oy + 86 * k, 15 * k, ui::tr("terrain.etape", sous), hex(0xD7DAE2), ui::GAUCHE, 0, false);
+        }
+        {   // solde d'étoiles : pilule de verre inclinée
+            const std::string nb = ui::nombre(boutique::solde(sauvegarde()));
+            const float tp = 24 * k, h = 40 * k, w = ui::width(tp, nb, 0) + tp + 40 * k, x = ox + 1568 * k - w, y = oy + 26 * k, b = 8 * k;
+            const vec2 q[4] = {{x + b, y}, {x + w, y}, {x + w - b, y + h}, {x, y + h}};
+            dessin2d::polygone(r, q, 4, dessin2d::uni(hex(0x15171D, 0.85f)));
+            dessin2d::contour(r, q, 4, 1 * k, hex(TEXTE, 0.18f));
+            garage::etoile(r, x + 20 * k + tp * 0.45f, y + h / 2, tp * 0.48f, hex(ACCENT));
+            ui::text(r, x + 20 * k + tp + 4 * k, y + (h - tp) / 2, tp, nb, hex(TEXTE), ui::GAUCHE, 0, false, true);
+        }
+        // ---------- cartes voisines (150 × 340), grisées ----------
+        g_prec = g_suiv = {};
+        for (int s = 0; s < 2; s++) {
+            const int i = g_index + (s == 0 ? -1 : 1);
+            if (i < 0 || i >= nbCartes()) continue;
+            const float x = ox + (s == 0 ? 30 : 1420) * k, y = oy + 160 * k, w = 150 * k, h = 340 * k;
+            (s == 0 ? g_prec : g_suiv) = {x, y, w, h};
+            vignette(r, x, y, w, h, g_liste[(size_t)i], g_nuitChoisie);
+            r.uiRect(x, y, w, h, hex(BG, 0.55f));
+            arrondirCoins(r, x, y, w, h, 14 * k);
+        }
+        // ---------- grande carte (1180 × 440) ----------
+        const float cx0 = ox + 210 * k, cy0 = oy + 110 * k, cw = 1180 * k, ch = 440 * k;
         g_carte = {cx0, cy0, cw, ch};
         const CarteVue& c = g_liste[(size_t)g_index];
         const MapDef& m = mapById(c.id.c_str());
-        r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(ACCENT2));   // WFS-146 (RG-07, ANO-41) : carte choisie, contour cyan (sélection) pour toutes les cartes
-        vignette(r, cx0, cy0, cw, ch, c, g_nuitChoisie);
-        assombrirCarte(r, c.id.c_str(), cx0, cy0, cw, ch);   // WFS-307 (RG-01) : paquet publié pas encore téléchargé
-        // WFS-96 (RG-02) : quartiers (zoneNames du web) en pastilles (.map-zones), rangées en lignes dans la carte
-        const std::vector<std::string> qs = quartiers(m);
-        const float pf = (cp ? 13 : 12) * k, ph = (cp ? 24 : 22) * k, pg = 6 * k, pmax = cw - 48 * k;
-        std::vector<float> pw; std::vector<int> pl; int nl = 1; float lx = 0;
-        for (const std::string& q : qs) {
-            const float w = ui::width(pf, q, 0.04f) + 20 * k;
-            if (lx > 0 && lx + w > pmax) { nl++; lx = 0; }
-            pw.push_back(w); pl.push_back(nl - 1); lx += w + pg;
-        }
-        // .map-info : nom, description, longueur, quartiers (petit écran : nom 26 dp, description 14 dp, libellés 12 dp,
-        // lignes rapprochées ; dDesc, dFait, dPuce : décalage de chaque ligne sous le nom)
-        // petit écran (QA tour 1, A) : longueur et quartiers sur une seule ligne (libellé puis valeur), pour laisser
-        // l'illustration visible au-dessus du bloc de texte
-        const float dDesc = (cp ? 30 : 46) * k, dFait = (cp ? 52 : 76) * k, dPuce = (cp ? 80 : 124) * k, lf = (cp ? 12 : 11) * k;
-        const float ix = cx0 + 24 * k, iy = cp ? cy0 + ch - dPuce - (nl * (ph + pg) - pg) - 8 * k : cy0 + ch - 128 * k - nl * (ph + pg) - 8 * k;
-        // .map-shade : linear-gradient(180deg, transparent 30 %, rgba(10,11,16,.6) 52 %, .97 68 %, #0A0B10) (style.css
-        // l. 519), en trois dégradés d'un seul tenant (WFS-147, ANO-18). Petit écran (QA tour 1, A) : l'ombre est calée
-        // sur le bloc de texte, pas sur la hauteur de la carte : transparente jusqu'à 32 dp au-dessus du nom, 0,6 en haut
-        // du nom, 0,97 en haut de la description, puis le fond ; bureau : arrêts du web (30 / 52 / 68 %)
-        float s0 = cy0 + ch * 0.30f, s1 = cy0 + ch * 0.52f, s2 = cy0 + ch * 0.68f;
-        if (cp) { s0 = std::max(cy0, iy - 32 * k); s1 = std::max(s0, iy); s2 = std::max(s1, iy + dDesc); }
-        degradeV(r, cx0, s0, cw, s1 - s0, hex(BG, 0), hex(BG, 0.6f));
-        degradeV(r, cx0, s1, cw, s2 - s1, hex(BG, 0.6f), hex(BG, 0.97f));
-        degradeV(r, cx0, s2, cw, cy0 + ch - s2, hex(BG, 0.97f), hex(BG, 1));
-        // .map-sel « Choisi »
-        const std::string choisi = ui::majuscules(ui::tr("terrain.choisi"));
-        const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
-        r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(ACCENT2, 0.92f));   // WFS-146 (RG-07) : badge « Choisi » cyan
-        ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
-        { const textes::NomPropre np;   // WFS-505 : nom de la carte, nom propre inchangé en anglais (RC-E20-03) : noté à part au banc
-          ui::text(r, ix, iy, (cp ? 26 : 36) * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true); }
-        ui::text(r, ix, iy + dDesc, (cp ? 14 : 15) * k, c.art < 4 ? ui::tr(c.desc.c_str()) : c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
-        std::string km = ui::decimal(std::round(longueurKm(m) * 10) / 10, 1);
-        if (km.size() > 2 && km.compare(km.size() - 2, 2, ",0") == 0) km.resize(km.size() - 2);
-        if (cp) {   // .fact sur une ligne : bordure à l'accent, libellé 12 dp, valeur 20 dp sur la même ligne de base
-            const float fy = iy + dFait, vh = 20 * k, ly = fy + vh - lf - 2 * k;
-            float fx = ix;
-            for (int f = 0; f < 2; f++) {
-                const std::string lib = ui::majuscules(ui::tr(f == 0 ? "terrain.longueur" : "terrain.quartiers")), val = f == 0 ? km + " km" : std::to_string(qs.size());
-                r.uiRect(fx - 10 * k, fy - 1 * k, 2 * k, vh + 4 * k, hex(c.accent));
-                ui::text(r, fx, ly, lf, lib, hex(MUTED), ui::GAUCHE, 0.16f, false);
-                const float vx = fx + ui::width(lf, lib, 0.16f) + 10 * k;
-                ui::text(r, vx, fy, vh, val, hex(TEXTE), ui::GAUCHE, 0, true, true);
-                fx = vx + ui::width(vh, val) + 34 * k;
-            }
-        } else {
-            ui::text(r, ix, iy + dFait, lf, ui::majuscules(ui::tr("terrain.longueur")), hex(MUTED), ui::GAUCHE, 0.16f, false);
-            ui::text(r, ix, iy + dFait + 16 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
-            r.uiRect(ix - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
-            const float qx = ix + std::max(ui::width(lf, ui::majuscules(ui::tr("terrain.longueur")), 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
-            r.uiRect(qx - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));
-            ui::text(r, qx, iy + dFait, lf, ui::majuscules(ui::tr("terrain.quartiers")), hex(MUTED), ui::GAUCHE, 0.16f, false);
-            ui::text(r, qx, iy + dFait + 16 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
-        }
-        lx = 0;
-        for (size_t i = 0; i < qs.size(); i++) {
-            if (i > 0 && pl[i] != pl[i - 1]) lx = 0;
-            const float px0 = ix + lx, py0 = iy + dPuce + pl[i] * (ph + pg);
-            const float sk = 4 * k, cr = 30 / 255.f, cg = 33 / 255.f, cb = 48 / 255.f, ca = 0.75f;   // skewX(-10deg)
-            const UiVertex q[4] = {{px0 + sk, py0, -1, -1, cr, cg, cb, ca}, {px0 + pw[i], py0, -1, -1, cr, cg, cb, ca},
-                                   {px0 + pw[i] - sk, py0 + ph, -1, -1, cr, cg, cb, ca}, {px0, py0 + ph, -1, -1, cr, cg, cb, ca}};
-            r.uiQuad(q);
-            ui::text(r, px0 + 10 * k, py0 + (ph - pf) / 2, pf, qs[i], hex(TEXTE), ui::GAUCHE, 0.04f, false);
-            lx += pw[i] + pg;
-        }
-        dessinerPaquetCarte(r, c.id.c_str(), cx0, cy0, cw, ch, k, g.time);   // WFS-307 : Télécharger / progression / Supprimer
-        // ---------- flèches (.map-arrow), grisées aux extrémités ----------
-        const float ar = 26 * kb, ay = cy0 + ch / 2;   // WFS-168 : flèche d'avant WFS-147
-        const float ax[2] = {cx0 - 18 * k - ar, cx0 + cw + 18 * k + ar};
-        for (int s = 0; s < 2; s++) {
-            const bool actif = s == 0 ? g_index > 0 : g_index < nbCartes() - 1;
-            (s == 0 ? g_prec : g_suiv) = actif ? Zone{ax[s] - ar - 10 * kb, ay - ar - 10 * kb, 2 * ar + 20 * kb, 2 * ar + 20 * kb} : Zone{};
-            r.uiCircle(ax[s], ay, ar + kb, hex(0xFFFFFF, actif ? 0.14f : 0.05f));
-            r.uiCircle(ax[s], ay, ar, hex(SURFACE2, actif ? 0.95f : 0.5f));
-            // grisé : couleur opaque équivalente (texte à 30 % sur le disque à 50 % sur le fond)
-            chevron(r, ax[s] + (s == 0 ? -2 : 2) * kb, ay, 18 * kb, s == 0 ? -1 : 1, actif ? hex(TEXTE) : melange(melange(hex(BG), hex(SURFACE2), 0.5f), hex(TEXTE), 0.3f));
-        }
-        // ---------- points (.map-dots) ----------
-        const float dy = cy0 + ch + (cp ? 7 : 16) * k;
-        float dxp = zl + zw / 2 - ((nbCartes() - 1) * 14 * k + 28 * k) / 2;
-        for (int i = 0; i < nbCartes(); i++) {
-            const float w = i == g_index ? 28 * k : 8 * k;
-            r.uiRect(dxp, dy, w, 4 * k, i == g_index ? hex(ACCENT) : hex(TEXTE, 0.25f));
-            dxp += w + 6 * k;
-        }
-        // ---------- .maps-bar : Jour / Nuit (.tod-btn), Retour, Rouler ----------
-        const float tw = 132 * kb;   // WFS-168 : largeur d'avant WFS-147
-        ui::boutons::selecteurFond(r, zl, by, 2 * tw + 6 * k, bh);   // WFS-549 (RG-05) : Jour / Nuit dans une rangée de verre
-        for (int s = 0; s < 2; s++) {
-            const bool nuit = s == 1, on = nuit == g_nuitChoisie;
-            const float x = zl + s * (tw + 6 * k);
-            (nuit ? g_nuit : g_jour) = {x, by, tw, bh};
-            // WFS-549 (RG-05, RG-07) : choix actif = pilule blanche, texte et icône sombres ; mêmes rectangles qu'avant
-            ui::boutons::selecteurChoix(r, x, by, tw, bh, "", on);
-            const vec4 ci = on ? hex(BG) : hex(TEXTE), fondIcone = on ? hex(0xEDEFF3) : hex(0x15171E);
-            const float icx = x + 30 * kb, icy = by + bh / 2;   // icône soleil / lune (taille du bouton d'avant WFS-147)
-            if (!nuit) { r.uiCircle(icx, icy, 7 * kb, ci); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * kb, icy + std::sin(a * 0.785f) * 12 * kb, 1.6f * kb, ci); }
-            else { r.uiCircle(icx, icy, 9 * kb, ci); r.uiCircle(icx + 5 * kb, icy - 4 * kb, 8 * kb, fondIcone); }
-            // WFS-375 (RG-01) : jamais « Midi », « Dorée »… ; WFS-505 (RG-03) : texte dans la place du bouton (police réduite de 20 % au plus)
-            ui::textBoite(r, x + 52 * kb, by, tw - 60 * kb, bh, 18 * k, ui::majuscules(ui::tr(nuit ? "terrain.nuit" : "terrain.jour")), ci, ui::GAUCHE, 0.08f, false);
-        }
-        const float tp = 20 * k;
-        // WFS-505 (RG-03, RC-E20-04) : largeurs mesurées sur le texte français (boutons identiques dans les deux langues)
-        const std::string rt = ui::majuscules(ui::tr("terrain.rouler")), bt = ui::majuscules(ui::tr("terrain.retour"));
-        const float rtw = ui::width(tp, ui::majuscules(ui::trLangue("terrain.rouler", ui::langue::Langue::Francais)), 0.12f);
-        const float btw = ui::width(tp, ui::majuscules(ui::trLangue("terrain.retour", ui::langue::Langue::Francais)), 0.12f);
-        const float rw = rtw + 56 * kb + 26 * kb, bw = btw + 52 * kb;
-        const float rx = zr - rw, bx = rx - 10 * k - bw;
-        g_rouler = {rx, by, rw, bh}; g_retour = {bx, by, bw, bh};
-        for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
-        // WFS-549 (RG-01, RG-02, RG-07) : « Retour » en autocollant, « Rouler » en bouton Start/Stop ; mêmes rectangles qu'avant
-        ui::boutons::autocollant(r, bx, by, bw, bh, bt, 1, false, tp);
-        // WFS-551 (RG-07, maquette 18a) : carte pas encore téléchargée : « Rouler » éteint, « Carte à télécharger » dessous
         const bool aTelecharger = carteATelecharger(c.id);
-        ui::boutons::startStop(r, rx, by, rw, bh, rt, 1, false, aTelecharger ? ui::tr("terrain.a_telecharger") : "", tp, aTelecharger);
+        if (!aTelecharger) {   // carte installée : halo orange autour (maquette 18c)
+            vec2 q[ui::boutons::MAX_SOMMETS];
+            const int n = ui::boutons::contourArrondi(q, cx0, cy0, cw, ch, 18 * k);
+            dessin2d::halo(r, q, n, 18 * k, hex(ACCENT, 0.35f));
+        }
+        vignette(r, cx0, cy0, cw, ch, c, g_nuitChoisie);
+        assombrirCarte(r, c.id.c_str(), cx0, cy0, cw, ch);   // WFS-307 (RG-01) : paquet publié pas encore téléchargé : image grise
+        // ombre du bas pour le texte (transparent → fond)
+        degradeV(r, cx0, cy0 + ch * 0.45f, cw, ch * 0.25f, hex(BG, 0), hex(BG, 0.55f));
+        degradeV(r, cx0, cy0 + ch * 0.70f, cw, ch * 0.30f, hex(BG, 0.55f), hex(BG, 0.90f));
+        arrondirCoins(r, cx0, cy0, cw, ch, 18 * k);
+        if (!aTelecharger) { vec2 q[ui::boutons::MAX_SOMMETS]; const int n = ui::boutons::contourArrondi(q, cx0, cy0, cw, ch, 18 * k);
+                             dessin2d::contour(r, q, n, 1.5f * k, hex(ACCENT, 0.85f)); }
+        {   // nom, description, longueur, quartiers
+            const float ix = cx0 + 32 * k;
+            { const textes::NomPropre np;   // WFS-505 : nom de la carte, nom propre (RC-E20-03)
+              ui::text(r, ix + 2 * k, cy0 + 300 * k, 64 * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.01f, false, true); }
+            { ui::AvecPolice inter(ui::Police::Inter);
+              ui::textBoite(r, ix, cy0 + 365 * k, cw - 64 * k, 20 * k, 17 * k, c.art < 4 ? ui::tr(c.desc.c_str()) : c.desc, hex(0xE6E8EE), ui::GAUCHE, 0); }
+            std::string km = ui::decimal(std::round(longueurKm(m) * 10) / 10, 1);
+            if (km.size() > 2 && km.compare(km.size() - 2, 2, ",0") == 0) km.resize(km.size() - 2);
+            const std::vector<std::string> qs = quartiers(m);
+            const float fy = cy0 + 397 * k, fp = 26 * k;
+            float x = ix;
+            const std::string t1 = km + " km", t2 = ui::tr(qs.size() > 1 ? "terrain.n_quartiers" : "terrain.n_quartier", std::to_string(qs.size()));
+            ui::text(r, x, fy, fp, t1, hex(TEXTE), ui::GAUCHE, 0, false, true); x += ui::width(fp, t1, 0) + 14 * k;
+            r.uiRect(x, fy + fp * 0.5f, 3 * k, 3 * k, hex(TEXTE, 0.5f)); x += 17 * k;
+            ui::text(r, x, fy, fp, t2, hex(TEXTE), ui::GAUCHE, 0, false, true); x += ui::width(fp, t2, 0) + 18 * k;
+            ui::AvecPolice inter(ui::Police::InterMedium);
+            for (const std::string& q : qs) {   // pastilles des quartiers : verre arrondi, bord clair
+                const float pw = ui::width(13 * k, q, 0) + 24 * k, ph = 22 * k, py = fy + (fp - ph) / 2 + 2 * k;
+                if (x + pw > cx0 + cw - 24 * k) break;
+                vec2 qq[ui::boutons::MAX_SOMMETS];
+                const int n = ui::boutons::contourArrondi(qq, x, py, pw, ph, 6 * k);
+                dessin2d::polygone(r, qq, n, dessin2d::uni(hex(0x15171D, 0.75f)));
+                dessin2d::contour(r, qq, n, 1 * k, hex(TEXTE, 0.30f));
+                ui::text(r, x + pw / 2, py + (ph - 13 * k) / 2, 13 * k, q, hex(0xE6E8EE), ui::CENTRE, 0, false);
+                x += pw + 16 * k;
+            }
+        }
+        dessinerPaquetCarte(r, c.id.c_str(), cx0, cy0, cw, ch, k, g.time);   // WFS-307 / WFS-551 : badge, Télécharger, progression, Supprimer
+        // ---------- points sous la carte ----------
+        {
+            const int n = nbCartes();
+            float tot = 0; for (int i = 0; i < n; i++) tot += (i == g_index ? 35 : 16) * k + (i ? 6 * k : 0);
+            float x = ox + 800 * k - tot / 2;
+            for (int i = 0; i < n; i++) {
+                const float w = (i == g_index ? 35 : 16) * k;
+                r.uiRect(x, oy + 567 * k, w, 4 * k, i == g_index ? hex(ACCENT) : i < g_index ? hex(TEXTE, 0.8f) : hex(TEXTE, 0.25f));
+                x += w + 6 * k;
+            }
+        }
+        // ---------- Midi / Nuit (sélecteur de verre 170 × 36) ----------
+        {
+            const float sx = ox + 240 * k, sy = oy + 654 * k, sh = 36 * k, in = 3 * k, tw = 82 * k;
+            ui::boutons::selecteurFond(r, sx, sy, 2 * tw + 2 * in, sh);
+            for (int s2 = 0; s2 < 2; s2++) {
+                const bool nuit = s2 == 1, on = nuit == g_nuitChoisie;
+                const float x = sx + in + s2 * tw;
+                (nuit ? g_nuit : g_jour) = {x, sy - 4 * k, tw, sh + 8 * k};   // zone ≥ 44 px
+                ui::boutons::selecteurChoix(r, x, sy + in, tw, sh - 2 * in, "", on);
+                const vec4 ci = on ? hex(BG) : hex(TEXTE);
+                const float icx = x + 20 * k, icy = sy + sh / 2;
+                if (!nuit) { dessin2d::anneau(r, icx, icy, 0, 3.2f * k, ci); for (int a2 = 0; a2 < 8; a2++) { const vec2 l[2] = {{icx + std::cos(a2 * 0.785f) * 5 * k, icy + std::sin(a2 * 0.785f) * 5 * k}, {icx + std::cos(a2 * 0.785f) * 7 * k, icy + std::sin(a2 * 0.785f) * 7 * k}}; dessin2d::trait(r, l, 2, 1.2f * k, ci); } }
+                else dessin2d::arc(r, icx + 1 * k, icy, 5 * k, 1.4f * k, 1.15f * PI, 1.85f * PI + PI * 0.15f, ci);
+                ui::AvecPolice inter(ui::Police::InterMedium);
+                ui::text(r, x + 31 * k, sy + (sh - 14 * k) / 2, 14 * k, ui::majuscules(ui::tr(nuit ? "terrain.nuit" : "terrain.midi")), ci, ui::GAUCHE, 0.08f, false);
+            }
+        }
+        // ---------- « Retour / Choix de la voiture » (autocollant) et « Rouler » (rond) ----------
+        g_retour = {ox + 70 * k, oy + 616 * k, 142 * k, 58 * k};
+        ui::boutons::autocollant(r, g_retour.x, g_retour.y, g_retour.w, g_retour.h, ui::majuscules(ui::tr("terrain.retour")), 1, false, 26 * k, ui::tr("terrain.retour.sous"));
+        const float d = 120 * k;
+        g_rouler = {ox + 1460 * k - d / 2, oy + 604 * k - d / 2, d, d};
+        // WFS-551 (RG-07, maquette 18a) : carte pas encore téléchargée : « Rouler » éteint, « Carte à télécharger » dessous
+        ui::boutons::startStop(r, g_rouler.x, g_rouler.y, d, d, ui::majuscules(ui::tr("terrain.rouler")), 1, false, aTelecharger ? ui::tr("terrain.a_telecharger") : "", 18 * k, aTelecharger);
+        for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
+    }
+    // coins arrondis d'un rectangle dessiné en carré : quatre coins remplis du fond (l'illustration reste à l'intérieur)
+    static void arrondirCoins(Renderer& r, float x, float y, float w, float h, float R) {
+        for (int c2 = 0; c2 < 4; c2++) {
+            const float cx = c2 % 3 == 0 ? x + R : x + w - R, cy = c2 < 2 ? y + R : y + h - R;
+            const float a0 = c2 == 0 ? 1.5f * PI : c2 == 1 ? 0.f : c2 == 2 ? 0.5f * PI : PI;
+            vec2 q[12]; int n = 0;
+            q[n++] = {c2 % 3 == 0 ? x : x + w, c2 < 2 ? y : y + h};
+            for (int i = 0; i <= 8; i++) { const float a = a0 + 0.5f * PI * i / 8; q[n++] = {cx + std::sin(a) * R, cy - std::cos(a) * R}; }
+            dessin2d::polygone(r, q, n, dessin2d::uni(hex(BG)));
+        }
     }
 private:
     void pas(int dir) {   // stepMap du web : bornée aux extrémités
