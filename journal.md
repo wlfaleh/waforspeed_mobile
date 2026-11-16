@@ -1264,3 +1264,10 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Plaque : suit le pseudo, toucher « Ta plaque » la modifie. Profil : « · record » si le score égale le record du mode ; aide de glissement retirée.
 - Menu : Crédits seulement dans les Réglages (maquette 14) ; compteur d'étoiles → Market ; bloc « RECORD » → Profil (pas de bouton ajouté) ; sous-titres, « Ta voiture » et aide retirés.
 - Pause : « CP 2 » sans total en Checkpoint. Market : apparence 100 % ; le pack débutant existe déjà (WFS-510, 511, 513), il est branché tel quel, grisé « Après ta 3e course » tant qu'il n'est pas proposé ; pas de nouvelle US.
+
+### 2026-11-16 00:39:16 — WFS-503 : PR #427 refusée par le lead dev (lead-dev)
+- Commit relu : 75d1f823. Les 28 captures ont été ouvertes et sont conformes : étoiles 0 → 28 ★ créditées une fois, coloris Cyan débloqué puis choisi, course de jour et de nuit, skin Camouflage débloquée, relance gardée ; paires du menu identiques à l'octet.
+- Diff lu en entier, sans défaut : donner() est fait dans la même écriture atomique, avec remise en cas d'échec ; la clé cadeau-nouveaux est bornée et compatible avec les anciennes sauvegardes.
+- Construction et tests refaits sur la branche + main : 148 tests réussis.
+- Refus pour un seul point : la capture « Tests CPU » manque dans la description et qa/pr/WFS-503/tests-cpu.log est absent (règle de l'utilisateur du 2026-11-11). Aucune capture à refaire.
+- Revue publiée en COMMENT sur la PR (GitHub refuse REQUEST_CHANGES pour le même compte).
