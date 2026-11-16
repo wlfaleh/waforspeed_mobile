@@ -45,7 +45,8 @@ constexpr float CADRE = 0.055f;                           // largeur du cadre av
 constexpr float SAILLIE_CADRE = 0.012f;                   // le cadre dépasse du masque
 constexpr float VISIERE = 0.007f;                         // profondeur des visières
 constexpr float RAYON_POINT = 0.0048f;                    // LED de 5 mm (lentille diffusante)
-constexpr int POINTS_MAX = 5200;                          // points allumés au plus (31 × 6 caractères, ≈ 28 points chacun)
+constexpr int POINTS_MAX = 5200;                          // points allumés au plus (30 × 6 caractères, ≈ 28 points chacun)
+constexpr int REFLETS_DECOR = 200;                        // taches des reflets des réglettes (15 réglettes × 10 au plus)
 const Repere MONDE{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
 
 // ambre 590 nm (sRGB #FFA000 en linéaire) : couleur des points et de leur lumière
@@ -153,7 +154,6 @@ public:
         for (int k = 0; k < NB_MATS; k++) if (mesh_[k].indexCount) r.draw(mesh_[k], mat_[k], voiture_);
         if (points_[courant_].indexCount) r.draw(points_[courant_], matPoint_, voiture_);
         if (reflets_[courant_].indexCount) r.draw(reflets_[courant_], matReflet_, voiture_);
-        if (refletsDecor_.indexCount) r.draw(refletsDecor_, matReflet_, voiture_);
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_affiche || g_tableau.titre.empty()) return;
@@ -270,24 +270,6 @@ private:
         Material mr; mr.flags = MAT_ADD | MAT_BLEND; mr.color = {1, 1, 1, 1};   // reflet : lumière ajoutée, couleur dans la normale
         matReflet_ = r.makeMaterial(mr, nullptr, nullptr, nullptr);
         matReflet_.flags |= MAT_ADD | MAT_BLEND;
-        // ---- reflets des réglettes de WFS-552 (même trame que menu_parking.cpp : allée tous les 4 m, places tous les 8 m) sur le
-        // sol mouillé : 10 taches par réglette de 1,5 m, étirées vers l'œil (caméra fixe de l'écran : préparé une fois)
-        {
-            Geo rg;
-            const vec3 E = camera(1.f).oeil;
-            auto reglette = [&](float x, float z) {
-                for (int k = 0; k < 10; k++) {
-                    const vec3 P{x - 0.70f + 1.40f * (float)k / 9.f, ecrans::parking::HAUTEUR_DALLE - 0.06f, z};
-                    if (P.z < E.z + 1.f) continue;   // derrière l'œil ou au-dessus de lui : pas vu dans le sol
-                    tache(rg.v, rg.i, E, P, 0.05f, 0.035f, vec3{1.0f, 0.93f, 0.84f} * 0.40f);
-                }
-            };
-            const float zA = (-ecrans::parking::PLACE_P / 2 + (-ecrans::parking::PLACE_P / 2 - ecrans::parking::ALLEE)) / 2;
-            for (float x = -18.f; x <= 18.f; x += 4.f) reglette(x, zA);
-            for (float x = -16.f; x <= 16.f; x += 8.f) reglette(x, 0.20f);
-            refletsDecor_ = r.essayerMesh(rg.v, rg.i);
-            if (refletsDecor_.vb.buf == VK_NULL_HANDLE) return false;
-        }
         return true;
     }
 
@@ -303,8 +285,6 @@ private:
         matPoint_ = matReflet_ = Material{};
         if (imageMasque_.img != VK_NULL_HANDLE) r.vk().destroy(imageMasque_);
         imageMasque_ = Image{};
-        if (refletsDecor_.vb.buf != VK_NULL_HANDLE || refletsDecor_.ib.buf != VK_NULL_HANDLE) r.destroy(refletsDecor_);
-        refletsDecor_ = Mesh{};
         ecrit_ = false;
     }
 
@@ -312,9 +292,27 @@ private:
     void ecrirePoints(Renderer& r) {
         const std::string entete[4] = {ui::tr("resultats.led.pos"), ui::tr("resultats.led.pilote"), ui::tr("resultats.led.temps"), ui::tr("resultats.led.ecart")};
         led::composer(entete, g_tableau.lignes, allumes_);
-        if (allumes_.size() > (size_t)POINTS_MAX) allumes_.resize(POINTS_MAX);
+        if (allumes_.size() > (size_t)(POINTS_MAX - REFLETS_DECOR)) allumes_.resize(POINTS_MAX - REFLETS_DECOR);
         sommetsP_.clear(); indicesP_.clear(); sommetsR_.clear(); indicesR_.clear();
         const vec3 E = oeilParking_;
+        // le halo additif lit sa couleur dans la normale, que le moteur tourne avec le repère du dessin (celui du parking, tourné
+        // avec la voiture) : couleur passée dans le repère du parking pour qu'elle reste ambre (avant : reflet vert)
+        const mat4 versParking = inverseAffine(voiture_);
+        auto teinte = [&](const vec3& c) { return versParking.transformDir(c); };
+        // reflets des réglettes de WFS-552 (même trame que menu_parking.cpp : allée tous les 4 m, places tous les 8 m) : 10 taches
+        // par réglette de 1,5 m, étirées vers l'œil
+        {
+            const float zA = (-ecrans::parking::PLACE_P / 2 + (-ecrans::parking::PLACE_P / 2 - ecrans::parking::ALLEE)) / 2;
+            auto reglette = [&](float x, float z) {
+                for (int k = 0; k < 10; k++) {
+                    const vec3 P{x - 0.70f + 1.40f * (float)k / 9.f, ecrans::parking::HAUTEUR_DALLE - 0.06f, z};
+                    if (P.z < E.z + 1.f) continue;   // au-dessus de l'œil ou derrière : pas vu dans le sol
+                    tache(sommetsR_, indicesR_, E, P, 0.05f, 0.035f, teinte(vec3{1.0f, 0.93f, 0.84f} * 0.40f));
+                }
+            };
+            for (float x = -18.f; x <= 18.f; x += 4.f) reglette(x, zA);
+            for (float x = -16.f; x <= 16.f; x += 8.f) reglette(x, 0.20f);
+        }
         for (const led::Point& p : allumes_) {
             const vec3 c = positionPoint(p.c, p.r);
             // LED : hexagone face à l'allée (normale −z), centre un peu bombé vers l'avant (lentille)
@@ -329,7 +327,7 @@ private:
             // l'horizontal, avis de l'agent 3D), qui s'efface en s'éloignant du mur (fondu sur ≈ 1,5 m) ; Fresnel de l'eau rasante
             const vec3 q = refletSol(E, c);
             const float loin = std::max(0.f, Z_FOND - q.z);
-            tache(sommetsR_, indicesR_, E, c, RAYON_POINT * 7.5f, RAYON_POINT * 2.5f, AMBRE * (1.20f * std::exp(-loin / 1.5f)));
+            tache(sommetsR_, indicesR_, E, c, RAYON_POINT * 7.5f, RAYON_POINT * 2.5f, teinte(AMBRE * (1.20f * std::exp(-loin / 1.5f))));
         }
         courant_ = 1 - courant_;   // jamais le tampon de l'image d'avant
         if (sommetsP_.empty()) { points_[courant_].indexCount = 0; reflets_[courant_].indexCount = 0; return; }
@@ -346,7 +344,6 @@ private:
     bool ecrit_ = false;
     float ouverture_[4]{};          // ouverture du cadre (x0, x1, y0, y1), repère du parking
     Image imageMasque_{};           // points éteints du masque
-    Mesh refletsDecor_{};           // reflets des réglettes sur le sol (caméra fixe : préparés une fois)
     size_t trianglesTableau_ = 0;
     mat4 voiture_ = mat4::identity();   // repère du parking dans le monde (autour de la voiture du joueur)
     vec3 oeilParking_{};
