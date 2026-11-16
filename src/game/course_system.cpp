@@ -285,12 +285,12 @@ private:
         }
         // WFS-557 (maquettes 10 et 11, RG-20 : éléments 2D seulement ; scènes 3D : WFS-560, 561) : « MENU » en plaque à bande orange en
         // bas à gauche (200 × 44), « Rejouer » en bouton rond (110 px) en bas à droite ; unités de la maquette (k = H / 720)
-        const float k = H / 720.f, ox = (W - 1600 * k) / 2;
+        const float k = std::min(H / 720.f, W / 1600.f), ox = (W - 1600 * k) / 2, oy = (H - 720 * k) / 2;   // 16:9 : réduite et centrée
         const float by = py + 60 * u + plus;
         if (rec) dessinerRecord(r, cx, py + 31.5f * u, by - 12 * s, u, ui::nombre(sauvegarde().best), nouveauRecord_);   // WFS-24 ; WFS-125 : commun aux modes
         const float d = 110 * k;
-        rejouer_ = {ox + 1330 * k - d / 2, 540 * k - d / 2, d, d};
-        menu_ = {ox + 190 * k, 556 * k, 200 * k, 44 * k};
+        rejouer_ = {ox + 1330 * k - d / 2, oy + 540 * k - d / 2, d, d};
+        menu_ = {ox + 190 * k, oy + 556 * k, 200 * k, 44 * k};
         manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
         static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
         ui::boutons::startStop(r, rejouer_.x, rejouer_.y, d, d, libRejouer(), 1, false, "", 17 * k);
@@ -298,7 +298,7 @@ private:
         {   // pastille « ★ +7 étoiles ▲ nouveau record » en haut à gauche (maquette 10, RG-20)
             const score_fin::Etat& e = score_fin::etat();
             if (e.pret && e.etoiles >= 0) {
-                const float px0 = ox + 42 * k, py0 = 30 * k, tp = 13 * k;
+                const float px0 = ox + 42 * k, py0 = oy + 30 * k, tp = 13 * k;
                 std::string t1 = "+" + ui::nombre(e.etoiles) + " " + ui::tr(e.etoiles > 1 ? "fin.pastille.etoiles" : "fin.pastille.etoile");
                 const std::string t2 = e.nouveauRecord ? ui::tr("fin.pastille.record") : std::string();
                 ui::AvecPolice inter(ui::Police::InterMedium);
@@ -365,8 +365,8 @@ void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, con
 }
 // WFS-141 : parallélogramme des boutons de l'écran de fin (avant : CourseSystem::biseau), commun aux 3 modes
 FinR19 panneauFinR19(Renderer& r, float W, float H) {
-    FinR19 f; f.k = H / 720.f; f.ox = (W - 1600 * f.k) / 2;
-    f.x = f.ox + 300 * f.k; f.y = 60 * f.k; f.w = 640 * f.k; f.h = 556 * f.k;
+    FinR19 f; f.k = std::min(H / 720.f, W / 1600.f); f.ox = (W - 1600 * f.k) / 2; f.oy = (H - 720 * f.k) / 2;   // 16:9 : maquette réduite et centrée
+    f.x = f.ox + 300 * f.k; f.y = f.oy + 60 * f.k; f.w = 640 * f.k; f.h = 556 * f.k;
     verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // écran arrêté : course floutée et assombrie
     verre::panneau(r, f.x, f.y, f.w, f.h, {22 * f.k, 1.5f * f.k});
     score_fin::poser(f.x, f.y, f.w, f.h);   // WFS-537 : bloc « Score » à droite du panneau
@@ -391,9 +391,9 @@ void ligneFinR19(Renderer& r, const FinR19& f, int n, const std::string& gauche,
 }
 void boutonsFinR19(Renderer& r, const FinR19& f, const std::string& action, bool actionAppuyee, float retour[4], float bouton[4]) {
     const float k = f.k;
-    retour[0] = f.ox + 976 * k; retour[1] = 520 * k; retour[2] = 184 * k; retour[3] = 80 * k;
+    retour[0] = f.ox + 976 * k; retour[1] = f.oy + 520 * k; retour[2] = 184 * k; retour[3] = 80 * k;
     const float d = 112 * k;
-    bouton[0] = f.ox + 1248 * k - d / 2; bouton[1] = 530 * k - d / 2; bouton[2] = d; bouton[3] = d;
+    bouton[0] = f.ox + 1248 * k - d / 2; bouton[1] = f.oy + 530 * k - d / 2; bouton[2] = d; bouton[3] = d;
     static textes::Capitales libRetour{"fin.retour"};
     ui::boutons::autocollant(r, retour[0], retour[1], retour[2], retour[3], libRetour(), 1, false, 30 * k, ui::tr("reglages.surtitre.menu"));
     ui::boutons::startStop(r, bouton[0], bouton[1], d, d, action, 1, actionAppuyee, "", 17 * k);

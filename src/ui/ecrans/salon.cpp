@@ -24,6 +24,8 @@
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "../boutons.h"   // WFS-549 : boutons au modèle R19
+#include "../../game/boutique.h"   // WFS-557 : solde d'étoiles (maquette 23)
+#include "../garage_achat.h"   // WFS-557 : étoile dessinée (garage::etoile)
 #include "../verre.h"   // WFS-548 (R19) : fenêtres de verre, sur-titres gris, couleurs d'état, fond flouté
 #include "../langue.h"   // WFS-505 : textes du salon en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
@@ -387,6 +389,16 @@ private:
         const float ox = g.marges.gauche + (W - g.marges.gauche - g.marges.droite - 1600 * k) / 2, oy = g.marges.haut + (H - g.marges.haut - g.marges.bas - 720 * k) / 2;
         verre::surTitre(r, ox + 56 * k, oy + 36 * k, 15 * k, ui::tr("salon.surtitre"));
         ui::text(r, ox + 57 * k, oy + 44 * k, 54 * k, ui::majuscules(ui::tr("salon.titre")), hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+        {   // WFS-557 (revue de la PR #432) : solde d'étoiles en pilule de verre en haut à droite (maquette 23 : 107 × 45, bord droit à 1570)
+            const std::string nb = ui::nombre(boutique::solde(sauvegarde()));
+            const float tp = 19 * k, h = 45 * k, w = ui::width(tp, nb, 0) + tp + 44 * k, x = ox + 1570 * k - w, y = oy + 22 * k;
+            vec2 q[ui::boutons::MAX_SOMMETS];
+            const int n = ui::boutons::contourArrondi(q, x, y, w, h, h / 2);
+            dessin2d::polygone(r, q, n, dessin2d::uni(hex(0x15171D, 0.85f)));
+            dessin2d::contour(r, q, n, 1 * k, hex(TEXTE, 0.18f));
+            garage::etoile(r, x + 22 * k + tp * 0.45f, y + h / 2, tp * 0.50f, hex(ACCENT));
+            ui::text(r, x + 22 * k + tp + 5 * k, y + (h - tp) / 2, tp, nb, hex(TEXTE), ui::GAUCHE, 0, false, true);
+        }
         // ---- fenêtre de gauche (756 × 450)
         const float lx = ox + 60 * k, ly = oy + 120 * k, lw = 756 * k, lh = 450 * k, xi = lx + 24 * k, xd = lx + lw - 30 * k;
         verre::panneau(r, lx, ly, lw, lh, {18 * k, 1.5f * k});

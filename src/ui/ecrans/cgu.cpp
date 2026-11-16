@@ -140,11 +140,11 @@ void Cgu::dessiner(Renderer& r, float W, float H, const Marges& m, double mainte
         WFS_LOG("CGU (WFS-308) : refus, fermeture de l'application");
     }
     if (!ouvert() || !ui::fontReady()) return;
-    const float k = H / 720.f;
+    const float k = std::min(H / 720.f, (W - m.gauche - m.droite) / 1600.f);   // 16:9 : maquette réduite pour tenir en largeur (revue #432)
     dp_ = ui::pixelsParDp(W);
     if (mode_ == Mode::Premier) r.uiRect(0, 0, W, H, hex(BG));   // 1er lancement : aucune scène derrière
     else { verre::fenetreSurEcran(r); verre::assombrir(r, W, H, 0.55f); }   // ouvertes depuis les Réglages : menu ou pause dessous, couverts
-    const float ox = m.gauche + (W - m.gauche - m.droite - 1600 * k) / 2, oy = m.haut;   // maquette centrée (écrans plus larges)
+    const float ox = m.gauche + (W - m.gauche - m.droite - 1600 * k) / 2, oy = m.haut + std::max(0.f, (H - m.haut - m.bas - 720 * k) / 2);   // maquette centrée
     const float px = ox + 261 * k, py = oy + 41 * k, pw = 1078 * k, ph = 558 * k;
     { verre::Style st; st.rayon = 22 * k; st.lisere = 1.5f * k; verre::panneau(r, px, py, pw, ph, st); }
     verre::surTitre(r, px + 31 * k, py + 27 * k, 15 * k, ui::tr(mode_ == Mode::Premier ? "cgu.surtitre.premier" : "cgu.surtitre.reglages", std::to_string(VERSION_CGU)));

@@ -2,8 +2,10 @@
 // Boutique simulée de WFS-510 (WFS_BOUTIQUE=simulee, prix de secours) ; sauvegarde du banc, effacée à la fin.
 // Captures market-<langue>-<nom>.png : menu, market, achat, attente, sans-pub, restauration, garage, garage-market, hors-ligne.
 #include "market_ecran.h"
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include "../../core/configgame.h"
 #include "../../core/log.h"
 #include "../../game/boutique.h"
 #include "../../game/cars.h"
@@ -69,6 +71,15 @@ int benchUneLangue(Game& gm, Renderer& r, const std::string& out, ui::langue::Ch
     verifier(ouvert() && gm.ecran() == Ecran::Menu, "RG-01 : menu → Market");
     verifier(soldeAffiche() == 1250, "RG-02 : solde en haut (1 250 ★)");
     capture("market", "Market : solde, 4 packs (bonus, base, prix), « Sans pub », mentions, Restaurer, Retour");
+    {   // WFS-557 (revue de la PR #432, RG-18) : pack débutant à l'état « proposé » (bouton 1,99 €), le temps d'une capture
+        const int c0 = sauvegarde().profil.courses;
+        sauvegarde().profil.courses = std::max(c0, config().market.debutantApres);
+        images(2);
+        verifier(market::packDebutantPropose(sauvegarde()) == market::SKINS_EN_VENTE, "WFS-557 RG-18 : pack débutant proposé après la 3e course");
+        capture("debutant-propose", "Market : pack débutant proposé (prix en grand bouton orange)");
+        sauvegarde().profil.courses = c0;
+        images(2);
+    }
     // ---- achat réussi (RG-03) : solde qui monte, « +720 ★ »
     const long long avant = solde();
     verifier(appuyer("pack-2"), "RG-02 : bouton d'achat de la « Médaille d'or »");

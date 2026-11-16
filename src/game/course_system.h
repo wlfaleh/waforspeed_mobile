@@ -38,7 +38,7 @@ void biseauFin(Renderer& r, float x, float y, float w, float h, float biais, con
 // (1600 × 720, k = H / 720, centrée en largeur) : fenêtre de verre 640 × 556 (score à sa droite, score_fin::poser), en-tête
 // (sur-titre gris, titre en italique 84, sous-titre 36), lignes en tuiles de verre (Inter), puis « Retour » (autocollant,
 // « Menu principal ») et le bouton rond (Rejouer, Revanche) sous le score. Rectangles écrits dans fen[4], retour[4], action[4].
-struct FinR19 { float k = 1, x = 0, y = 0, w = 0, h = 0, ox = 0; };
+struct FinR19 { float k = 1, x = 0, y = 0, w = 0, h = 0, ox = 0, oy = 0; };
 FinR19 panneauFinR19(Renderer& r, float W, float H);
 void enTeteFinR19(Renderer& r, const FinR19& f, const std::string& surTitre, const std::string& titre, const vec4& couleurTitre, const std::string& sousTitre);
 // ligne n (0 = première) : texte à gauche, valeur à droite ; moi : liseré et texte orange (toi)

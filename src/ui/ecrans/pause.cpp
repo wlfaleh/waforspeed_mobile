@@ -39,12 +39,6 @@ enum { REPRENDRE = 0, RECOMMENCER = 1, QUITTER = 2 };
 // index.html, #pause .actions ; WFS-505 (RG-01) : clés des tables de textes (« Reprendre », « Recommencer », « Quitter la course »)
 const char* TEXTES[3] = {"pause.reprendre", "pause.recommencer", "pause.quitter"};
 
-// parallélogramme (clip-path des .btn / .cam-btn) en bandes horizontales : haut décalé à droite de `biais`
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
-    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
-}
-
 // bouton « Menu » visible : course réelle en cours (décompte ou course), pas l'écran de fin, pas les scènes du banc sans règles
 bool boutonVisible(const GameView& g) {
     const Course* c = activeCourse();
