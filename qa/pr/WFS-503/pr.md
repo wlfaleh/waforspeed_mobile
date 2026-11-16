@@ -14,14 +14,28 @@
   - Aucun fichier `src/ui/**` ni `assets/textes/**` modifié : l'écran du cadeau (WFS-501) affiche déjà les textes du gain.
 - **Comment c'est vérifié** :
   - `tests/test_cadeau.cpp`, 20 cas nouveaux (RG-05) : étoiles créditées une seule fois (2e ouverture le même jour et relance : rien de plus) ; coloris possédé après le cadeau et après relance, pas appliqué (aspect de course inchangé) ; skin possédée, pas posée, après relance, sortie du tirage suivant ; skins « cadeau seulement » dans le tirage ; tout possédé → étoiles ≥ 10 sur 60 jours (garantie comprise), toutes créditées ; garantie avec toutes les skins possédées → voiture prêtée ; sauvegarde impossible → ni étoile ni objet (40 graines) ; `cadeau-nouveaux` : nouveau → `vu` → plus nouveau, gardé après relance, ancienne sauvegarde sans la clé, éléments mal écrits.
-  - Suite complète `bash tools/qa/tests_cpu.sh build` (branche synchronisée avec `main`, compilée en local) : **148 tests réussis, 0 échec** (549 s).
+  - Suite complète `bash tools/qa/tests_cpu.sh build` (branche synchronisée avec `main`, compilée en local) : **148 tests réussis, 0 échec** (section « Tests CPU » ci-dessous).
   - Parcours (banc `cadeau-gains`, 0 écart en FR et en EN) : menu (0 ★) → cadeau → +28 ★ → menu (28 ★) → 2e appui : attente, rien de plus → cadeau coloris (Cyan pour la 208) → garage, pastille sans cadenas → « Choisir » (0 ★ débité) → terrain → course de jour et de nuit en Cyan → cadeau skin (Camouflage) → garage, skin sans cadenas → relance (sauvegarde relue) : solde, Cyan choisi, Camouflage et 3 cadeaux gardés.
 - **Limites et risques connus** :
   - Pas de badge « NOUVEAU » au garage : décision du PO, ticket WFS-556 (les fichiers du garage sont tenus par WFS-551). Les données (`cadeau-nouveaux`) sont prêtes.
   - Pour obtenir chaque type de gain, le banc ne garde que la chance de ce type dans `config().cadeau` (valeurs du jeu remises ensuite) et possède les finitions d'avance (le coloris tiré est alors une couleur) ; le tirage lui-même n'est pas changé.
   - Banc `cadeau` (WFS-501) : la sauvegarde inactive du banc reçoit maintenant le vrai gain ; les captures « avant / après » de ses menus sont identiques (le tirage du banc, graine 501, donne un coloris : solde inchangé à 0 ★).
   - Captures « avant » : le banc `cadeau-gains` n'existe pas sur `main` (« — » dans le tableau).
+  - Captures `cadeau-gains-*-relance-garage` : la skin Camouflage, gagnée après le coloris, recouvre la peinture à l'image ; que le Cyan soit gardé après la relance est vérifié par le contrôle du banc (`s.paint`, journal « relance : … OK ») et par les captures de course faites avec le Cyan (remarque du lead dev, 1re revue).
+  - `cadeau-nouveaux` grandit tant que WFS-556 n'appelle pas `vu()` : lecture bornée à 256 éléments, sans risque ; signalé au PO pour WFS-556.
   - Ligne `[ERREUR] éclairage (WFS-213) : capture abandonnée` au journal du banc pendant la course de nuit : message du moteur d'éclairage, pas lié à ce ticket.
+
+## Tests CPU
+
+Commit testé : `ddcc72a2` (branche synchronisée avec `main` ; le commit suivant n'ajoute que `qa/pr/WFS-503/`). Journal complet : `qa/pr/WFS-503/tests-cpu.log`.
+
+```
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (1 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 148 test(s) réussi(s) en 535 s
+code de sortie : 0
+```
 
 ## Captures pour le lead dev (24 après)
 
