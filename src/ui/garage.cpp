@@ -145,7 +145,8 @@ public:
                 return true;
             }
             if (doigt_ >= 0) return true;
-            if (market_ecran::dansBoutonGarage(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("garage : « Market »"); market_ecran::ouvrir(Ecran::Garage); return true; }   // WFS-513 (accroche, RG-01)
+            if (market_ecran::dansBoutonGarage(t.x, t.y) || onglets::dansSolde(t.x, t.y)) {   // WFS-551 (RG-12) : cadre du solde
+                appui_.prendre(t.id); WFS_LOG("garage : « Market »"); market_ecran::ouvrir(Ecran::Garage); return true; }   // WFS-513 (accroche, RG-01)
             // boutons et panneaux, dans l'ordre d'avant le découpage : action à l'appui (comme les boutons de la pause)
             if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
             if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
@@ -212,7 +213,9 @@ public:
             ui::textBoite(r, x + w / 2, mp.py0, w - 40 * k, mp.panelH, 15 * k, ui::tr("garage.skin.aucune_voiture"), hex(MUTED, mp.op), ui::CENTRE, 0, false);
         }
         cadre::pied(r, mp, car, voiture_.ok);
-        market_ecran::dessinerBoutonGarage(r, mp.W, mp.H, g.marges, mp.op);   // WFS-513 (accroche, RG-01) : sous le solde d'étoiles
+        // WFS-551 (RG-12) : plus de bouton « Market » visible au garage (maquettes) : le cadre du solde ouvre le Market ; le bouton
+        // de WFS-513 est posé transparent (sa zone, collée sous le cadre du solde, reste pour le banc du Market)
+        market_ecran::dessinerBoutonGarage(r, mp.W, mp.H, g.marges, 0.f);
         achat_.dessinerFenetre(r, mp);      // WFS-499 (accroche) : fenêtre d'achat de la voiture, au-dessus de tout
         skin_.dessinerFenetre(r, mp, index_);   // WFS-494 (accroche) : fenêtre de la skin offerte
     }

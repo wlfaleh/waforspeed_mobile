@@ -15,6 +15,7 @@
 namespace wfs::ecrans::garage {
 namespace {
 int g_onglet = ONGLET_VOITURE;
+Zone g_solde;   // cadre du solde (dernière image) : ouvre le Market (RG-12)
 const char* const CLES[NB_ONGLETS_GARAGE] = {"garage.onglet.voiture", "garage.onglet.peinture", "garage.onglet.finition", "garage.onglet.skins"};
 // centres des onglets, en part de la largeur de l'écran (maquettes 06, 07, 13, 16 : 610, 785, 960, 1113 px sur 1400)
 constexpr float CENTRES[NB_ONGLETS_GARAGE] = {0.436f, 0.561f, 0.686f, 0.795f};
@@ -49,16 +50,16 @@ void dessiner(Renderer& r, const MiseEnPage& mp) {
         const std::string t = ui::majuscules(ui::tr(CLES[o]));
         if (o == g_onglet) {
             // onglet ouvert : titre en néon cyan (tube blanc, lueur cyan), lumière qui tombe dessous (maquettes)
-            const float px = 30 * k;
+            const float px = 34 * k;
             dessin2d::couronne(r, cx, y + h * 0.9f, 0, 46 * k, hex(ACCENT2, 0.30f * op), hex(ACCENT2, 0));
             r.uiCircle(cx, y + h * 0.95f, 7 * k, hex(0xBFFBFF, 0.85f * op));
             // maquettes : lettres en tube de néon (contour creux), lueur cyan autour, carré de lumière dessous
             r.uiRect(cx - 9 * k, y + h + 2 * k, 18 * k, 14 * k, hex(0x9BF6FF, 0.55f * op));
             dessin2d::couronne(r, cx, y + h + 9 * k, 0, 34 * k, hex(ACCENT2, 0.55f * op), hex(ACCENT2, 0));
             for (int i = 0; i < 3; i++)   // lueur : le titre plein redessiné un peu plus gros, très transparent
-                ui::text(r, cx, y + h / 2 - px * 0.62f - i * 0.6f * k, px + i * 1.2f * k, t, hex(ACCENT2, 0.16f * op), ui::CENTRE, 0.02f, false, false);
+                ui::text(r, cx, y + h / 2 - px * 0.62f - i * 0.6f * k, px + i * 1.2f * k, t, hex(ACCENT2, 0.24f * op), ui::CENTRE, 0.02f, false, false);
             ui::contourNeon(true);
-            ui::text(r, cx, y + h / 2 - px * 0.6f, px, t, hex(0x7FF3FF, op), ui::CENTRE, 0.02f, false, false);
+            ui::text(r, cx, y + h / 2 - px * 0.6f, px, t, hex(0xA8FAFF, op), ui::CENTRE, 0.02f, false, false);
             ui::contourNeon(false);
         } else {
             // onglet fermé : plaque claire, liseré orange à gauche, texte sombre en capitales grasses
@@ -81,7 +82,9 @@ int appui(float x, float y) {
     return -1;
 }
 
-void viderZones() { for (Zone& z : g_z.ongletsGarage) z = Zone{}; }
+void viderZones() { for (Zone& z : g_z.ongletsGarage) z = Zone{}; g_solde = Zone{}; }
+
+bool dansSolde(float x, float y) { return g_solde.contient(x, y); }
 
 void boutonRond(Renderer& r, float cx, float cy, float R, const std::string& titre, const std::string& sousTitre, float op, bool grise) {
     const float d = 2 * R, x = cx - R, y = cy - R;
@@ -99,8 +102,8 @@ void fleches(Renderer& r, const MiseEnPage& mp) {
     for (int s = 0; s < 2; s++) {
         const float x = s == 0 ? mp.gl + 12 * k : mp.W - mp.gr - 12 * k - w;
         auto X = [&](float u) { return s == 1 ? x + u * w : x + (1 - u) * w; };   // flèche gauche : miroir
-        vec2 tige[4] = {{X(0), y + 0.31f * h}, {X(0.54f), y + 0.31f * h}, {X(0.54f), y + 0.69f * h}, {X(0), y + 0.69f * h}};
-        vec2 tete[3] = {{X(0.46f), y}, {X(1), y + 0.5f * h}, {X(0.46f), y + h}};
+        vec2 tige[4] = {{X(0), y + 0.26f * h}, {X(0.46f), y + 0.26f * h}, {X(0.46f), y + 0.74f * h}, {X(0), y + 0.74f * h}};   // tige épaisse
+        vec2 tete[3] = {{X(0.40f), y - 0.04f * h}, {X(1), y + 0.5f * h}, {X(0.40f), y + 1.04f * h}};                          // pointe large
         if (s == 0) { std::swap(tige[1], tige[3]); std::swap(tete[0], tete[2]); }   // miroir : sens horaire gardé
         const vec4 haut = s ? hex(0xFFC24A, op) : hex(0x7A5638, op), bas = s ? hex(0xFF7A00, op) : hex(0x3E2A1A, op);
         const dessin2d::Teinte t{haut, bas, y, y + h};
@@ -108,8 +111,8 @@ void fleches(Renderer& r, const MiseEnPage& mp) {
         dessin2d::polygone(r, tige, 4, t);
         dessin2d::polygone(r, tete, 3, t);
         if (!s) for (int i = 0; i < 3; i++)   // veines du bois sur la tige
-            r.uiRect(std::min(X(0), X(0.5f)), y + (0.38f + 0.1f * i) * h, std::fabs(X(0.5f) - X(0)), 1.2f * k, hex(0x2A1C10, 0.55f * op));
-        r.uiRect(std::min(X(0.02f), X(0.5f)), y + 0.33f * h, std::fabs(X(0.5f) - X(0.02f)), 2 * k, {1, 1, 1, (s ? 0.45f : 0.18f) * op});   // reflet
+            r.uiRect(std::min(X(0), X(0.42f)), y + (0.36f + 0.12f * i) * h, std::fabs(X(0.42f) - X(0)), 1.2f * k, hex(0x2A1C10, 0.55f * op));
+        r.uiRect(std::min(X(0.02f), X(0.42f)), y + 0.29f * h, std::fabs(X(0.42f) - X(0.02f)), 2 * k, {1, 1, 1, (s ? 0.45f : 0.18f) * op});   // reflet
         dessin2d::contour(r, tige, 4, 1.4f * k, s ? hex(0xB04E00, op) : hex(0xC9A07A, 0.8f * op));
         dessin2d::contour(r, tete, 3, 1.4f * k, s ? hex(0xB04E00, op) : hex(0xC9A07A, 0.8f * op));
         (s == 0 ? g_z.prev : g_z.next) = {x - 8 * k, y - 12 * k, w + 16 * k, h + 24 * k};
@@ -121,6 +124,7 @@ void solde(Renderer& r, const MiseEnPage& mp, long long etoiles) {
     const float k = mp.k, op = mp.op, px = 20 * k;
     const std::string t = ui::nombre(etoiles);
     const float w = ui::width(px, t) + 58 * k, h = 38 * k, x = mp.W - mp.gr - 18 * k - w, y = mp.gt + 6 * k;
+    g_solde = {x - 6 * k, y - 6 * k, w + 12 * k, h + 12 * k};
     dessin2d::biseau(r, x, y, w, h, 8 * k, dessin2d::uni(hex(0x0E1016, 0.85f * op)));
     const vec2 c[4] = {{x + 8 * k, y}, {x + w, y}, {x + w - 8 * k, y + h}, {x, y + h}};
     dessin2d::contour(r, c, 4, 1.2f * k, {1, 1, 1, 0.22f * op});

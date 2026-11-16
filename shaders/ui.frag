@@ -8,7 +8,7 @@ void main() {
     if (vUv.x >= 5.5) {   // WFS-551 : lettre en tube de néon (contour creux du champ de distance : onglet ouvert du garage)
         float d = texture(fontAtlas, vUv - vec2(6.0, 0.0)).r;
         float w = max(fwidth(d) * 0.75, 0.01);
-        a *= smoothstep(0.38 - w, 0.38 + w, d) * (1.0 - smoothstep(0.56 - w, 0.56 + w, d));
+        a *= smoothstep(0.33 - w, 0.33 + w, d) * (1.0 - smoothstep(0.58 - w, 0.58 + w, d));   // tube épais
         outColor = vec4(vColor.rgb * a, a);
         return;
     }

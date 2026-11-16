@@ -20,5 +20,6 @@ void boutonRond(Renderer& r, float cx, float cy, float R, const std::string& tit
 void fleches(Renderer& r, const MiseEnPage& mp);
 // solde d'étoiles en haut à droite (cadre de verre, étoile orange)
 void solde(Renderer& r, const MiseEnPage& mp, long long etoiles);
+bool dansSolde(float x, float y);   // WFS-551 (RG-12) : le cadre du solde ouvre le Market
 
 } // namespace wfs::ecrans::garage::onglets
