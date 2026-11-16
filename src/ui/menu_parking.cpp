@@ -378,6 +378,13 @@ void Parking::regler(FrameParams& fp, SceneDediee& s, const GameView& g, const C
     fp.view = lookAt(oeil, cible, haut);
     fp.proj = translate({c.decalage, -c.decalageY, 0}) * perspectiveVk(c.fovY, aspect, 0.1f);   // objectif décentré (y de Vulkan vers le bas)
     fp.camPos = oeil;
+    eclairer(fp, M);
+    s.route = false; s.joueur = true; s.commandes = false; s.cible = cible;
+}
+
+Parking& commun() { static Parking p; return p; }
+
+void Parking::eclairer(FrameParams& fp, const mat4& M) const {
     // souterrain : aucune lumière du ciel, ni soleil ni lune (RG-06 : même image de jour et de nuit) ; fond noir derrière les
     // voiles (jamais vu) ; exposition du garage
     fp.exposure = 1.15f;
@@ -403,7 +410,6 @@ void Parking::regler(FrameParams& fp, SceneDediee& s, const GameView& g, const C
     for (float x : {0.f, 8.f}) spot({x, y, Z_ALLEE1 - PLACE_P / 2}, 0.8f);
     fp.spotCount = n;
     fp.bloom = 0.22f;   // avis de l'agent 3D : halo des réglettes resserré
-    s.route = false; s.joueur = true; s.commandes = false; s.cible = cible;
 }
 
 void Parking::dessiner(Renderer& r, const mat4& M) {

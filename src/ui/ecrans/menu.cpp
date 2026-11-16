@@ -236,7 +236,7 @@ private:
         const TrackPoint p = g.track->pointLisse(g.player->dist, g.player->playerX * RW);
         return translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + g.player->heading + g.player->spinYaw)) * rotateX((float)p.slope);
     }
-    parking::Parking parking_;   // WFS-552
+    parking::Parking& parking_ = parking::commun();   // WFS-552 ; WFS-558 : instance partagée avec le duel en ligne
     mat4 voiture_ = mat4::identity();
     double t0_ = -1;
     bool finVue_ = false;

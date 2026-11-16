@@ -36,6 +36,8 @@ public:
     // caméra rapprochée de la maquette 01 (RG-04) et lumière du parking (RG-06 : la même de jour et de nuit) ; voiture = matrice
     // de la voiture du joueur dans le monde
     void regler(FrameParams& fp, SceneDediee& s, const GameView& g, const CarDef& car, const mat4& voiture) const;
+    // WFS-558 : lumière seule du parking (réglettes, ambiance, fond noir), partagée avec la scène du duel en ligne
+    void eclairer(FrameParams& fp, const mat4& voiture) const;
     void dessiner(Renderer& r, const mat4& voiture);
     // triangles et appels de dessin du décor (journal du banc, RG-05)
     size_t triangles() const { return triangles_; }
@@ -49,6 +51,10 @@ private:
     bool pret_ = false;
     size_t triangles_ = 0;
 };
+
+// WFS-558 : instance unique du parking, partagée par le menu (WFS-552) et l'écran du duel en ligne (une seule scène à la fois,
+// RG-C5 : rien n'est construit deux fois)
+Parking& commun();
 
 } // namespace ecrans::parking
 class Game;
