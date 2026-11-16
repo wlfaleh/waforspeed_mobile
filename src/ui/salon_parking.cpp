@@ -59,11 +59,18 @@ Repere repereFace(const Repere& R) { return {R.o, R.x, R.z, R.y * -1.f}; }
 
 void pave(Geo& g, const Repere& R, vec3 c, vec3 h, float ch) { mobilier::pave(Sortie(g), R, c, h, ch, UV0); }
 
-// tête de vis inviolable bombée Ø 7 mm (inox), ou rivet Ø 4 mm, posée sur la surface z
-void tete(Geo& g, const Repere& R, float x, float y, float z, float rayon) {
+// tête de vis inviolable Ø 7 mm (inox) : tête bombée basse ISO 7380 (hauteur 0,2 × Ø), empreinte creusée (Ø 0,55 × la tête,
+// 6 lobes de la Torx à téton) et téton central ; rivet Ø 4 mm (sans empreinte), posés sur la surface z
+void tete(Geo& g, const Repere& R, float x, float y, float z, float rayon, bool empreinte = true) {
     const Repere F = repereFace(R);
-    const float h = rayon * 0.28f;   // tête bombée basse (ISO 7380), pas une bille
-    mobilier::tour(Sortie(g), F, {x, z, -y}, {{rayon, 0.f}, {rayon, h * 0.25f}, {rayon * 0.80f, h * 0.75f}, {rayon * 0.45f, h}, {0.f, h * 1.05f}}, 14, UV0);
+    const float h = rayon * 0.40f;
+    if (!empreinte) { mobilier::tour(Sortie(g), F, {x, z, -y}, {{rayon, 0.f}, {rayon, h * 0.2f}, {rayon * 0.75f, h * 0.8f}, {0.f, h}}, 14, UV0); return; }
+    const float re = rayon * 0.55f, fond = h * 0.25f, teton = rayon * 0.16f;
+    // tête : flanc, dôme, puis bord plat de l'empreinte (anneau jusqu'à 0,80 × son rayon)
+    mobilier::tour(Sortie(g), F, {x, z, -y}, {{rayon, 0.f}, {rayon, h * 0.20f}, {rayon * 0.82f, h * 0.75f}, {re + rayon * 0.06f, h},
+                                               {re * 0.80f, h * 0.97f}}, 24, UV0);
+    // empreinte à 6 lobes (rayon 0,78 à 0,98 × re) : paroi qui descend (normales vers l'intérieur), fond, téton central
+    mobilier::tour(Sortie(g), F, {x, z, -y}, {{re * 0.78f, h * 0.97f}, {re * 0.78f, fond}, {teton, fond}, {teton, h * 0.80f}, {0.f, h * 0.84f}}, 36, UV0, 6, 0.25f);
 }
 
 class Decor {
@@ -86,8 +93,20 @@ public:
         // ---- vis inviolables aux 4 coins (Ø 7 mm)
         for (float sx : {-1.f, 1.f}) for (float sy : {-1.f, 1.f}) tete(g[VIS], R, sx * (FACE_L / 2 - 0.009f), sy * (FACE_H / 2 - 0.009f), EPAIS, 0.0035f);
         // ---- gaine IRL Ø 20 mm : sort du flanc droit du boîtier, monte le long du poteau jusqu'à la poutre (2,20 m) ; colliers
-        const float xg = 0.150f, zg = 0.011f, haut = 2.20f - DIGI_Y;
-        mobilier::tube(Sortie(g[PVC]), R, {{FACE_L / 2 - 0.004f, 0.040f, zg}, {xg - 0.03f, 0.040f, zg}, {xg, 0.070f, zg}, {xg, haut, zg}}, 0.010f, 12, UV0, true);
+        // à 25 mm du bord de la plaque (x = 0,150 m) ; sortie horizontale par un presse-étoupe, coude cintré de 60 mm de rayon
+        const float xg = 0.185f, zg = 0.011f, haut = 2.20f - DIGI_Y, yg = 0.040f, RC = 0.060f, xp = FACE_L / 2 + 0.016f;
+        {   // presse-étoupe PG 16 en polyamide gris : écrou six pans (24 mm sur plats) puis chapeau de serrage, axe le long de x
+            const Repere P{R.p({FACE_L / 2, yg, zg}), R.y, R.x, R.z * -1.f};
+            mobilier::tour(Sortie(g[PVC]), P, {0, 0, 0}, {{0.0139f, 0.f}, {0.0139f, 0.006f}, {0.0125f, 0.0068f}, {0.0115f, 0.0068f}, {0.0115f, 0.0075f},
+                                                          {0.0118f, 0.0080f}, {0.0118f, 0.0145f}, {0.0108f, 0.0158f}, {0.0100f, 0.016f}}, 6, UV0);
+        }
+        std::vector<vec3> trace{{xp - 0.001f, yg, zg}, {xg - RC, yg, zg}};
+        for (int k = 1; k <= 10; k++) {   // quart de cercle : de l'horizontale à la verticale
+            const float a = (PI / 2) * (float)k / 10.f;
+            trace.push_back({xg - RC + RC * std::sin(a), yg + RC - RC * std::cos(a), zg});
+        }
+        trace.push_back({xg, haut, zg});
+        mobilier::tube(Sortie(g[PVC]), R, trace, 0.010f, 12, UV0, true);
         for (float y = 0.16f; y < haut - 0.05f; y += 0.20f) {
             pave(g[PVC], R, {xg, y, zg}, {0.0125f, 0.006f, 0.0115f}, 0.002f);                 // collier à embase
             tete(g[VIS], R, xg + 0.017f, y, 0.0f, 0.0025f);                                  // vis de l'embase
@@ -98,8 +117,15 @@ public:
         pave(g[BORD], R, {0, py, pz + 0.00075f}, {PL, PH, 0.00075f}, 0.0007f);
         pave(g[PLAQUE], R, {0, py, pz + 0.0016f}, {PL - 0.006f, PH - 0.006f, 0.0001f}, 0.0001f);
         pave(g[BANDE], R, {-PL + 0.006f + 0.016f, py, pz + 0.0018f}, {0.016f, PH - 0.006f, 0.0001f}, 0.0001f);
-        for (float sx : {-1.f, 1.f}) for (float sy : {-1.f, 1.f}) tete(g[VIS], R, sx * (PL - 0.012f), py + sy * (PH - 0.012f), pz + 0.0019f, 0.002f);
+        for (float sx : {-1.f, 1.f}) for (float sy : {-1.f, 1.f}) tete(g[VIS], R, sx * (PL - 0.012f), py + sy * (PH - 0.012f), pz + 0.0019f, 0.002f, false);
         for (float sx : {-1.f, 1.f}) pave(g[PVC], R, {sx * (PL - 0.012f), py, pz / 2}, {0.004f, 0.004f, pz / 2}, 0.001f);   // entretoises
+        // ---- inox brossé : uv planes en mètres dans le repère du digicode (façade, touches), × 20 : une texture pour 5 cm ; le
+        // brossage suit x (stries horizontales, comme une tôle brossée en long)
+        for (int k : {INOX, TOUCHE})
+            for (Vertex& v : g[k].v) {
+                const vec3 d{v.px - R.o.x, v.py - R.o.y, v.pz - R.o.z};
+                v.u = dot(d, R.x) * 20.f; v.v = dot(d, R.y) * 20.f;
+            }
         // ---- envoi : un maillage par matériau ; mémoire refusée → rien n'est gardé (repli : écran 2D d'avant)
         bool ok = true; triangles_ = 0;
         for (int k = 0; k < NB_MATS; k++) {
@@ -109,15 +135,16 @@ public:
             triangles_ += g[k].i.size() / 3;
         }
         if (!ok) { WFS_ERR("salon (WFS-558) : mémoire graphique refusée pour le digicode : écran 2D gardé (repli)"); liberer(r); return false; }
-        auto mat = [&](int k, vec3 c, float rough, float metal, vec3 em = {0, 0, 0}) {
+        brossage(r);
+        auto mat = [&](int k, vec3 c, float rough, float metal, vec3 em = {0, 0, 0}, bool brosse = false) {
             Material m; m.color = {c.x, c.y, c.z, 1}; m.rough = rough; m.metal = metal; m.emissive = em;
-            mat_[k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+            mat_[k] = brosse && grain_.view ? r.makeMaterial(m, &grain_, nullptr, &grainMR_) : r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
-        mat(INOX, {0.60f, 0.60f, 0.61f}, 0.34f, 1);             // inox 304 brossé (F0 ≈ 0,56-0,62 ; brossé : rugosité 0,30-0,40)
-        mat(TOUCHE, {0.64f, 0.64f, 0.65f}, 0.38f, 1);           // touches en inox brossé (même finition que la façade)
+        mat(INOX, {0.62f, 0.62f, 0.63f}, 0.44f, 1, {}, true);   // inox 304 brossé (F0 ≈ 0,56-0,62 ; rugosité 0,25-0,44 selon la strie)
+        mat(TOUCHE, {0.65f, 0.65f, 0.66f}, 0.44f, 1, {}, true); // touches en inox brossé (même finition que la façade)
         mat(CADRE, lin(0x141518), 0.55f, 0);                    // plastique ABS noir, joint en EPDM
         mat(LCD, {0.010f, 0.030f, 0.032f}, 0.08f, 0, vec3{0.003f, 0.016f, 0.018f});   // cristaux liquides à rétroéclairage cyan (éteint : vert-noir)
-        mat(VIS, {0.55f, 0.55f, 0.56f}, 0.40f, 1);              // têtes de vis et rivets inox
+        mat(VIS, {0.55f, 0.55f, 0.56f}, 0.48f, 1);              // têtes de vis et rivets inox (tête décolletée, mate)
         mat(PVC, lin(0xB4B6B2), 0.65f, 0);                      // PVC gris clair RAL 7035
         mat(PLAQUE, {0.78f, 0.78f, 0.76f}, 0.35f, 0);           // film rétroréfléchissant blanc
         mat(BANDE, lin(0xE85A12), 0.40f, 0);                    // bande orange (RAL 2004)
@@ -132,6 +159,9 @@ public:
         r.vk().waitIdle();
         for (Mesh& m : mesh_) { if (m.vb.buf != VK_NULL_HANDLE || m.ib.buf != VK_NULL_HANDLE) r.destroy(m); m = Mesh{}; }
         for (Material& m : mat_) { if (m.set != VK_NULL_HANDLE) r.destroy(m); m = Material{}; }
+        if (grain_.view) r.vk().destroy(grain_);
+        if (grainMR_.view) r.vk().destroy(grainMR_);
+        grain_ = Image{}; grainMR_ = Image{};
         if (garee_.ok) r.destroy(garee_);
         garee_ = Model{};
         for (auto& [id, m] : adversaires_) r.destroy(m);
@@ -163,8 +193,31 @@ public:
     }
     vec3 r_camera_{};
 private:
+    // grain de l'inox brossé (256 × 256, généré au chargement, déterministe) : stries fines le long de u, chacune d'une longueur
+    // et d'une profondeur au hasard ; couleur (sRGB, ± 6 %) et rugosité (canal g : 0,55 à 1 × la rugosité du matériau)
+    void brossage(Renderer& r) {
+        constexpr int N = 256;
+        std::vector<uint8_t> c((size_t)N * N * 4), mr((size_t)N * N * 4);
+        uint32_t graine = 0x5A17D16u;
+        auto hasard = [&]() { graine ^= graine << 13; graine ^= graine >> 17; graine ^= graine << 5; return (float)(graine & 0xFFFF) / 65535.f; };
+        std::vector<float> ligne(N), phase(N), longueur(N);
+        for (int y = 0; y < N; y++) { ligne[(size_t)y] = hasard(); phase[(size_t)y] = hasard() * 6.2832f; longueur[(size_t)y] = 1.f + hasard() * 5.f; }
+        for (int y = 0; y < N; y++)
+            for (int x = 0; x < N; x++) {
+                // strie de la rangée y, modulée le long de x (rayures qui commencent et s'arrêtent), plus un grain très fin
+                const float le = 0.5f + 0.5f * std::sin(phase[(size_t)y] + 6.2832f * longueur[(size_t)y] * (float)x / N);
+                const float s = std::clamp(0.55f * ligne[(size_t)y] + 0.30f * le * ligne[(size_t)y] + 0.15f * hasard(), 0.f, 1.f);
+                const size_t i = ((size_t)y * N + (size_t)x) * 4;
+                const uint8_t v = (uint8_t)std::lround(255.f * (0.94f + 0.06f * s));
+                c[i] = c[i + 1] = c[i + 2] = v; c[i + 3] = 255;
+                mr[i] = 255; mr[i + 1] = (uint8_t)std::lround(255.f * (0.55f + 0.45f * (1.f - s))); mr[i + 2] = 255; mr[i + 3] = 255;
+            }
+        grain_ = r.vk().uploadTexture(c.data(), N, N, true);
+        grainMR_ = r.vk().uploadTexture(mr.data(), N, N, false);
+    }
     Mesh mesh_[NB_MATS]{};
     Material mat_[NB_MATS]{};
+    Image grain_{}, grainMR_{};
     Model garee_{};
     std::map<std::string, Model> adversaires_;
     bool pret_ = false;
@@ -271,7 +324,7 @@ public:
             v.touches[k] = proche ? touches_[k] : Rect{};
         }
         afficheur_ = rectEcran(VP, M_, R, {0, Y_AFF, EPAIS + 0.0011f}, {AFF_L / 2 - 0.004f, AFF_H / 2 - 0.004f}, W, H);
-        plaque_ = rectEcran(VP, M_, R, {0.016f, PLAQUE_DY, 0.0098f}, {0.150f - 0.04f, 0.050f - 0.006f}, W, H);
+        plaque_ = rectEcran(VP, M_, R, {0.024f, PLAQUE_DY, 0.0098f}, {0.150f - 0.054f, 0.050f - 0.008f}, W, H);   // à 34 mm de la bande orange
         bande_ = rectEcran(VP, M_, R, {-0.150f + 0.022f, PLAQUE_DY, 0.0098f}, {0.016f, 0.044f}, W, H);
         decor().r_camera_ = oeil;
         v.active = true;
@@ -315,8 +368,8 @@ public:
         }
         if (plaque_.ok && plaque_.h >= 3.f) {   // pseudo du joueur (RG-07), gravé noir sur le film blanc ; « WFS » sur la bande
             const float px = plaque_.h * 0.70f;
-            ui::textBoite(r, plaque_.x, plaque_.y, plaque_.w, plaque_.h, px, ui::majuscules(sauvegarde().nick), hexa(0x141518), ui::CENTRE, 0.04f, false, false);
-            if (bande_.ok && bande_.h >= 6.f) ui::textBoite(r, bande_.x, bande_.y + bande_.h * 0.62f, bande_.w, bande_.h * 0.3f, bande_.h * 0.22f, "WFS", hexa(0xFFFFFF, 0.95f), ui::CENTRE, 0, false, false);
+            ui::textBoite(r, plaque_.x + plaque_.w / 2, plaque_.y, plaque_.w, plaque_.h, px, ui::majuscules(sauvegarde().nick), hexa(0x141518), ui::CENTRE, 0.04f, false, false);
+            if (bande_.ok && bande_.h >= 6.f) ui::textBoite(r, bande_.x + bande_.w / 2, bande_.y + bande_.h * 0.62f, bande_.w, bande_.h * 0.3f, bande_.h * 0.22f, "WFS", hexa(0xFFFFFF, 0.95f), ui::CENTRE, 0, false, false);
         }
     }
 private:
