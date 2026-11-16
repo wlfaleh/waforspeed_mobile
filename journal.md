@@ -705,3 +705,35 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Tests CPU 150 / 150, bancs `paquets`, `cgu`, `creation`, `market`, `menu3d` à 0 écart ; 22 paires de captures en 1600 × 720 + planches maquette / avant / après.
 - Suite : avis de l'agent 3D sur le cadrage du menu (WFS-552), puis lead dev.
 
+
+### 2026-11-16 12:18:05 — WFS-550 : 4e revue corrigée, lead dev rappelé (Claude, agent dev3d (01UY1Vv1yg))
+- PR #424 : deux emplacements de skin (vitrine / joueur), vitrine chargée seulement au menu (274–301 ms, 98 Mo, libérée en sortant), remarques corrigées (`595417f6`) ; captures `hud-course`, `hud-solo-jour` (skin ciel), `pret-garage-actif-fr`, `pret-menu-actif-fr` et `journal-skins.txt` (`6d573913`).
+- Chargement d'une partie (banc PC) : main 5,42 / 5,18 s, branche 6,17 / 5,66 s (image de plus de l'étape « Voitures », rendu logiciel).
+- Branche synchronisée (`2684ab7e`), 151 tests CPU verts ; description de la PR mise à jour, réponse sous la revue ; suivi-pr en 🔁.
+
+### 2026-11-16 12:18:20 — WFS-559 : PR #431 refusée par le lead dev (lead-dev)
+- Revue complète de `ce6a0e6b` : 18 captures après, 7 avant et 4 zooms ouverts ; maquette 09 comparée au code (6 lignes conformes, écart : lueur verte du GO) ; diff entier lu ; branche construite, `tests_cpu.sh build` : 151 tests réussis.
+- Refus pour : (1) section « Tests CPU » et `qa/pr/WFS-559/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) `PortiqueDepart::ambiance` (portique_depart.cpp:201-207) : `feuxRouges()` vaut 0 au GO, donc la lumière verte n'est jamais posée (RG-04, code mort) ; (3) nouvel avis de l'agent 3D sur le prochain commit. Seules les 2 captures de nuit au GO sont à refaire.
+- Revue postée en COMMENT (même compte GitHub) : https://github.com/wlfaleh/waforspeed_mobile/pull/431
+
+### 2026-11-16 12:38:08 — WFS-550 fusionné par le lead dev (lead-dev)
+- PR #424, 5e revue sur `2684ab7e` : les 2 points de la 4e revue sont corrigés (deux emplacements de skin, joueur et vitrine du menu ; vitrine chargée seulement au menu) et les remarques sont nettoyées.
+- Diff des corrections lu en entier ; branche construite (aucun avertissement) ; **151 tests CPU verts** ; bancs `hud` (WFS_SKIN=ciel : la skin de la Golf n'est jamais libérée par la vitrine) et `chargement` (5,79 s, écart venant de l'image en plus de l'étape « Voitures ») rejoués.
+- 9 maquettes (01, 05, 08, 13, 15, 17, 26, 29, 30) comparées au code et aux captures : conformes.
+- Revue « ✅ Approuvé » postée en COMMENT (même compte GitHub), puis fusion en squash : `436f0738`. Statut 🟣 ; ligne dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+
+### 2026-11-16 12:38:36 — WFS-550 fusionné, session terminée (Claude, agent dev3d (01UY1Vv1yg))
+- PR #424 fusionnée en squash par le lead dev (5e revue, `436f0738`). WFS-550 en 🟡 À valider (utilisateur) : menu et voiture de vitrine demandés par l'utilisateur, à confirmer sur l'APK de `main` (à regarder : à-coup possible au retour au menu, rechargement de la vitrine ≈ 0,3 s sur PC).
+- Remarques non bloquantes du lead dev pour le PO (petite US possible) : paramètre `g_pose` de `poserDans` qui masque la globale, `vehicule_skin::coder(float)` plus appelé. Cadenas de la maquette 15 : fait par WFS-551.
+- Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-16 12:40:01 — WFS-558 : refus du lead dev corrigé, PR #430 à relire (Claude, agent dev3d (01Us6uCtQN))
+- Avis agent 3D du 1er tour (vis, gaine, inox brossé, plaque) corrigé dans f0412179, « VALIDÉ ».
+- Refus du lead dev (5 points) corrigé : tuile du salon local avant le bloc de la vue large (b85f0df0, banc « 0 écart ») ; plus de texte net sur le salon flouté ; panneau nominatif 600 × 200 mm et caméra rapprochée (pseudo 23 px, test CPU) ; code tapé recopié dans le panneau en vue large (arbitrage du PO RG-05, 9c6c9a25) ; tests CPU (151 réussis, `qa/pr/WFS-558/tests-cpu.log`) ; captures refaites avec le code final.
+- Avis agent 3D « VALIDÉ » sur 248debab (réserves mineures : ombre portée du panneau, pseudo à ≈ 20-23 px à ne pas éloigner).
+
+
+### 2026-11-16 12:43:25 — WFS-558 : 2e revue de la PR #430, refusée (lead-dev)
+- Points 1 à 5 de la 1re revue corrigés (code de la tuile, salon sans texte net, plaque 600 × 200 mm lisible, code dans le panneau, tests CPU 151, captures refaites) ; avis agent 3D VALIDÉ sur 248debab.
+- Refus : (A) conflit avec `main` dans `src/ui/ecrans/menu.cpp` (WFS-550 #424, vitrine SF-X contre parking partagé `parking::commun()`) : squash impossible ; (B) `apres-salon-accueil.jpg` sans la tuile « Rejoindre Nadia » (salon expiré pendant le rendu du banc).
+- Pour le PO : 2 erreurs du parcours « duel entre amis » (revanche : écran de fin, temps 0,0 s) présentes aussi sur `main` 73b7f6fd (banc `menu2`) : anomalie existante, sans lien avec WFS-558.

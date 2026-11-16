@@ -28,6 +28,7 @@ struct Pose {
     int calques = 0; double msCuisson = 0;   // WFS-495
 };
 Pose g_pose;
+Pose g_vitrine;   // WFS-550 : 2e emplacement, la voiture de vitrine du menu (jamais libérée par une pose du joueur, et inversement)
 
 // matériaux habillés : copie de chaque matériau peint, texture de couleur = l'habillage, normales et métal-rugosité d'origine ;
 // renvoie le nombre de pièces habillées
@@ -68,15 +69,19 @@ bool masquesSkin(const char* idVoiture, const char* idSkin, std::vector<uint8_t>
 
 } // namespace
 
-void liberer(Renderer& r) {
-    for (Material& m : g_pose.mats) r.destroy(m);   // avant la texture : plus aucun jeu ne la lit
-    if (g_pose.texture.img) r.vk().destroy(g_pose.texture);
-    if (g_pose.skin != AUCUNE) WFS_LOG("skin : %s de %s libérée (WFS-492)", g_pose.id.c_str(), g_pose.voiture.c_str());
-    g_pose = Pose{};
+void libererPose(Renderer& r, Pose& p) {
+    for (Material& m : p.mats) r.destroy(m);   // avant la texture : plus aucun jeu ne la lit
+    if (p.texture.img) r.vk().destroy(p.texture);
+    if (p.skin != AUCUNE) WFS_LOG("skin : %s de %s libérée (WFS-492)%s", p.id.c_str(), p.voiture.c_str(), &p == &g_vitrine ? " (vitrine du menu)" : "");
+    p = Pose{};
 }
 
-bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin) {
-    liberer(r);   // RG-03 : une seule texture d'habillage en mémoire
+void liberer(Renderer& r) { libererPose(r, g_pose); }
+void libererVitrine(Renderer& r) { libererPose(r, g_vitrine); }
+
+// pose une skin (masques EAC) dans l'emplacement p ; l'ancienne pose de cet emplacement est libérée d'abord
+bool poserDans(Renderer& r, Pose& g_pose, const Model& m, const char* idVoiture, const char* idSkin) {
+    libererPose(r, g_pose);   // RG-03 : une seule texture d'habillage par emplacement
     const int skin = depuisId(idSkin);
     if (skin == AUCUNE || !m.ok || !idVoiture) return false;
     const std::string fichier = chemin(idVoiture, idSkin) + ".etc2.ktx2";
@@ -117,11 +122,14 @@ bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSki
     }
     g_pose.skin = skin; g_pose.voiture = idVoiture; g_pose.id = idSkin; g_pose.texture = tex; g_pose.decodeCpu = cpu;
     g_pose.mats = std::move(mats); g_pose.modele = &m; g_pose.vb = m.vb.buf;
-    WFS_LOG("skin : %s posée sur %s : %s %ux%u, %zu niveaux, %.1f Ko sur le GPU, %d pièces peintes habillées ; 1 texture d'habillage en mémoire (WFS-492)",
+    WFS_LOG("skin : %s posée sur %s : %s %ux%u, %zu niveaux, %.1f Ko sur le GPU, %d pièces peintes habillées ; 1 texture d'habillage en mémoire (WFS-492)%s",
             idSkin, idVoiture, cpu ? "RG8 (EAC décodé sur le processeur : GPU sans ETC2)" : "EAC RG11", f.w, f.h, f.niveaux.size(),
-            tex.octetsTexture / 1024.0, n);
+            tex.octetsTexture / 1024.0, n, &g_pose == &g_vitrine ? " (vitrine du menu)" : "");
     return true;
 }
+
+bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin) { return poserDans(r, g_pose, m, idVoiture, idSkin); }
+bool poserVitrine(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin) { return poserDans(r, g_vitrine, m, idVoiture, idSkin); }
 
 bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSkin, const std::string& texte) {
     namespace va = vehicule_autocollants;
@@ -178,12 +186,23 @@ bool poser(Renderer& r, const Model& m, const char* idVoiture, const char* idSki
     return true;
 }
 
+namespace {
+// emplacement qui habille ce modèle (joueur ou vitrine du menu), sinon nullptr
+const Pose* poseDe(const Model& m) {
+    for (const Pose* p : {&g_pose, &g_vitrine})
+        if (p->skin != AUCUNE && &m == p->modele && m.vb.buf == p->vb) return p;
+    return nullptr;
+}
+} // namespace
+
 const Material* materiau(const Model& m, uint32_t i) {
-    if (g_pose.skin == AUCUNE || &m != g_pose.modele || m.vb.buf != g_pose.vb || i >= g_pose.mats.size()) return nullptr;
-    return g_pose.mats[i].set ? &g_pose.mats[i] : nullptr;
+    const Pose* p = poseDe(m);
+    if (!p || i >= p->mats.size()) return nullptr;
+    return p->mats[i].set ? &p->mats[i] : nullptr;
 }
 
 float coder(float metalCode) { return g_pose.skin == AUCUNE ? metalCode : metalCode + 16.f * (float)g_pose.skin; }
+float coder(float metalCode, const Model& m) { const Pose* p = poseDe(m); return p ? metalCode + 16.f * (float)p->skin : metalCode; }
 
 Etat etat() {
     Etat e;

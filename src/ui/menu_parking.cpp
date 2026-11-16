@@ -345,7 +345,8 @@ bool Parking::init(Renderer& r) {
         mat_[k].flags |= flags;
     };
     mat(BETON, {0.30f, 0.30f, 0.29f}, 0.90f, 0, MAT_FACADE, 0.2f * 4);    // béton brut de décoffrage (appareil « béton » de decor.glsl)
-    mat(SOL, {0.12f, 0.125f, 0.13f}, 0.26f, 0, MAT_FACADE, 0.2f * 4);     // dalle surfacée et vernie (résine époxy gris anthracite clair)
+    // dalle surfacée et vernie (résine époxy gris anthracite) ; WFS-550 (maquette 01, sol ≈ 45 sur 255) : plus foncée et moins vernie (avant : 0,12 ; 0,26)
+    mat(SOL, {0.06f, 0.062f, 0.066f}, 0.42f, 0, MAT_FACADE, 0.2f * 4);
     mat(BLANC, {0.72f, 0.72f, 0.70f}, 0.55f, 0);                          // peinture routière blanche
     mat(JAUNE, lin(0xF0B20A), 0.50f, 0);                                  // jaune de signalisation (RAL 1003)
     mat(NOIR, lin(0x1C1C1E), 0.55f, 0);                                   // noir de signalisation (RAL 9004)
@@ -382,11 +383,14 @@ void Parking::regler(FrameParams& fp, SceneDediee& s, const GameView& g, const C
     // voiles (jamais vu) ; exposition du garage
     fp.exposure = 1.15f;
     fp.skyTop = fp.skyHorizon = fp.ground = fp.fogColor = vec3{0.004f, 0.004f, 0.005f};
+    // WFS-550 (maquette 01) : « ciel » de reflets du studio (jamais vu : le parking le cache), pour que la carrosserie brille comme
+    // sur la maquette (réglettes et murs clairs reflétés) ; avant : noir, carrosserie mate
+    fp.skyTop = vec3{0.03f, 0.03f, 0.035f}; fp.skyHorizon = vec3{0.16f, 0.14f, 0.12f}; fp.ground = vec3{0.01f, 0.01f, 0.012f};
     fp.fogDensity = 0; fp.fogNear = 30; fp.fogFar = 80;
     fp.sunIntensity = 0; fp.ambient = 1; fp.shadows = false; fp.night = false;
     fp.feux = false; fp.mouille = false; fp.reflets = false;
     // lumière renvoyée par le béton (albédo 0,30) : ambiance grise, plus sombre vers le sol
-    fp.hemiSky = vec3{0.36f, 0.36f, 0.37f}; fp.hemiGround = vec3{0.08f, 0.08f, 0.08f}; fp.hemiIntensity = 0.26f;
+    fp.hemiSky = vec3{0.36f, 0.36f, 0.37f}; fp.hemiGround = vec3{0.08f, 0.08f, 0.08f}; fp.hemiIntensity = 0.24f;   // WFS-550 (maquette 01) : fond plus sombre (0,26 avant)
     // réglettes : un projecteur large (≈ 120°) sous chaque réglette proche de la voiture, 4 000 K
     const vec3 led{1.0f, 0.93f, 0.84f};
     int n = 0;
@@ -398,9 +402,10 @@ void Parking::regler(FrameParams& fp, SceneDediee& s, const GameView& g, const C
         fp.spots[n++] = sp;
     };
     const float zA = (Z_ALLEE0 + Z_ALLEE1) / 2, y = HAUTEUR_DALLE - 0.08f;
-    for (float x : {-6.f, -2.f, 2.f, 6.f, 10.f, -10.f}) spot({x, y, zA}, std::fabs(x) < 3 ? 2.4f : 1.4f);   // les deux réglettes devant la voiture : sa face avant
-    for (float x : {0.f, 8.f, -8.f}) spot({x, y, 0.20f}, x == 0 ? 3.2f : 1.0f);   // réglette au-dessus de la voiture
-    for (float x : {0.f, 8.f}) spot({x, y, Z_ALLEE1 - PLACE_P / 2}, 0.8f);
+    // WFS-550 (maquette 01, mesurée : mur ≈ 57, sol ≈ 55 sur 255) : projecteurs moins forts (le sol était presque blanc), ambiance un peu plus haute
+    for (float x : {-6.f, -2.f, 2.f, 6.f, 10.f, -10.f}) spot({x, y, zA}, std::fabs(x) < 3 ? 0.45f : 0.15f);   // les deux réglettes devant la voiture : sa face avant
+    for (float x : {0.f, 8.f, -8.f}) spot({x, y, 0.20f}, x == 0 ? 2.4f : 0.3f);   // réglette au-dessus de la voiture
+    for (float x : {0.f, 8.f}) spot({x, y, Z_ALLEE1 - PLACE_P / 2}, 0.3f);
     fp.spotCount = n;
     fp.bloom = 0.22f;   // avis de l'agent 3D : halo des réglettes resserré
     s.route = false; s.joueur = true; s.commandes = false; s.cible = cible;

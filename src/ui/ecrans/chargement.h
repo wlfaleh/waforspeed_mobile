@@ -37,9 +37,10 @@ public:
     float pourcent() const { return p_; }
     const std::string& libelle() const { return libelle_; }
     bool enErreur() const { return erreur_; }
+    bool actif() const { return actif_; }   // WFS-550 : entre debut() et fin() / erreur()
 private:
     Renderer* r_ = nullptr;
-    float p_ = 0; int n_ = 0; bool erreur_ = false;
+    float p_ = 0; int n_ = 0; bool erreur_ = false, actif_ = false;
     std::string libelle_;
     double t0_ = 0, tEtape_ = 0;
 };
@@ -54,6 +55,9 @@ MiseEnPage miseEnPage(float W, float H);
 MiseEnPage miseEnPagePetit(float W, float H, float logoMax, float gap);
 // dessine le sur-titre et le logo à partir de y (haut du bloc) ; renvoie y sous le logo + l'espace (gap) suivant
 float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float opacite);
+// WFS-550 (maquette 01) : logo « WAFORSPEED » sur une ligne, en italique (WA blanc, FOR en contour, SPEED orange avec halo) ;
+// (x, y) : haut gauche, px : taille de la police ; rend la largeur
+float dessinerLogoLigne(Renderer& r, float x, float y, float px, float opacite);
 // dessin de l'écran (sans beginFrame / endFrame) : opacite de 0 à 1 (fondu)
 // WFS-297 (RG-06) : « Mémoire : jeu 1 380 Mo · carte graphique 620 Mo · partie 2 » (chargement : numéro de la partie qui se charge)
 std::string texteMemoire(bool enChargement);

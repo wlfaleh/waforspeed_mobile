@@ -1461,7 +1461,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         if (mat.peinture2Piece && paint && peinture2 < -0.5f) { p.pc.color.w = peinture2; p.pc.params.z = mat.peinture2Finition; }   // WFS-488 : toit non peint
         if (finition && paint && ((mat.flags & MAT_PAINT) || (mat.peinture2Piece && peinture2 < -0.5f))) p.pc.params.x = vehicule_finitions::coder(mat.metal, finition);   // WFS-490
-        if (habille) p.pc.params.x = vehicule_skin::coder(p.pc.params.x);   // WFS-492 (accroche) : numéro de la skin (vehicule_skin.h)
+        if (habille) p.pc.params.x = vehicule_skin::coder(p.pc.params.x, m);   // WFS-492 (accroche) : numéro de la skin (vehicule_skin.h)
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, tramage != 0 ? tramage : mat.detail};   // w : finesse (WFS-42) ; WFS-134 : tramage (< 0)
         // WFS-423 (RG-02) : Basse, nuit : éclairement de la chaussée autour de la voiture calculé ici, une fois par matrice (la
         // caisse et ses pièces peintes partagent celle de la voiture), au lieu de 3 × 12 lumières pour chaque pixel peint
