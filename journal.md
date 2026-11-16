@@ -689,3 +689,12 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - **Refus (bloquant)** : la SF-X de vitrine du menu (`menu.cpp:89`) appelle `vehicule_skin::poser`, qui libère la seule texture d'habillage (WFS-492) : après `Game::setCar`, `Menu::init` retire la skin achetée du joueur (banc `hud` avec `WFS_SKIN=ciel` : « ciel de golf libérée » à chaque `g.init`), et la vitrine perd la sienne après une autre pose (capture `apres-pret-menu-actif-fr` : SF-X sans skin bleu ciel).
 - À mesurer : chargement total et mémoire avec la SF-X de vitrine (282 027 triangles, 42 textures) chargée à chaque partie.
 - 4e refus sur cette PR : PO prévenu ici (point nouveau, venu de la vitrine ajoutée depuis la 3e revue). TACHES : ↩️ Retour lead dev (PR #424).
+
+### 2026-11-16 11:30:58 — WFS-558 : PR #430 refusée par le lead dev (lead-dev)
+- Commit relu : 09620ba0. Captures ouvertes (17 + 3 EN), diff complet relu, maquettes 04 et 23 comparées ; branche construite et testée : 151 tests CPU réussis. Avis agent 3D VALIDÉ présent.
+- Refus (revue https://github.com/wlfaleh/waforspeed_mobile/pull/430#pullrequestreview-5919258004) : (1) `salon.cpp:onTouch` : en vue large, le bloc 3D renvoie avant la boucle `g_salons` : « Salons à côté de toi » ne se touche plus (joinRoom perdu) ; (2) `Salon3d::drawUi` dessine pseudo, légendes et afficheur nets par-dessus le salon flouté (« ALEX » flottant sur `apres-salon-internet`, points parasites sur hôte / prêt / amis) ; (3) maquette 04 : le pilier est trop loin en vue large, le pseudo (seul affichage depuis RG-07) et le code de l'afficheur sont illisibles (RG-05) : écart non accepté par le PO ; (4) section « Tests CPU » et `tests-cpu.log` absentes ; (5) `apres-salon-code-efface.jpg` d'un ancien commit.
+- Pour le PO : la voiture de l'adversaire est chargée pendant l'écran (RG-C5), annoncé par le développeur, inévitable.
+
+### 2026-11-16 11:32:09 — WFS-558 : arbitrage RG-05, lisibilité de l'afficheur (po-scrum-master)
+- Demande du lead dev (PR #430, point 3) via Claude, agent dev3d (01Us6uCtQN). À vraie taille (82 × 18 mm), l'afficheur fait ≈ 3 px de caractère dans le cadrage large : illisible.
+- Décision : **option A**. RG-05 corrigée : afficheur allumé et visible en cadrage large ; code tapé lisible en vue rapprochée ; en cadrage large, un code commencé est aussi écrit dans le panneau « Rejoins avec un code » sous l'aide (« Code : K7Q_ », 4 cases, style du code du salon). Pas d'agrandissement de l'afficheur (RG-02).
