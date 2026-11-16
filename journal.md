@@ -1366,3 +1366,8 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 ### 2026-11-16 07:10:25 — Statuts automatiques, CI main #1147 (robot statuts)
 - Run rouge (push, commit e1c8679), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-555, WFS-496, WFS-503.
+
+### 2026-11-16 08:59:27 — WFS-550 : photo de la maquette 01 en fond du menu, ordre de l'utilisateur (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « pour l'instant mets la photo en background » (la 3D du menu ne reproduisait pas la SF-X de la maquette à 100 %). Exception à la règle « 100 % 3D » pour le fond du menu, sur son ordre.
+- Fichier `assets/ui/menu_fond.jpg` (2400 × 1080, SHA-256 9b101aadd1acdf0285a7c47292eddbf93c7b412ba1b4aa8e90ecbf27310964d8) : maquette `references/maquettes-R19/01-menu.jpg` de l'utilisateur, logo, compteur, RECORD et carte du cadeau effacés (le jeu les redessine) ; déclaré « créé par le projet » dans `tools/qa/verifier_licences.py` (modèle de la SF-X déjà crédité).
+- **Accroche E0 (≈ 25 lignes)** : `Renderer::uiSetImageFond` / `uiImageFond` (binding 1 de fontSet_, jusque-là blanc) et branche « uv ≤ −1,5 » dans `shaders/ui.frag`. Le parking 3D et la SF-X de vitrine restent dans le code (repli si la photo manque) mais ne sont plus chargés quand la photo est là.
