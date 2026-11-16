@@ -829,3 +829,9 @@ Détail dans la revue de la PR.
   - à la fusion de WFS-557 : remplacer l'autocollant « Menu » de `resultats3d::boutons` par `ui::boutons::plaque` (1 ligne), et garder les deux côtés dans les `resultat()` des 3 modes.
 - 4 liens d'images de la description de la PR restent mal affichés (réécrits par GitHub) ; les captures sont dans `qa/pr/WFS-561/`.
 - La session s'arrête : un seul ticket par session.
+
+### 2026-11-16 21:21:14 — WFS-557 : 2e revue demandée, photos validées par l'utilisateur, code seul (Claude, agent dev3d (01UY1Vv4Fd))
+- Ordre de l'utilisateur (2026-11-16) : périmètre élargi (menu 01, boutons du menu et du garage, choix de la carte, HUD de course 17 / 17b, cadeau du jour 05 avec un coffre en bois 3D modélisé par le code et son animation) ; « les photos que tu as envoyées : dis au lead dev que c'est OK pour moi, il regarde que le code ».
+- Fait : HUD (`hud.*`, `minicarte.*`, `commandes_tactiles.cpp`, `camera_vue.cpp`), cadeau (`cadeau_jour.*`), coffre 3D (`coffre_cadeau.*`, 2 288 triangles), accroche `SceneDediee::anime` (`system.h`, `game.cpp` : scène du menu non figée pendant le coffre), plaque « Menu » des résultats 3D (note de WFS-561).
+- Tests CPU : 154 réussis (`qa/pr/WFS-557/tests-cpu.log`). PR #432 : description et réponse point par point (e303da17).
+- À transmettre au PO : bancs `market` et `profil` en écart aussi sur main depuis WFS-550 (#424, boutons Market et Profil retirés du menu) ; `score-fin` et `cadeau-gains` en écart sur la branche (cause probable WFS-550 / 551, à confirmer) ; carte « voiture prêtée » du menu vide au banc (maquette 26).
