@@ -182,7 +182,7 @@ void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarag
         }
         if (prix > 0) cadenas(r, ex + t * 0.30f, ey + t * 0.80f, 13 * k, op);   // RG-01 : non possédée (sous la poignée)
         ui::textBoite(r, cxi, yy + es + 4 * k, pas - 6 * k, 16 * k, 12 * k, nomFinition(f), hex(on ? TEXTE : TAG, op), ui::CENTRE, 0.02f, false);
-        if (o == portee) r.uiCircle(cxi, yy + es + 30 * k, 2.5f * k, hex(TEXTE, op));
+        if (o == portee) r.uiCircle(cxi, yy + es + 33 * k, 2.5f * k, hex(TEXTE, op));
         g_z.finitions[o] = {x, yy - 8 * k, pas, es + 40 * k};
         manette::focus(g_z.finitions[o]);   // WFS-80 : A = toucher
     }

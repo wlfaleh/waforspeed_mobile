@@ -475,6 +475,7 @@ garage.finition=Finish
 garage.onglet.voiture=Car
 garage.onglet.peinture=Paint
 garage.onglet.finition=Finish
+garage.skin.aucune_voiture=No skin for this car
 garage.onglet.skins=Skins
 garage.apercu_pas_a_toi=preview · not yours yet
 garage.acheter_court=Buy

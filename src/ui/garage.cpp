@@ -12,6 +12,7 @@
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "text.h"
+#include "langue.h"   // WFS-551 : ui::tr
 #include "appui.h"   // WFS-113
 #include "../platform/manette.h"   // WFS-22
 #include "../audio/sfx.h"   // WFS-96 : son du changement de voiture
@@ -184,7 +185,6 @@ public:
         // ---------- WFS-551 (maquettes 06, 07, 13, 15, 16) : onglets, un seul panneau de verre en bas, bouton rond à droite ----------
         onglets::dessiner(r, mp);
         mp.onglet = ongletGarage();
-        if (mp.onglet == ONGLET_SKINS && !SkinGarage::visible(index_)) { choisirOnglet(ONGLET_VOITURE); mp.onglet = ONGLET_VOITURE; }   // voiture sans skin
         mp.panelH = 140 * k; mp.py0 = mp.H - mp.gb - 20 * k - mp.panelH;   // crédit du modèle (cadre::pied) dessous
         mp.rBouton = 56 * k; mp.cxBouton = std::min(mp.W * 0.881f, mp.W - mp.gr - mp.rBouton - 12 * k); mp.cyBouton = mp.py0 + 10 * k;
         mp.yNom = mp.cyBouton - mp.rBouton - 84 * k;   // nom, « aperçu », puis une ligne (équivalents, skin offerte)
@@ -205,7 +205,11 @@ public:
             fiche_.stats(r, f, car, xStats);                // .statlist : 4 barres sur 10
         } else if (mp.onglet == ONGLET_PEINTURE) couleur_.dessiner(r, mp, e);   // maquette 06 (WFS-489)
         else if (mp.onglet == ONGLET_FINITION) finition_.dessiner(r, mp, e);    // maquette 16 (WFS-491)
-        else skin_.dessiner(r, mp, e);                                          // maquette 07 (WFS-494)
+        else if (SkinGarage::visible(index_)) skin_.dessiner(r, mp, e);         // maquette 07 (WFS-494)
+        else {   // voiture sans skin : l'onglet reste ouvert, panneau avec « Pas de skin pour cette voiture »
+            const float w = 420 * k, x = panneauOnglet(r, mp, w);
+            ui::textBoite(r, x + w / 2, mp.py0, w - 40 * k, mp.panelH, 15 * k, ui::tr("garage.skin.aucune_voiture"), hex(MUTED, mp.op), ui::CENTRE, 0, false);
+        }
         cadre::pied(r, mp, car, voiture_.ok);
         market_ecran::dessinerBoutonGarage(r, mp.W, mp.H, g.marges, mp.op);   // WFS-513 (accroche, RG-01) : sous le solde d'étoiles
         achat_.dessinerFenetre(r, mp);      // WFS-499 (accroche) : fenêtre d'achat de la voiture, au-dessus de tout

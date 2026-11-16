@@ -81,7 +81,7 @@ int benchGarageCouleurs(Game& g, Renderer& r, const std::string& out) {
     images(4);
     capture("p208-debut", "208 : 28 couleurs, cadenas et prix des 20 couleurs payantes, solde 30 ★");
     if (const Zone& z = g_z.peintures[2]; z.w > 0) {   // glisser vers la gauche sur la rangée : défilement
-        const float x0 = z.x + z.w / 2, y0 = z.y + z.h / 2, d = r.height() * 0.9f;
+        const float x0 = z.x + z.w / 2, y0 = z.y + z.h / 2, d = r.height() * 1.5f;   // WFS-551 : gouttes plus grandes (pas de 56 px au lieu de 38) : glisser plus long
         g.onTouch({90, x0, y0, true}); image();
         for (int i = 1; i <= 20; i++) { g.onTouch({90, x0 - d * i / 20, y0, true}); image(); }
         g.onTouch({90, x0 - d, y0, false}); images(4);

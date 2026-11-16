@@ -136,12 +136,13 @@ void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, doub
     if (!ui::fontReady()) return;
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
-    if (!menu_) dessinerChargement(r, W, H, 1.f, ui::tr("chargement.etape.paquets"), false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
+    // WFS-551 (maquette 18d) : au démarrage, plus le logo de l'écran de chargement derrière : fond sombre et doux (aucune scène n'est
+    // encore chargée, le flou n'a rien à montrer), seule la fenêtre se lit
+    if (!menu_) { r.uiRect(0, 0, W, H, hex(BG)); dessin2d::couronne(r, W * 0.5f, H * 0.42f, 0, std::max(W, H) * 0.6f, hex(0x1B1E28, 0.9f), hex(BG, 0)); }
     const JournalPaquets journal;   // WFS-507 : textes notés au banc « textes » (après le fond de l'écran de chargement)
     // WFS-551 (maquette 18d, revue du lead dev) : au menu, la scène du jeu floutée et assombrie derrière la fenêtre, jamais l'interface
     // du menu (verre::fenetreSurEcran : le menu ne dessine plus son interface tant que la fenêtre est ouverte)
     if (menu_) { verre::fenetreSurEcran(r); verre::assombrir(r, W, H, 0.55f); }
-    else r.uiRect(0, 0, W, H, hex(BG, 0.82f));
     const float pw = std::min(W - m.gauche - m.droite - 32 * k, 760 * k), px = m.gauche + (W - m.gauche - m.droite - pw) / 2;
     const float ph = (cp ? 300 : 340) * k, py = std::max(m.haut + 8 * k, (H - ph) / 2);
     // WFS-551 (RG-07, maquette 18d) : fenêtre de verre aux coins arrondis (plus de liseré cyan ni de sur-titre), nuage orange devant le titre
