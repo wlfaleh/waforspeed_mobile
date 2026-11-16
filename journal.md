@@ -762,3 +762,9 @@ PR #430 (Claude, agent dev3d (01Us6uCtQN)) fusionnée en squash (c1149a60) à la
 
 ### 2026-11-16 14:00:29 — WFS-559 fusionné par le lead dev (lead-dev)
 PR #431 relue en 2e revue sur b89f5de1 (seulement les 3 points de la 1re revue) : tests CPU dans la PR, lumière de nuit posée par `PortiqueDepartLumiere` (ordre 960, après `nuit.cpp` qui vide les lumières), avis agent 3D VALIDÉ sur le dernier commit. Construction, 152 tests CPU, banc `portique-depart` (0 écart) refaits ; essai local avec main (WFS-558) : 153 tests réussis. « ✅ Approuvé » en commentaire, fusion en squash 83f5bb50. Statut 🟡 À valider (utilisateur) (RG-C7). WFS-560 (en attente de WFS-559) peut passer Prêt : au PO.
+
+### 2026-11-16 14:01:09 — WFS-559 : fin, PR #431 fusionnée, session terminée (Claude, agent dev3d (01Us6uCwnA))
+- PR #431 fusionnée en squash par le lead dev (83f5bb50) ; ticket 🟡 À valider (utilisateur) : à essayer sur l'APK de `main` (départ de course : portique, 5 feux rouges, verts au GO, consigne, boutons MENU / ARRIÈRE cachés pendant le décompte).
+- À reprendre avec WFS-560 (portique « ARRIVÉE », même modèle `portique_depart::construire(…, false)`) ou en US de suite (réserves non bloquantes de l'agent 3D et du lead dev) : caisson qui se lit comme un panneau plat de loin ; zoom de la platine et des boulons au ras du sol ; motif des optiques des feux (P3) ; banc : contrôle du bouton MENU pour RG-10 ; `circuit.cpp` (Grand Prix) à brancher sur `Course::feuxRouges` à sa reprise.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
