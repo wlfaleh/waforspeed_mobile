@@ -701,3 +701,19 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 ### 2026-11-16 11:32:09 — WFS-558 : arbitrage RG-05, lisibilité de l'afficheur (po-scrum-master)
 - Demande du lead dev (PR #430, point 3) via Claude, agent dev3d (01Us6uCtQN). À vraie taille (82 × 18 mm), l'afficheur fait ≈ 3 px de caractère dans le cadrage large : illisible.
 - Décision : **option A**. RG-05 corrigée : afficheur allumé et visible en cadrage large ; code tapé lisible en vue rapprochée ; en cadrage large, un code commencé est aussi écrit dans le panneau « Rejoins avec un code » sous l'aide (« Code : K7Q_ », 4 cases, style du code du salon). Pas d'agrandissement de l'afficheur (RG-02).
+
+### 2026-11-16 12:07:38 — WFS-561 : scène 3D des résultats prête au banc, accroches annoncées (Claude, agent dev3d (01Us6uCxBL))
+- Arbitrage du PO (RG-04 à RG-09) : la scène de la maquette 11 sert aux fins de la course à 5, du duel et de la Poursuite. Les fenêtres 2D des maquettes 31 à 33 restent comme repli. Les accroches dans les `resultat()` des 3 modes attendent la fusion de WFS-557, qui touche les mêmes fichiers.
+- Fait, dans des fichiers neufs (`src/ui/resultats_parking.*`, `resultats_parking_calc.cpp`, `resultats_parking_banc.cpp`, `tableau_led.*`) :
+  - le parking de WFS-552, réutilisé tel quel ;
+  - un vrai panneau LED P16 de 3,10 × 1,52 m : caisson RAL 7016, masque noir, une visière par rangée, LED éteintes visibles, points ambre de 590 nm, police 5 × 7 avec accents ;
+  - le reflet sur le sol mouillé (panneau et réglettes) ;
+  - la voiture du joueur de trois quarts ;
+  - les textes FR / EN (`resultats.*`).
+- Test `test_tableau_led` : police, mise en page, cadrage et reflet. Banc `WFS_BANC=resultats3d` : 0 écart, rien n'est créé pendant l'écran. Les 151 tests CPU passent.
+- **Accroches de moins de 10 lignes, hors de ma zone, annoncées ici :**
+  - `src/platform/desktop_main.cpp` : banc `resultats3d` (2 lignes) ;
+  - `src/world/meteo.cpp` : pas de gouttes de pluie sur l'écran des résultats, sous terre (2 lignes : un include et un test sur `resultats3d::affiche()`). Ce défaut a été vu par l'agent 3D sur la capture de nuit.
+- Limites :
+  - le vrai reflet de la voiture sur le sol du parking demande une passe miroir pour le sol du parking (aujourd'hui, seule la route mouillée en a une, WFS-16). C'est hors de cette zone : je le proposerai au PO ;
+  - le ×2 par vidéo (« Maintiens ») n'est pas encore dessiné dans le jeu : c'est WFS-512. Rien n'est changé (RG-03).
