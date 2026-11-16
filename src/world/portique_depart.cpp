@@ -28,12 +28,17 @@ constexpr float HAUTEUR_LIBRE = 5.5f;  // RG-02 : hauteur libre sous la poutre
 const vec4 TEXTE_UI{242 / 255.f, 244 / 255.f, 248 / 255.f, 1};       // --text
 const vec4 FOND_UI{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.72f};         // --bg en verre teinté
 
+// position des feux, lue par la lumière de nuit (PortiqueDepartLumiere) ; vide tant que le portique n'est pas construit
+struct FeuxPoses { bool construit = false; vec3 centre{}, avant{}; };
+FeuxPoses g_feux;
+int g_lumiere = 0;   // banc : lumière de nuit posée à la dernière image (0 aucune, 1 rouge, 2 verte)
+
 class PortiqueDepart : public System {
 public:
     const char* name() const override { return "portique de départ"; }
 
     void init(Renderer& r, const GameView& g) override {
-        actif_ = false; construit_ = false;
+        actif_ = false; construit_ = false; g_feux = {};
         if (!g.map || !std::strcmp(g.map->id, "circuit")) return;   // le Grand Prix a son propre portique de feux (WFS-373)
         // matériaux PBR (regles-de-gestion/DA-realisme.md, § 3) : aluminium brut (F0 0,91), acier galvanisé terni, aluminium
         // laqué noir (diélectrique, albédo 0,035), polycarbonate des lentilles (éteint : rouge très sombre et brillant)
@@ -61,20 +66,7 @@ public:
         r.destroy(eteint_); r.destroy(rouge_); r.destroy(vert_);
         for (Mesh& m : pieces_) m = Mesh{};
         for (Mesh& m : lentilles_) m = Mesh{};
-        actif_ = construit_ = false;
-    }
-
-    // nuit : les feux allumés éclairent le treillis et la chaussée (une lumière ponctuelle, s'il en reste une de libre)
-    void ambiance(FrameParams& fp, const GameView& g) override {
-        if (!construit_ || !g.night || g.sceneDediee || fp.spotCount >= FrameParams::SPOTS_MAX) return;
-        const int n = feux(nullptr);
-        if (n == 0 || length(feuxMonde_ - g.camPos) > 250) return;
-        FrameParams::Spot& s = fp.spots[fp.spotCount++];
-        // lumière 1,2 m devant le caisson et 0,9 m plus bas (avis de l'agent 3D, PR #431) : elle éclaire le treillis, les pieds et
-        // la chaussée sans teinter toute la face du caisson (visières et bagues restent lisibles)
-        s.pos = feuxMonde_ + avant_ * 1.2f + vec3{0, -0.9f, 0}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 2; s.distance = 22;
-        s.color = vert() ? vie::lin(0x19ff5a) : vie::lin(0xff1a1a);
-        s.intensity = 0.25f * (float)n;   // 5 lanternes allumées ≈ un lampadaire (1,1 à 26 m) sur une portée plus courte
+        actif_ = construit_ = false; g_feux = {};
     }
 
     void render(Renderer& r, const GameView& g) override {
@@ -83,7 +75,7 @@ public:
         if (!construit_ || length(origine_ - g.camPos) > 900) return;
         const mat4 I = mat4::identity();
         for (int p = 0; p < NB_PIECES - 1; p++) if (pieces_[p].indexCount) r.draw(pieces_[p], mats_[p], I);
-        const int n = feux(nullptr);
+        const int n = feux();
         const bool v = vert();
         for (int k = 0; k < NB_FEUX; k++) r.draw(lentilles_[k], v ? vert_ : (k < n ? rouge_ : eteint_), I);
     }
@@ -126,13 +118,13 @@ public:
         ui::text(r, x0 + pad + wa + wb, ty, px, d, TEXTE_UI, ui::GAUCHE, 0.f, false);
     }
 
-private:
-    static int feux(const Course** out) {
+    static int feux() {
         const Course* c = activeCourse();
-        if (out) *out = c;
         return c ? c->feuxRouges() : 0;
     }
     static bool vert() { const Course* c = activeCourse(); return c && c->feuxVerts(); }
+
+private:
 
     static bool projeter(const GameView& g, vec3 p, float& sx, float& sy) {
         const mat4 vp = g.proj * g.view;
@@ -164,6 +156,7 @@ private:
         origine_ = p.o; avant_ = Z;
         feuxMonde_ = p.o + X * md.centreFeux.x + Y * md.centreFeux.y + Z * md.centreFeux.z;
         construit_ = true;
+        g_feux = {true, feuxMonde_, avant_};
         WFS_LOG("portique de départ (WFS-559) : ouverture %.2f m, hauteur libre %.2f m, %d triangles, feux à %.2f m", md.ouverture, md.hauteurLibre, tri, md.centreFeux.y);
     }
 
@@ -173,8 +166,35 @@ private:
     vec3 origine_{}, feuxMonde_{}, avant_{};   // avant_ : vers les voitures qui arrivent (face des feux)
 };
 
+
+// RG-04 : la nuit, les feux allumés éclairent le treillis, les pieds et la chaussée (une lumière ponctuelle, s'il en reste une).
+// Système à part, d'ordre 960 : le système de la nuit (nuit.cpp, ordre 950) remet la liste des lumières à zéro dans son ambiance,
+// une lumière posée avant lui serait effacée (revue du lead dev, PR #431 : lueur du GO jamais allumée).
+class PortiqueDepartLumiere : public System {
+public:
+    const char* name() const override { return "portique de départ : lumière"; }
+    void ambiance(FrameParams& fp, const GameView& g) override {
+        g_lumiere = 0;
+        if (!g_feux.construit || !g.night || g.sceneDediee || fp.spotCount >= FrameParams::SPOTS_MAX) return;
+        const bool vert = PortiqueDepart::vert();
+        const int n = vert ? Course::FEUX_DEPART : PortiqueDepart::feux();   // GO : les 5 colonnes vertes éclairent
+        if (n == 0 || length(g_feux.centre - g.camPos) > 250) return;
+        FrameParams::Spot& s = fp.spots[fp.spotCount++];
+        // 1,2 m devant le caisson et 0,9 m plus bas (avis de l'agent 3D, PR #431) : la face du caisson n'est pas teintée en entier
+        s.pos = g_feux.centre + g_feux.avant * 1.2f + vec3{0, -0.9f, 0}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 2; s.distance = 22;
+        s.color = vert ? vie::lin(0x19ff5a) : vie::lin(0xff1a1a);
+        s.intensity = 0.25f * (float)n;   // 5 lanternes allumées ≈ un lampadaire (1,1 à 26 m) sur une portée plus courte
+        s.rang = 1;                       // éclairage fixe (WFS-450)
+        g_lumiere = vert ? 2 : 1;
+    }
+};
+
 } // namespace
 
+// banc « portique-depart » : lumière de nuit posée à la dernière image (0 aucune, 1 rouge, 2 verte)
+int portiqueDepartLumiere() { return g_lumiere; }
+
 WFS_SYSTEM(PortiqueDepart, 112)   // décor (100-199)
+WFS_SYSTEM(PortiqueDepartLumiere, 960)   // après la nuit (950), qui remet les lumières à zéro
 
 } // namespace wfs

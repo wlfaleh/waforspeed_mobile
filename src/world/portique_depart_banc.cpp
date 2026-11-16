@@ -13,6 +13,8 @@
 
 namespace wfs {
 
+int portiqueDepartLumiere();   // portique_depart.cpp
+
 int benchPortiqueDepart(Game& g, Renderer& r, const std::string& out) {
     int ecarts = 0;
     auto verifier = [&](bool ok, const std::string& quoi) {
@@ -54,11 +56,13 @@ int benchPortiqueDepart(Game& g, Renderer& r, const std::string& out) {
                     c = activeCourse();
                     if (!c) break;
                     if (debut < 0 && c->lastCount >= 0) debut = t;
-                    if (!vu3 && c->feuxRouges() == 3) { vu3 = true; capture(base + "-feux3"); verifier(!boutonVue(bx, by), base + " : bouton de vue caché pendant le décompte (RG-10)"); }
+                    if (!vu3 && c->feuxRouges() == 3) { vu3 = true; capture(base + "-feux3"); verifier(!boutonVue(bx, by), base + " : bouton de vue caché pendant le décompte (RG-10)");
+                        verifier(portiqueDepartLumiere() == (nuit ? 1 : 0), base + (nuit ? " : lumière rouge des feux posée (RG-04)" : " : pas de lumière des feux de jour")); }
                     if (!vu5 && c->feuxRouges() == 5) { vu5 = true; capture(base + "-feux5"); }
                     if (c->feuxVerts()) {
                         vuGo = true; image(6); capture(base + "-go");
                         verifier(boutonVue(bx, by), base + " : bouton de vue revenu au départ (RG-10)");
+                        verifier(portiqueDepartLumiere() == (nuit ? 2 : 0), base + (nuit ? " : lumière verte des feux posée au GO (RG-04)" : " : pas de lumière des feux de jour"));
                         verifier(debut > 0 && std::abs((t - 0.1) - debut - 3.0) < 0.1, base + " : décompte de 3 s");
                     }
                 }
