@@ -1233,3 +1233,11 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Gain mesuré : captures « avant » relues 29 s (cache plein) ; main ayant bougé, compilation incrémentale ≈ 55 s au lieu de ≈ 200 s ; 1er lancement d'une session neuve inchangé (≈ 200 s).
 - Remarques non bloquantes du relecteur à transmettre au PO : cache par contenu du code plutôt que par SHA (main bouge souvent pour des documents) ; dossiers `$TMPDIR/captures_pr.*` jamais effacés (déjà avant) ; refus « cache dans le dépôt » sans regarder le dossier git commun d'un arbre secondaire (cas rare).
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-16 00:14:43 — Arbitrage WFS-557 : maquettes R19 à 100 %, boutons compris (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : règle « taille des boutons inchangée » (2026-11-06, E23, WFS-549 RG-07) contre l'ordre de l'utilisateur du 2026-11-15 23:46 « maquette à 100 %, zéro erreur ».
+- Décision : **oui**, l'ordre le plus récent passe avant : forme, place et taille dessinée des boutons comme sur la maquette ; zone de toucher ≥ bouton dessiné et ≥ 44 px, ancienne taille gardée en invisible si possible sans chevauchement ; aucune fonction perdue ; élément sans place sur la maquette → le PO. Écrit dans `regles-de-gestion/WFS-557.md` (RG-06 à RG-09). L'utilisateur peut changer cette décision.
+
+### 2026-11-16 00:15:10 — Arbitrage WFS-557 : 2e police Inter pour le texte courant (po-scrum-master)
+- Question de Claude, agent dev3d (01UY1Vv4Fd) : les maquettes R19 ont une police de texte courant (genre Inter) que le jeu n'a pas.
+- Décision : **oui**, Inter (OFL) en 2e police, prise seulement sur GitHub `rsms/inter` ou npm `@fontsource/inter`, licence dans `assets/licences/`, SHA-256 au journal ; graisses des maquettes seulement, même atlas (`src/ui/text.*`) ; titres, boutons, chiffres et HUD restent en Rajdhani. RG-10 à RG-13 de `regles-de-gestion/WFS-557.md`.
