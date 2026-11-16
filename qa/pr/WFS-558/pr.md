@@ -22,7 +22,7 @@
   - maquette 04, « Retour » et « Créer duel » ↔ hors périmètre (**WFS-557**, en cours : boutons non retouchés ici) ;
   - maquette 23 (salon) ↔ `salon.cpp:Salon::dessinerSalon` (inchangé, WFS-557 le refait) sur la scène floutée : conforme.
 - **Comment c'est vérifié** :
-  - `test_salon_digicode` (nouveau) : 31 caractères une fois chacun, 15 mm, pas de 19 mm, tout dans 120 × 180 mm, ⌫ / OK, vue rapprochée (digicode sur 98 % de la hauteur, touches 89 px), vue large (voiture, poteau à gauche, voisine à droite), glissé en 24 images à 60 img/s sans saut et sans traverser le poteau, retour en 0,4 s ; pseudo ≥ 20 px en vue large ; **tests CPU : 151 réussis** (`qa/pr/WFS-558/tests-cpu.log`).
+  - `test_salon_digicode` (nouveau) : 31 caractères une fois chacun, 15 mm, pas de 19 mm, tout dans 120 × 180 mm, ⌫ / OK, vue rapprochée (digicode sur 98 % de la hauteur, touches 89 px), vue large (voiture, poteau à gauche, voisine à droite), glissé en 24 images à 60 img/s sans saut et sans traverser le poteau, retour en 0,4 s ; pseudo ≥ 20 px en vue large ; **tests CPU : 152 réussis** sur le commit synchronisé avec main (`qa/pr/WFS-558/tests-cpu.log`).
   - Banc `menu2` (2400 × 1080) : parcours complet du salon : toucher du digicode → vue rapprochée → K, 7, Q, 2 tapés sur les touches 3D → « effacer » maintenu (un seul caractère retiré, WFS-545) → « Retour » → cadrage large, écran Salon gardé (« 0 écart ») → Créer, Rejoindre par Internet, hors ligne, Quitter, Retour → menu (« 0 écart ») ; tuile « Rejoindre Nadia » du panneau touchée → salon rejoint (« 0 écart ») ; derniers adversaires (WFS-122) : toucher dans le panneau OK. Lignes du journal du banc : `qa/pr/WFS-558/banc-menu2.journal`.
   - Captures EN (banc `salon`, `WFS_LANGUE=en`) ajoutées à la main : `apres-en-*.jpg` (accueil, code tapé, retour au cadrage large), refaites avec le code final.
 - **Limites et risques** :
@@ -30,6 +30,7 @@
   - La voiture d'un adversaire **est chargée quand il arrive** dans le salon (hors de l'image, dans `update`, comme `DuelSystem`), pas au chargement de la partie : impossible de connaître sa voiture avant ; la voiture garée d'attente, elle, est chargée au chargement.
   - Légendes des touches, code de l'afficheur et pseudo de la plaque : textes 2D projetés sur leur pièce 3D à chaque image (pas de gravure en géométrie).
   - 2 erreurs **déjà présentes sur `main`** dans le parcours « duel entre amis » du banc (`écran de fin : classement… et temps`, `vrais temps…`, temps 0,0 s) : mêmes lignes dans le journal « avant » (main 68a71e26) et « après » ; sans lien avec ce ticket.
+  - Synchronisé avec main après la fusion de **WFS-550** (#424, vitrine SF-X du menu) : conflit de `menu.cpp` résolu en gardant les deux (parking partagé + vitrine) ; la vitrine ne vit que pendant l'écran Menu, la lumière plus sombre de WFS-550 est dans `Parking::eclairer` (partagée avec le salon) ; `menu-duel` identique avant / après.
   - Conflit attendu avec **WFS-557** (même fichier `salon.cpp`, boutons et salon 2D) : je synchronise avec `main` dès sa fusion.
 
 ### Captures EN (après seulement)
@@ -46,17 +47,19 @@
 
 ```
 [OK] test_salon_digicode (0 s)
-tests CPU : 151 test(s) réussi(s) en 502 s
+tests CPU : 152 test(s) réussi(s) en 469 s
 ```
 
-## Captures pour le lead dev (14 après)
+## Captures pour le lead dev (16 après)
 
 Dossier : [`qa/pr/WFS-558`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558) — produit par `tools/qa/captures_pr.sh`.
 
-Captures « avant » : `origin/main` = `73b7f6fd4f8368c80576d04d6c2ccf1e9127e84e` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
+Captures « avant » : `origin/main` = `636181205dc65b250c59bab261025b891f0d0f03` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
+| `manette-reglages` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/avant-manette-reglages.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/apres-manette-reglages.jpg?raw=true) |
+| `menu-duel` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/avant-menu-duel.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/apres-menu-duel.jpg?raw=true) |
 | `salon-accueil` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/avant-salon-accueil.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/apres-salon-accueil.jpg?raw=true) |
 | `salon-amis-fin` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/avant-salon-amis-fin.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/apres-salon-amis-fin.jpg?raw=true) |
 | `salon-amis` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/avant-salon-amis.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-558/qa/pr/WFS-558/apres-salon-amis.jpg?raw=true) |

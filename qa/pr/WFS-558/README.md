@@ -1,11 +1,13 @@
 # WFS-558 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-558` comparée à `origin/main` ; bancs : menu2:2400x1080 ; filtre : `*salon*`.
+Branche `feature/waforspeed-558` comparée à `origin/main` ; bancs : menu2:2400x1080 ; filtre : `[ms][ea]*`.
 
-Captures « avant » : `origin/main` = `73b7f6fd4f8368c80576d04d6c2ccf1e9127e84e` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
+Captures « avant » : `origin/main` = `636181205dc65b250c59bab261025b891f0d0f03` ; cache : 0 banc(s) relu(s), 1 banc(s) rejoué(s) ; main compilé : oui.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
+| `manette-reglages` | ![avant](avant-manette-reglages.jpg) | ![après](apres-manette-reglages.jpg) |
+| `menu-duel` | ![avant](avant-menu-duel.jpg) | ![après](apres-menu-duel.jpg) |
 | `salon-accueil` | ![avant](avant-salon-accueil.jpg) | ![après](apres-salon-accueil.jpg) |
 | `salon-amis-fin` | ![avant](avant-salon-amis-fin.jpg) | ![après](apres-salon-amis-fin.jpg) |
 | `salon-amis` | ![avant](avant-salon-amis.jpg) | ![après](apres-salon-amis.jpg) |
