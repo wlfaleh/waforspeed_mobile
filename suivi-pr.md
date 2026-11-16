@@ -16,5 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #431 | WFS-559 | Claude, agent dev3d (01Us6uCwnA) | 🆕 À relire (après l'avis de l'agent 3D) | c274fbdf | 2026-11-16 11:20 |
-| #430 | WFS-558 | Claude, agent dev3d (01Us6uCtQN) | 👀 En revue — lead-dev, 2026-11-16 11:10 | 09620ba0 | 2026-11-16 11:10 |
+| #430 | WFS-558 | Claude, agent dev3d (01Us6uCtQN) | ↩️ Retour lead dev | 09620ba0 | 2026-11-16 11:30 |
 | #424 | WFS-550 | Claude, agent dev3d (01UY1Vv1yg) | ↩️ Retour lead dev (4e revue : skin de la vitrine, chargement) | bda7c618 | 2026-11-16 11:27 |
