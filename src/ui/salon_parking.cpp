@@ -111,14 +111,15 @@ public:
             pave(g[PVC], R, {xg, y, zg}, {0.0125f, 0.006f, 0.0115f}, 0.002f);                 // collier à embase
             tete(g[VIS], R, xg + 0.017f, y, 0.0f, 0.0025f);                                  // vis de l'embase
         }
-        // ---- plaque du pseudo : aluminium 300 × 100 × 1,5 mm sur entretoises de 8 mm, bord embouti peint, bande orange « WFS »,
-        // film blanc, 4 rivets
-        const float py = PLAQUE_DY, pz = 0.008f, PL = 0.150f, PH = 0.050f;
+        // ---- plaque du pseudo : aluminium 600 × 200 × 1,5 mm sur 4 entretoises de 30 mm (la gaine passe derrière), bord embouti
+        // peint, bande orange « WFS », film blanc, 4 rivets
+        const float py = PLAQUE_DY, pz = PLAQUE_Z, PL = PLAQUE_DEMI_L, PH = PLAQUE_DEMI_H;
         pave(g[BORD], R, {0, py, pz + 0.00075f}, {PL, PH, 0.00075f}, 0.0007f);
         pave(g[PLAQUE], R, {0, py, pz + 0.0016f}, {PL - 0.006f, PH - 0.006f, 0.0001f}, 0.0001f);
-        pave(g[BANDE], R, {-PL + 0.006f + 0.016f, py, pz + 0.0018f}, {0.016f, PH - 0.006f, 0.0001f}, 0.0001f);
-        for (float sx : {-1.f, 1.f}) for (float sy : {-1.f, 1.f}) tete(g[VIS], R, sx * (PL - 0.012f), py + sy * (PH - 0.012f), pz + 0.0019f, 0.002f, false);
-        for (float sx : {-1.f, 1.f}) pave(g[PVC], R, {sx * (PL - 0.012f), py, pz / 2}, {0.004f, 0.004f, pz / 2}, 0.001f);   // entretoises
+        pave(g[BANDE], R, {-PL + 0.006f + 0.025f, py, pz + 0.0018f}, {0.025f, PH - 0.006f, 0.0001f}, 0.0001f);
+        for (float sx : {-1.f, 1.f}) for (float sy : {-1.f, 1.f}) tete(g[VIS], R, sx * (PL - 0.015f), py + sy * (PH - 0.015f), pz + 0.0019f, 0.002f, false);
+        for (float sx : {-1.f, 1.f}) for (float sy : {-1.f, 1.f})   // entretoises Ø 8 mm (six pans) sous les rivets
+            mobilier::tour(Sortie(g[VIS]), repereFace(R), {sx * (PL - 0.015f), 0.f, -(py + sy * (PH - 0.015f))}, {{0.0046f, 0.f}, {0.0046f, pz}, {0.f, pz}}, 6, UV0);
         // ---- inox brossé : uv planes en mètres dans le repère du digicode (façade, touches), × 20 : une texture pour 5 cm ; le
         // brossage suit x (stries horizontales, comme une tôle brossée en long)
         for (int k : {INOX, TOUCHE})
@@ -324,8 +325,8 @@ public:
             v.touches[k] = proche ? touches_[k] : Rect{};
         }
         afficheur_ = rectEcran(VP, M_, R, {0, Y_AFF, EPAIS + 0.0011f}, {AFF_L / 2 - 0.004f, AFF_H / 2 - 0.004f}, W, H);
-        plaque_ = rectEcran(VP, M_, R, {0.024f, PLAQUE_DY, 0.0098f}, {0.150f - 0.054f, 0.050f - 0.008f}, W, H);   // à 34 mm de la bande orange
-        bande_ = rectEcran(VP, M_, R, {-0.150f + 0.022f, PLAQUE_DY, 0.0098f}, {0.016f, 0.044f}, W, H);
+        plaque_ = rectEcran(VP, M_, R, {0.035f, PLAQUE_DY, PLAQUE_Z + 0.0018f}, {PLAQUE_DEMI_L - 0.065f, PLAQUE_DEMI_H - 0.012f}, W, H);   // à 30 mm de la bande
+        bande_ = rectEcran(VP, M_, R, {-PLAQUE_DEMI_L + 0.031f, PLAQUE_DY, PLAQUE_Z + 0.0018f}, {0.025f, PLAQUE_DEMI_H - 0.006f}, W, H);
         decor().r_camera_ = oeil;
         v.active = true;
         return true;
@@ -339,7 +340,8 @@ public:
     // légendes gravées des touches, code tapé sur l'afficheur, pseudo sur la plaque : projetés sur leur pièce 3D (sous l'interface
     // de l'écran Salon, ordre 452 < 453)
     void drawUi(Renderer& r, const GameView& g) override {
-        if (g.ecran != Ecran::Salon || !vue().active || !ui::fontReady()) return;
+        // salon (maquette 23) : la scène est floutée sous le verre ; un texte net par-dessus flotterait (revue du lead dev, #430)
+        if (g.ecran != Ecran::Salon || !vue().active || !ui::fontReady() || duelSession().inRoom()) return;
         for (int k = 0; k < NB_TOUCHES; k++) {
             const Rect& q = legendes_[k];
             if (!q.ok || q.h < 3.f) continue;   // plus petit que 3 px : invisible de toute façon
@@ -367,7 +369,7 @@ public:
             }
         }
         if (plaque_.ok && plaque_.h >= 3.f) {   // pseudo du joueur (RG-07), gravé noir sur le film blanc ; « WFS » sur la bande
-            const float px = plaque_.h * 0.70f;
+            const float px = plaque_.h * (PLAQUE_LETTRE / 0.70f) / (2 * (PLAQUE_DEMI_H - 0.012f));   // capitales de 120 mm (capitale ≈ 0,70 × la taille)
             ui::textBoite(r, plaque_.x + plaque_.w / 2, plaque_.y, plaque_.w, plaque_.h, px, ui::majuscules(sauvegarde().nick), hexa(0x141518), ui::CENTRE, 0.04f, false, false);
             if (bande_.ok && bande_.h >= 6.f) ui::textBoite(r, bande_.x + bande_.w / 2, bande_.y + bande_.h * 0.62f, bande_.w, bande_.h * 0.3f, bande_.h * 0.22f, "WFS", hexa(0xFFFFFF, 0.95f), ui::CENTRE, 0, false, false);
         }

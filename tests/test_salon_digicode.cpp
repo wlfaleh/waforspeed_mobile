@@ -77,6 +77,15 @@ int main() {
         cas("vue large : voiture, poteau (à gauche) et place voisine (à droite) dans l'image",
             ok && std::fabs(v.x) < 0.4f && po.x < -0.2f && po.x > -0.95f && voisine.x > 0.3f && voisine.x < 1.1f);
     }
+    // ---- revue du lead dev (#430) : pseudo lisible sur la plaque dans le cadrage large (capitales ≥ 20 px en 2400 × 1080)
+    {
+        const Camera l = camera(0);
+        vec2 h, b;
+        const bool ok = ndc(l, aspect, versVoiture({0.035f, PLAQUE_DY + PLAQUE_LETTRE / 2, PLAQUE_Z}), h) && ndc(l, aspect, versVoiture({0.035f, PLAQUE_DY - PLAQUE_LETTRE / 2, PLAQUE_Z}), b);
+        const float px = std::fabs(b.y - h.y) / 2 * 1080;
+        char m[120]; std::snprintf(m, sizeof m, "vue large : capitales du pseudo de %.1f px en 2400 × 1080 (≥ 20)", px);
+        cas(m, ok && px >= 20.f);
+    }
     // ---- glissé : 0,4 s, doux, sans saut, sans traverser le poteau (œil toujours devant sa face)
     {
         float t = 0; int images = 0; bool doux = true, devant = true;

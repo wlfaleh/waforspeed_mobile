@@ -212,7 +212,15 @@ public:
                 }
                 return true;
             }
-            if (duel3d::vue().active && !duel3d::vue().rapprochee()) {   // WFS-558 (RG-05) : vue large : le digicode se touche pour s'approcher
+            for (size_t i = 0; i < g_liste.size() && i < 4; i++)
+                if (g_salons[i].contient(t.x, t.y)) {   // joinRoom
+                    const std::string code = g_liste[i].code;
+                    s.join(std::make_unique<reseau::TransportUdp>(prise(), code), code, false, sv.nick, car, sv.peinture(car).c_str(), "");
+                    WFS_LOG("salon : rejoint %s (hôte %s)", code.c_str(), g_liste[i].hote.c_str());
+                    return true;
+                }
+            // WFS-558 (RG-05) : vue large : le digicode se touche pour s'approcher (après les tuiles du panneau, qui gardent leurs touchers)
+            if (duel3d::vue().active && !duel3d::vue().rapprochee()) {
                 if (duel3d::vue().digicode.contient(t.x, t.y) && !duel3d::vue().proche) duel3d::rapprocher(true);
                 return true;
             }
@@ -226,13 +234,6 @@ public:
                 g_saisie.clear();
                 return true;
             }
-            for (size_t i = 0; i < g_liste.size() && i < 4; i++)
-                if (g_salons[i].contient(t.x, t.y)) {   // joinRoom
-                    const std::string code = g_liste[i].code;
-                    s.join(std::make_unique<reseau::TransportUdp>(prise(), code), code, false, sv.nick, car, sv.peinture(car).c_str(), "");
-                    WFS_LOG("salon : rejoint %s (hôte %s)", code.c_str(), g_liste[i].hote.c_str());
-                    return true;
-                }
             return true;
         }
         if (g_quitter.contient(t.x, t.y)) { WFS_LOG("salon : « Quitter le salon »"); s.leave(); return true; }
@@ -354,6 +355,8 @@ private:
         const auto& adv = sauvegarde().adversaires;
         const size_t ns = std::min<size_t>(g_liste.size(), 2), na = std::min<size_t>(adv.size(), 3);
         float h = 82 * k;
+        const bool code = !g_saisie.empty();   // RG-05 (arbitrage du PO, 2026-11-16) : code commencé recopié sous l'aide
+        if (code) h += 46 * k;
         if (ns) h += 22 * k + ns * (lh + 6 * k);
         if (na) h += 22 * k + na * (lh + 6 * k);
         h = std::min(h, std::max(82 * k, std::min(0.52f * H, by - 12 * k) - y));
@@ -362,6 +365,17 @@ private:
         ui::textBoite(r, x + pad, y + 40 * k, lw, 16 * k, 13 * k, ui::tr("salon.aide_digicode1"), hex(0xC9CDDA), ui::GAUCHE, 0, false);
         ui::textBoite(r, x + pad, y + 58 * k, lw, 16 * k, 13 * k, ui::tr("salon.aide_digicode2"), hex(0xC9CDDA), ui::GAUCHE, 0, false);
         float ly = y + 86 * k;
+        if (code) {   // « Code : K7Q_ » : 4 cases, caractères en orange comme le code du salon, case suivante soulignée en cyan
+            ui::text(r, x + pad, ly + 12 * k, 12 * k, ui::majuscules(ui::tr("salon.code_tape")), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            const float cw = 30 * k, ch = 36 * k, cx0 = x + pad + 70 * k;
+            for (int i = 0; i < 4; i++) {
+                const float cx = cx0 + i * (cw + 6 * k);
+                r.uiRect(cx, ly, cw, ch, GLASS);
+                r.uiRect(cx, ly + ch - 2 * k, cw, 2 * k, i == (int)g_saisie.size() ? hex(ACCENT2) : i < (int)g_saisie.size() ? hex(ACCENT) : hex(SURFACE2));
+                if (i < (int)g_saisie.size()) ui::text(r, cx + cw / 2, ly + 5 * k, 24 * k, ui::majuscules(g_saisie.substr((size_t)i, 1)), hex(ACCENT), ui::CENTRE, 0, false, true);
+            }
+            ly += 46 * k;
+        }
         const float bas = y + h - 4 * k;
         auto tuile = [&](Zone& z, const std::string& nom, const std::string& droite, unsigned bord, unsigned couleurDroite, float tailleDroite) {
             if (ly + lh > bas) return false;
@@ -821,6 +835,12 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     sauvegarde().adversaires = {"Sam"};   // WFS-558 (RG-07) : un ancien adversaire simulé (listes non vides dans le panneau)
     g.allerA(Ecran::Salon); pas(30);
     capture("salon-accueil", "salon de Nadia listé");
+    if (duel3d::vue().active) {   // WFS-558 (revue du lead dev, #430) : la tuile « Rejoindre Nadia » du panneau fait entrer dans son salon
+        g.render(t); const bool tuile = g_salons[0].w > 0; toucher(26, g_salons[0]); pas(10);
+        if (tuile && duelSession().inRoom() && duelSession().code() == "n4d1") WFS_LOG("salon (WFS-558) : tuile « Rejoindre Nadia » du panneau touchée → salon n4d1 rejoint : 0 écart");
+        else WFS_ERR("salon (WFS-558) : tuile « Rejoindre Nadia » : %s, salon %s", tuile ? "touchée" : "ABSENTE", duelSession().inRoom() ? duelSession().code().c_str() : "non rejoint");
+        duelSession().leave(); pas(10);
+    }
     nadia.leave(); sauvegarde().adversaires = advAvant; pas(10);
     // salon-hote : je crée un salon, Nadia le rejoint
     g.render(t); toucher(1, g_creer);

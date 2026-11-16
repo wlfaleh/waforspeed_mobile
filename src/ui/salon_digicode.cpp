@@ -31,7 +31,7 @@ void touche(int k, vec3& c, vec2& demi) {
 Camera camera(float t) {
     // cadrage large de la maquette 04 : œil dans l'allée à hauteur d'homme, voiture du joueur au milieu, poteau à gauche, place
     // voisine à droite ; vue rapprochée : 28 cm devant le digicode, qui remplit la hauteur (fov 40° : 0,19 m vus, digicode 0,18 m)
-    const Camera large{{1.10f, 1.30f, -6.4f}, {0.45f, 1.00f, 0.6f}, 46.f * PI / 180.f};
+    const Camera large{{1.15f, 1.30f, -5.6f}, {0.50f, 1.02f, 0.6f}, 46.f * PI / 180.f};
     const Camera proche{{POTEAU_X - 0.02f, DIGI_Y + 0.012f, POTEAU_FACE - 0.28f}, {POTEAU_X, DIGI_Y, POTEAU_FACE - EPAIS}, 40.f * PI / 180.f};
     const float s = doux(t);
     return {lerp(large.oeil, proche.oeil, s), lerp(large.cible, proche.cible, s), large.fovY + (proche.fovY - large.fovY) * s};

@@ -247,6 +247,7 @@ salon.rejoindre_code=Join with a code
 salon.rejoins_code=Join with a code
 salon.aide_digicode1=Type your friend's code on the keypad, then
 salon.aide_digicode2=OK. Or create a duel and send them the link.
+salon.code_tape=Code
 salon.rejoindre=Join
 salon.code=Room code
 salon.valable=code valid for {1} min

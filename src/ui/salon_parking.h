@@ -31,7 +31,10 @@ inline constexpr float FACE_L = 0.120f, FACE_H = 0.180f, EPAIS = 0.030f;   // bo
 inline constexpr float Y_LIGNE0 = 0.0365f;                                 // centre de la 1re ligne (sous l'afficheur)
 inline constexpr float Y_AFF = 0.0670f, AFF_L = 0.090f, AFF_H = 0.026f;    // cadre de l'afficheur
 inline constexpr float POTEAU_X = 4.f, POTEAU_FACE = 1.60f - 0.25f, DIGI_Y = 1.62f;   // centre du digicode à 1,62 m (haut à 1,71 m)
-inline constexpr float PLAQUE_DY = 0.30f;                                             // plaque : centre 30 cm au-dessus du digicode
+inline constexpr float PLAQUE_DY = 0.36f;                                             // plaque : centre 36 cm au-dessus du digicode
+// panneau nominatif de place réservée en aluminium 600 × 200 mm, lettres de 120 mm (revue du lead dev, #430 : pseudo lisible dans
+// le cadrage large, ≥ 20 px en 2400 × 1080) ; plus large que le poteau de 50 cm, comme sur la maquette 04
+inline constexpr float PLAQUE_DEMI_L = 0.30f, PLAQUE_DEMI_H = 0.10f, PLAQUE_LETTRE = 0.12f, PLAQUE_Z = 0.030f;   // entretoises de 30 mm
 inline constexpr float VOISINE_X = -2.50f;                                            // 2e voiture : place voisine, à droite à l'écran
 // caractère de la touche (rang 0..30), en minuscule comme duel::CODE_CHARS ; 0 pour effacer et OK
 char caractere(int touche);
