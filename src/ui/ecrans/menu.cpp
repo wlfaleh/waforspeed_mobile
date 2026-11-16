@@ -27,6 +27,11 @@
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
 #include "../menu_parking.h"   // WFS-552 : parking souterrain derrière le menu
+#include "../../render/model_loader.h"        // WFS-550 : voiture de vitrine du menu
+#include "../../render/vehicule_skin.h"
+#include "../../render/vehicule_finitions.h"
+#include "../../render/vehicule_peinture2.h"
+#include "../../game/roues.h"
 #include <cstdlib>
 #include "../../game/track.h"
 #include "../../game/player.h"
@@ -74,19 +79,45 @@ class Menu : public System {
 public:
     const char* name() const override { return "menu"; }
     // WFS-552 (RG-05) : parking préparé au chargement de la partie ; mémoire refusée → fond d'avant (scène de la course figée)
-    void init(Renderer& r, const GameView&) override { if (!parking_.pret() && !std::getenv("WFS_MENU_SANS_PARKING")) parking_.init(r); }
-    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); }
+    void init(Renderer& r, const GameView&) override {
+        if (!parking_.pret() && !std::getenv("WFS_MENU_SANS_PARKING")) parking_.init(r);
+        // WFS-550 (ordre de l'utilisateur du 2026-11-16 : « la voiture dans le menu doit être exactement la même, c'est l'image
+        // de marque du jeu ») : la SF-X de la maquette 01 (orange, finition caméléon, skin bleu ciel) est la voiture de vitrine
+        // du menu, quelle que soit la voiture du joueur (la course, le garage et la sauvegarde ne changent pas)
+        if (parking_.pret() && !vitrine_.ok) {
+            if (loadCarModel(r, carById(VITRINE).file, vitrine_)) vehicule_skin::poser(r, vitrine_, VITRINE, "ciel");
+            else WFS_ERR("menu : voiture de vitrine %s introuvable (la voiture du joueur reste affichée)", VITRINE);
+        }
+    }
+    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); if (vitrine_.ok) r.destroy(vitrine_); vitrine_ = Model{}; }
     // WFS-552 (RG-01, RG-04, RG-06) : derrière le menu, la voiture du joueur (sa peinture, sa finition et sa skin, dessinées par
     // Game) garée dans le parking souterrain, en caméra rapprochée ; l'interface du menu reste dessinée par-dessus
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         if (g.ecran != Ecran::Menu || !parking_.pret() || !g.car || !g.player || !g.track) return false;
         voiture_ = matriceVoiture(g);
-        parking_.regler(fp, s, g, *g.car, voiture_);
+        parking_.regler(fp, s, g, vitrine_.ok ? carById(VITRINE) : *g.car, voiture_);   // WFS-550 : cadrage sur la SF-X de vitrine
+        if (vitrine_.ok) s.joueur = false;   // la voiture du joueur n'est pas dessinée au menu : la vitrine la remplace
         s.interface = true;
         return true;
     }
     void render(Renderer& r, const GameView& g) override {
-        if (g.ecran == Ecran::Menu && g.sceneDediee && parking_.pret()) parking_.dessiner(r, voiture_);
+        if (g.ecran == Ecran::Menu && g.sceneDediee && parking_.pret()) {
+            parking_.dessiner(r, voiture_);
+            if (vitrine_.ok) {   // WFS-550 : SF-X orange caméléon, skin bleu ciel (maquette 01), roues droites, à l'arrêt
+                const int f0 = r.finitionJoueur();
+                r.finitionJoueur(vehicule_finitions::depuisId("cameleon"));
+                r.dessinJoueur = true;
+                r.peinture2ProchaineVoiture(vehicule_peinture2::UNE_COULEUR);
+                RouesPose rp = roues::poseJoueur(0, 0, 0, vitrine_.nRoues ? vitrine_.roues[0].rayon : roues::RW_DEFAUT);
+                const PeintureDef* o = peintureDef("orange");
+                const unsigned h = o ? o->hex : 0xFF6A00;
+                auto lin = [](float c) { return std::pow(c, 2.2f); };
+                const vec3 orange{lin(((h >> 16) & 255) / 255.f), lin(((h >> 8) & 255) / 255.f), lin((h & 255) / 255.f)};
+                r.draw(vitrine_, voiture_, &orange, &rp);
+                r.dessinJoueur = false;
+                r.finitionJoueur(f0);
+            }
+        }
     }
     void onEcran(Ecran, Ecran nouveau, const GameView&) override {
         if (nouveau == Ecran::Menu) t0_ = -1;
@@ -226,6 +257,8 @@ private:
         return translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + g.player->heading + g.player->spinYaw)) * rotateX((float)p.slope);
     }
     parking::Parking parking_;   // WFS-552
+    static constexpr const char* VITRINE = "sf90";   // Cavallo SF-X (nom inventé du catalogue)
+    Model vitrine_;              // WFS-550 : voiture de vitrine du menu
     mat4 voiture_ = mat4::identity();
     double t0_ = -1;
     bool finVue_ = false;
