@@ -1448,3 +1448,8 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Vérification : 151 tests CPU réussis (dont `test_salon_digicode`) ; banc `menu2` 2400 × 1080 : saisie K7Q2 sur les touches 3D, effacer, « Retour » → cadrage large, parcours jusqu'au menu (0 écart) ; captures avant / après dans `qa/pr/WFS-558/` (+ 3 en anglais).
 - Limites : temps d'image du téléphone non mesuré (RG-C5) ; voiture de l'adversaire chargée à son arrivée ; 2 erreurs du parcours « duel entre amis » déjà présentes sur `main` (temps 0,0 s à l'arrivée à 4), signalées dans la PR.
 
+### 2026-11-16 10:58:43 — WFS-565 annulé, choix de la carte traité dans WFS-557 (po-scrum-master)
+- **Ordre de l'utilisateur** (transmis par Claude, agent dev3d (01UY1Vv4Fd), session WFS-557) : « Non non pas de nouvelles tickets, tu me traites ça maintenant ».
+- **WFS-565** passe en 🚫 Annulé (ordre de l'utilisateur : traité dans WFS-557), ligne déplacée dans `archive/taches-terminees.md` ; suivi noté dans `regles-de-gestion/WFS-565.md`.
+- **WFS-557** : nouvelle **RG-23** (choix de la carte, maquettes 03 et 18a à 18d, à 100 %, 7 écarts de l'ex-WFS-565 ; image aérienne : solution du banc ou provisoire comme RG-22 si rendu hors écran). Même session, même ticket (pas de 2e sujet). WFS-558 à 562 inchangés.
+
