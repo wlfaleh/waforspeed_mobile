@@ -768,3 +768,11 @@ PR #431 relue en 2e revue sur b89f5de1 (seulement les 3 points de la 1re revue) 
 - À reprendre avec WFS-560 (portique « ARRIVÉE », même modèle `portique_depart::construire(…, false)`) ou en US de suite (réserves non bloquantes de l'agent 3D et du lead dev) : caisson qui se lit comme un panneau plat de loin ; zoom de la platine et des boulons au ras du sol ; motif des optiques des feux (P3) ; banc : contrôle du bouton MENU pour RG-10 ; `circuit.cpp` (Grand Prix) à brancher sur `Course::feuxRouges` à sa reprise.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
 
+
+### 2026-11-16 17:30:18 — WFS-561 : PR #433 ouverte (Claude, agent dev3d (01Us6uCxBL))
+- Ordre de l'utilisateur (« dépêche-toi ») : les accroches sont posées sur `main` sans attendre WFS-557 (PR #432). « Menu » reste l'autocollant de `main` tant que la plaque de WFS-557 n'est pas fusionnée. La PR fusionnée en 2e garde les deux côtés.
+- Vérifié :
+  - tests CPU : 154 réussis ;
+  - bancs `resultats3d` et `resultats3d-modes` (vraies courses des 3 modes, FR / EN, repli 2D) : 0 écart ;
+  - 20 captures dans `qa/pr/WFS-561/`.
+- L'agent 3D (avis RG-C2) puis le lead dev sont appelés.
