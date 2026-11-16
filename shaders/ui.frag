@@ -3,13 +3,8 @@ layout(location = 0) in vec2 vUv;
 layout(location = 1) in vec4 vColor;
 layout(location = 0) out vec4 outColor;
 layout(set = 0, binding = 0) uniform sampler2D fontAtlas;   // atlas de police (WFS-26)
-layout(set = 0, binding = 1) uniform sampler2D imageFond;   // WFS-550 : image de fond de l'interface (menu, maquette 01)
 void main() {
     float a = vColor.a;
-    if (vUv.x <= -1.5) {   // WFS-550 : image de fond (uv décalés de −3), codes sRGB lus tels quels
-        outColor = vec4(texture(imageFond, vUv + vec2(3.0, 0.0)).rgb * vColor.rgb * a, a);
-        return;
-    }
     if (vUv.x >= 1.5) {   // caractère : champ de distance signé, bord net à toutes les tailles
         float d = texture(fontAtlas, vUv - vec2(2.0, 0.0)).r;
         float w = max(fwidth(d) * 0.75, 0.01);

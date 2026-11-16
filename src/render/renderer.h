@@ -206,10 +206,6 @@ public:
     void uiSetFontAtlas(const Image& atlas);
     // WFS-48 : biais = décalage en x du bord haut par rapport au bord bas (italique synthétique), 0 = droit
     void uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais = 0);
-    // WFS-550 (accroche E0, annoncée au journal) : une image plein écran dans l'interface (fond du menu, maquette 01) : texture
-    // en codes sRGB (non sRGB à l'envoi), posée une fois (attente du GPU), lue par ui.frag (binding 1) ; vide : texture blanche
-    void uiSetImageFond(const Image& image);
-    void uiImageFond(float x, float y, float w, float h, float u0, float v0, float u1, float v1, float a = 1);
     void endFrame();
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 
@@ -359,7 +355,6 @@ private:
     std::unordered_set<VkDescriptorSet> jeuxMat_;   // WFS-187 : jeux des matériaux vivants (copies d'un matériau : libéré une fois)
     VkShaderModule modScene_[6]{};   // scene.vert, scene.frag, sky.vert, sky.frag, scene_skin.vert, scene_skin.frag
     VkDescriptorSet postSet_ = VK_NULL_HANDLE, fontSet_ = VK_NULL_HANDLE;
-    VkImageView atlasVue_ = VK_NULL_HANDLE, imageFondVue_ = VK_NULL_HANDLE;   // WFS-550 : vues liées à fontSet_ (atlas, image de fond)
 
     static constexpr int FRAMES = 2;
     struct FrameRes {
