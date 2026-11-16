@@ -365,6 +365,10 @@ hud.kmh_arriere=R · km/h
 hud.nitro=Nitro
 hud.menu=Menu
 hud.gaz=Gas
+# WFS-559 (RG-08) : consigne sous les feux du portique de départ, pendant le décompte (mot du milieu en orange)
+depart.consigne.debut=Keep your finger on 
+depart.consigne.gaz=GAS
+depart.consigne.fin=: release the brakes on green for a perfect start
 hud.frein=Brake
 hud.fantome=Your best
 # toasts (src/ui/toasts.cpp)
