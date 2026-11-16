@@ -40,6 +40,10 @@ int restantsGarantie(const ConfigJeu::Cadeau& c, const EtatCadeau& e);
 void ouvrir();     // cadeau disponible : tirage (WFS-500) puis animation ; sinon : écran d'attente (dernier gain, compte à rebours)
 void fermer();
 bool ouvert();
+// WFS-557 (maquette 05) : coffre en bois 3D du parking (coffre_cadeau.h) : ouverture du couvercle (0 fermé, 1 ouvert) et
+// tremblement (radians, rotation autour de la verticale) pendant l'animation ; fermé hors de l'écran du gain
+float ouvertureCoffre();
+float trembleCoffre();
 void dessiner(Renderer& r, float W, float H, const Marges& m, double temps);
 bool toucher(int id, float x, float y, bool down);   // toujours gardé (vrai) quand l'écran est ouvert
 

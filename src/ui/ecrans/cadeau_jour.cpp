@@ -111,12 +111,6 @@ void poly(Renderer& r, vec2* p, int n, const dessin2d::Teinte& t) {
     if (aire < 0) std::reverse(p, p + n);
     dessin2d::polygone(r, p, n, t);
 }
-void polyContour(Renderer& r, vec2* p, int n, float ep, const vec4& c) {
-    float aire = 0;
-    for (int i = 0; i < n; i++) { const vec2 &a = p[i], &b = p[(i + 1) % n]; aire += a.x * b.y - b.x * a.y; }
-    if (aire < 0) std::reverse(p, p + n);
-    dessin2d::contour(r, p, n, ep, c);
-}
 // rectangle (x, y, w, h) tourné de a autour de (px, py)
 void rectTourne(vec2* q, float x, float y, float w, float h, float px, float py, float a) {
     const float c = std::cos(a), s = std::sin(a);
@@ -126,54 +120,6 @@ void rectTourne(vec2* q, float x, float y, float w, float h, float px, float py,
         q[i] = {px + dx * c - dy * s, py + dx * s + dy * c};
     }
 }
-void pieceNeon(Renderer& r, vec2* q, float k, float a, bool halo) {
-    if (halo) dessin2d::halo(r, q, 4, 16 * k, hex(ACCENT, 0.45f * a));
-    dessin2d::Teinte t{hex(SURFACE2, 0.97f * a), hex(0x12141C, 0.97f * a), std::min({q[0].y, q[1].y, q[2].y, q[3].y}), std::max({q[0].y, q[1].y, q[2].y, q[3].y})};
-    poly(r, q, 4, t);
-    polyContour(r, q, 4, 2.5f * k, hex(ACCENT, a));
-}
-
-// boîte cadeau en 2D (néons) : corps, ruban, couvercle, nœud ; t : temps depuis le début de l'animation (s)
-void dessinerBoite(Renderer& r, float cx, float bas, float k, float t, float a) {
-    k *= 1.45f;   // boîte grande au centre du panneau
-    const float bw = 150 * k, bh = 104 * k, lh = 28 * k, lw = bw + 18 * k, rib = 20 * k;
-    // tremblement (0 → 0,9 s), de plus en plus fort ; ouverture du couvercle (0,9 → 1,3 s)
-    const float tr = std::clamp(t / 0.9f, 0.f, 1.f), tremble = t < 0.9f ? std::sin(t * 2 * PI * 9) * 0.07f * tr : 0.f;
-    const float ouv = ease((t - 0.9f) / 0.4f);
-    const float haut = bas - bh;
-    // lumière qui sort de la boîte (dès 0,95 s) : rayons et lueur, derrière le couvercle
-    if (t > 0.95f) {
-        const float l = std::clamp((t - 0.95f) / 0.25f, 0.f, 1.f) * (t < 1.25f ? 1.f : std::max(0.25f, 1 - (t - 1.25f) / 0.25f * 0.75f));
-        dessin2d::couronne(r, cx, haut, 0, 200 * k, hex(0xFFB066, 0.75f * l * a), hex(ACCENT, 0));
-        for (int i = 0; i < 11; i++) {
-            const float ang = PI + PI * (i + 0.5f) / 11, lg = (150 + 70 * (i % 2)) * k * l, ep = 0.06f;
-            vec2 ray[3] = {{cx, haut}, {cx + std::cos(ang - ep) * lg, haut + std::sin(ang - ep) * lg}, {cx + std::cos(ang + ep) * lg, haut + std::sin(ang + ep) * lg}};
-            poly(r, ray, 3, dessin2d::uni(hex(i % 2 ? ACCENT2 : 0xFFB066, 0.6f * l * a)));
-        }
-    }
-    vec2 q[4];
-    // corps
-    rectTourne(q, cx - bw / 2, haut, bw, bh, cx, bas, tremble);
-    pieceNeon(r, q, k, a, true);
-    rectTourne(q, cx - rib / 2, haut, rib, bh, cx, bas, tremble);
-    poly(r, q, 4, dessin2d::uni(hex(ACCENT2, 0.85f * a)));
-    // couvercle : il monte, part à gauche et bascule
-    const float ly = haut - lh - ouv * 74 * k, lx = cx - lw / 2 - ouv * 26 * k, la = tremble - ouv * 0.42f;
-    const float pcx = lx + lw / 2, pcy = ly + lh;
-    rectTourne(q, lx, ly, lw, lh, pcx, pcy, la);
-    pieceNeon(r, q, k, a, ouv < 0.5f);
-    rectTourne(q, pcx - rib / 2, ly, rib, lh, pcx, pcy, la);
-    poly(r, q, 4, dessin2d::uni(hex(ACCENT2, 0.85f * a)));
-    // nœud : deux boucles en losange sur le couvercle
-    const float c = std::cos(la), s = std::sin(la);
-    auto pt = [&](float dx, float dy) { return vec2{pcx + dx * c - (dy - lh) * s, pcy + dx * s + (dy - lh) * c}; };
-    for (int cote = -1; cote <= 1; cote += 2) {
-        vec2 b[4] = {pt(0, 0), pt(cote * 14 * k, -22 * k), pt(cote * 40 * k, -26 * k), pt(cote * 34 * k, -4 * k)};
-        poly(r, b, 4, dessin2d::uni(hex(SURFACE2, a)));
-        polyContour(r, b, 4, 2.5f * k, hex(ACCENT2, a));
-    }
-}
-
 // RC-E20-04 : largeur d'un bouton mesurée sur le plus long de ses deux textes (même bouton dans les deux langues)
 float largeurTexte(float tp, const char* cle) {
     return std::max(ui::width(tp, ui::majuscules(ui::trLangue(cle, ui::langue::Langue::Francais)), 0.12f),
@@ -411,8 +357,7 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     }
     switch (g.vue) {
         case Vue::Animation: {
-            const float fin = std::clamp((ta - 1.15f) / 0.25f, 0.f, 1.f), aBoite = 1 - fin;   // la boîte descend et s'efface, le gain monte
-            if (aBoite > 0) dessinerBoite(r, f.X(815), f.Y(560) + fin * 90 * k, k, ta, aBoite);
+            // WFS-557 : le coffre en bois 3D du parking tremble puis s'ouvre (ouvertureCoffre, trembleCoffre) ; le gain monte au-dessus
             if (ta > 1.2f && g.res) { const float e = ease((ta - 1.2f) / 0.3f); dessinerGain(r, *g.res, f, e, 0.8f + 0.2f * e); }
             break;
         }
@@ -425,6 +370,18 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
             break;
         }
     }
+}
+
+float ouvertureCoffre() {
+    if (!g.ouvert) return 0;
+    if (g.vue == Vue::Gain) return 1;
+    if (g.vue != Vue::Animation || g.t0 < 0) return 0;
+    return ease(((float)(g.temps - g.t0) - 0.9f) / 0.4f);   // ouverture du couvercle de 0,9 à 1,3 s (RG-02 : 1,5 s en tout)
+}
+float trembleCoffre() {
+    if (!g.ouvert || g.vue != Vue::Animation || g.t0 < 0) return 0;
+    const float t = (float)(g.temps - g.t0);
+    return t < 0.9f ? std::sin(t * 2 * PI * 9) * 0.035f * std::clamp(t / 0.9f, 0.f, 1.f) : 0.f;   // de plus en plus fort
 }
 
 bool toucher(int id, float x, float y, bool down) {

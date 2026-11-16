@@ -43,6 +43,7 @@ struct SceneDediee {
     bool commandes = false;   // commandes tactiles de conduite
     vec3 cible{};             // point regardé par la caméra choisie (GameView::camTarget)
     bool interface = false;   // WFS-552 (accroche) : simple fond 3D d'un écran (menu) : l'interface des systèmes reste dessinée (sceneDediee faux pendant drawUi)
+    bool anime = false;       // WFS-557 (accroche) : la scène bouge (coffre du cadeau du jour qui s'ouvre) : jamais figée (fond_fige.h)
 };
 
 // marges de sécurité de l'écran (WFS-51) : encoche, coins arrondis ; pixels de l'interface (paysage), 0 par défaut.

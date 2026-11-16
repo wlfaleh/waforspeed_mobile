@@ -41,6 +41,7 @@
 #include "compteur_etoiles.h"   // WFS-537 (accroche) : compteur d'étoiles à côté de « Réglages »
 #include "../../platform/manette.h"   // WFS-22 : focus de la manette
 #include "../verre.h"   // WFS-548 : rien du menu sous une fenêtre de verre (verre::couvert)
+#include "../coffre_cadeau.h"   // WFS-557 : coffre en bois 3D du cadeau du jour (maquette 05)
 
 namespace wfs {
 namespace ecrans {
@@ -85,7 +86,7 @@ public:
         r_ = &r;
         if (!parking_.pret() && !std::getenv("WFS_MENU_SANS_PARKING")) parking_.init(r);
     }
-    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); libererVitrine(r); }
+    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); coffre::commun().shutdown(r); libererVitrine(r); }
     // WFS-550 (revue du lead dev, PR #424 : 98 Mo de mémoire graphique, 254 ms) : la vitrine n'existe qu'au menu : chargée en y
     // entrant (1re image du menu), libérée en le quittant ; la course et le chargement d'une partie ne paient rien
     void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
@@ -100,12 +101,18 @@ public:
         voiture_ = matriceVoiture(g);
         parking_.regler(fp, s, g, vitrine_.ok ? carById(VITRINE) : *g.car, voiture_);   // WFS-550 : cadrage sur la SF-X de vitrine
         if (vitrine_.ok) s.joueur = false;   // la voiture du joueur n'est pas dessinée au menu : la vitrine la remplace
+        // WFS-557 (maquette 05) : écran du cadeau : le coffre en bois prend la place de la voiture (construit à la 1re ouverture)
+        if (cadeau_jour::ouvert() && r_) {
+            if (!coffre::commun().pret() && !coffreEchec_) coffreEchec_ = !coffre::commun().init(*r_);
+            if (coffre::commun().pret()) { s.joueur = false; s.anime = true; coffre::commun().eclairer(fp, placeCoffre(), cadeau_jour::ouvertureCoffre()); }
+        }
         s.interface = true;
         return true;
     }
     void render(Renderer& r, const GameView& g) override {
         if (g.ecran == Ecran::Menu && g.sceneDediee && parking_.pret()) {
             parking_.dessiner(r, voiture_);
+            if (cadeau_jour::ouvert() && coffre::commun().pret()) { coffre::commun().dessiner(r, placeCoffre(), cadeau_jour::ouvertureCoffre()); return; }
             if (vitrine_.ok) {   // WFS-550 : SF-X orange caméléon, skin bleu ciel (maquette 01), roues droites, à l'arrêt
                 const int f0 = r.finitionJoueur();
                 r.finitionJoueur(vehicule_finitions::depuisId("cameleon"));
@@ -254,6 +261,10 @@ public:
         compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:
+    // coffre avancé de 1,20 m vers l'allée (vers la caméra), centré dans l'image, tourné de 13° vers elle (maquette 05 : vu de
+    // trois quarts face, au centre de l'image) ; tremblement autour de la verticale pendant l'animation
+    mat4 placeCoffre() const { return voiture_ * translate({0.35f, 0, -1.20f}) * rotateY(0.22f + cadeau_jour::trembleCoffre()); }
+    bool coffreEchec_ = false;
     void libererVitrine(Renderer& r) { vehicule_skin::libererVitrine(r); if (vitrine_.ok) r.destroy(vitrine_); vitrine_ = Model{}; }
     void chargerVitrine(Renderer& r) {
         // WFS-550 (ordre de l'utilisateur du 2026-11-16 : « la voiture dans le menu doit être exactement la même, c'est l'image
