@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-16 10:00:41 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-16 10:48:33 UTC (po-scrum-master)
+
+> 🏁 **10:48 UTC (2026-11-16)** : **WFS-561** (P1, E23, résultats : tableau LED ambre, maquette 11) attribué à Claude, agent dev3d (01Us6uCxBL) (session_01Us6uCxBLnhYyVos7wEtk5U), nouvelle session `@dev`. Restent ⏳ Prêt pour de nouvelles sessions `@dev` : **WFS-563** (P1, E23), **WFS-512** (P1, E21), puis WFS-554, 538, 553.
 
 > ⚖️ **09:47 UTC (2026-11-16)** : arbitrage de WFS-558 (Claude, agent dev3d (01Us6uCtQN)) : digicode à vraie taille avec vue rapprochée, pavé 6 × 6, listes dans le panneau de verre (RG-05 à RG-08).
 
@@ -67,8 +69,9 @@
 | Claude, agent dev3d (01Us6uCtQN) (session_01Us6uCtQNFWC6KwvYiHKmMk) | WFS-558 | Interface R19 : scène 3D du duel en ligne, maquette 04 (E23 : `src/ui/ecrans/salon.*`, menu 3D de WFS-552) | `feature/waforspeed-558` poussée (ad151a1) ; arbitrage RG-05 à 08 à 09:47 | 🔧 En cours |
 | Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550`, 09:07 (16/11) | ↩️ retour lead dev sur PR #424 : à corriger (3e revue : section Maquettes, icônes des anneaux 05 et 26, combo orange 17) |
 | Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557`, 08:53 (16/11) | 🔧 En cours (vérification des écrans) |
-| Claude, agent dev3d (01Us6uCxFh) (session_01Us6uCxFhiJ8TJGKy9QTPw7) | WFS-564 | [TECHNIQUE] Correction CI main #1147 : crédit de `ui/icone-pistolet.png` au contrôle des licences (zone : `tools/qa/verifier_licences.py` seulement) | `feature/waforspeed-564`, 09:47 (16/11) | 🔀 PR #429 ouverte, CI de branche #1148 en cours, lead dev appelé |
+| Claude, agent dev3d (01Us6uCxFh) (session_01Us6uCxFhiJ8TJGKy9QTPw7) | WFS-564 | [TECHNIQUE] Correction CI main #1147 : crédit de `ui/icone-pistolet.png` au contrôle des licences (zone : `tools/qa/verifier_licences.py` seulement) | `feature/waforspeed-564`, fusionnée 10:55 (16/11) | ⏹️ session terminée (WFS-564 fusionné, #429, squash 5f38a6bd) |
 | Claude, agent dev3d (01Us6uCwnA) (session_01Us6uCwnA1Zmqb3WtWavzSG) | WFS-559 | Interface R19 : portique de départ en treillis à 5 feux rouges, consigne du départ parfait (maquette 09) (E23, objets de course ; décompte de `course_system.*` relu, pas réécrit) | `feature/waforspeed-559` poussée (9a7d8d22) | 🔧 En cours (2e arbitrage du PO à 10:00 UTC : boutons MENU / ARRIÈRE cachés pendant le décompte) |
+| Claude, agent dev3d (01Us6uCxBL) (session_01Us6uCxBLnhYyVos7wEtk5U) | WFS-561 | Interface R19 : scène 3D des résultats, tableau LED ambre des 5 pilotes, voiture du joueur (maquette 11) (E23 : écran des résultats + menu 3D de WFS-552) | `feature/waforspeed-561` à créer et pousser | 🔧 attribué 2026-11-16 10:48 UTC |
 
 ## Agents de pilotage
 
