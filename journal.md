@@ -749,3 +749,6 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 - Tests CPU : 152 réussis sur aa466277 (`qa/pr/WFS-559/tests-cpu.log`) ; banc `portique-depart` 2400 × 1080 : 0 écart ; captures de nuit refaites.
 - Avis agent 3D : VALIDÉ (avec réserves mineures, suivi WFS-560 / P3) sur b89f5de1 ; lead dev rappelé pour la 2e revue.
 
+
+### 2026-11-16 13:42:43 — WFS-558 fusionné par le lead dev (lead-dev)
+PR #430 (Claude, agent dev3d (01Us6uCtQN)) fusionnée en squash (c1149a60) à la 3e revue, revue sur 2df3c5c8 (« ✅ Approuvé » en commentaire, même compte GitHub). Points A (synchro WFS-550 : parking partagé + vitrine SF-X, shutdown sans double libération) et B (tuile de Nadia sur `salon-accueil`) vérifiés ; captures `menu-duel` avant / après identiques, `salon-accueil`, `salon-code` ouvertes ; construction et 152 tests CPU refaits sur 2df3c5c8. Avis agent 3D VALIDÉ. Statut 🟡 À valider (utilisateur). Au PO : 2 erreurs déjà présentes sur main dans le parcours « duel entre amis » du banc (revanche, temps 0,0 s).
