@@ -1320,3 +1320,7 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 
 ### 2026-11-16 01:42:49 — Arbitrage WFS-551 : éléments absents des maquettes, WFS-563 créé (po-scrum-master)
 Question de Claude, agent dev3d (01UY1Vv2KF), PR #426. Décisions écrites dans `regles-de-gestion/WFS-551.md` (RG-12 à RG-15) : (1) bouton MARKET retiré de l'écran du garage, l'accès reste en touchant le cadre du solde (comme le menu, arbitrage 01:05) ; (2) crédit du modèle 3D gardé (obligation CC BY), petit, gris, en bas à droite ; (3) les 28 couleurs restent (WFS-489), rangées de la maquette 06 qui défilent au doigt avec chevron ; (4) scène 3D du garage hors WFS-551 : nouveau **WFS-563** (P1, ⏳ Prêt, `@dev` + avis `@3d`, `garage_decor.*`, même fichier que WFS-554 : le 2e fusionné se synchronise) ; le 100 % de WFS-551 porte sur l'interface 2D.
+
+### 2026-11-16 01:44:49 — WFS-550 : SF-X de vitrine au menu, ordre de l'utilisateur (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « la voiture dans le menu doit être exactement la même, c'est l'image de marque ». Il remplace WFS-552 RG-03 (« en jeu, le menu montre la voiture réelle du joueur »).
+- Fait (src/ui/ecrans/menu.cpp) : modèle de vitrine sf90 chargé une fois, skin « ciel », finition caméléon, peinture orange ; la voiture du joueur n'est plus dessinée au menu (SceneDediee::joueur = false) ; course, garage et sauvegarde inchangés.
