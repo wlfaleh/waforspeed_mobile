@@ -38,6 +38,7 @@ int benchAtelier(Game& g, Renderer& r, const std::string& out) {
     std::remove(chemin.c_str());
     Sauvegarde& s = sauvegarde();
     s.charger(chemin);   // partie neuve : 208, 500, GT86 gratuites, aucun pack d'autocollants
+    s.profil.cree = true;   // pilote déjà créé (WFS-481) : le menu n'est pas caché par « Crée ton pilote »
     ui::langue::choisir(ui::langue::Choix::Francais);
     const bool complet = (r.width() == 1280 && r.height() == 720) || std::getenv("WFS_ATELIER_COMPLET");
     const std::string taille = complet ? "" : "-" + std::to_string(r.width()) + "x" + std::to_string(r.height());
@@ -201,8 +202,7 @@ int benchAtelier(Game& g, Renderer& r, const std::string& out) {
         if (ecrans::centreRouler(x, y)) toucher(x, y); else { WFS_ERR("atelier : « Rouler » absent (écran %s)", nomEcran(g.ecran())); ecarts++; }
         for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) image();
         g.setAutopilot(true); images(300); g.setAutopilot(false);
-        const char* m = std::getenv("WFS_MOMENT");
-        verifier(m && std::strcmp(m, "jour") == 0, std::string("parcours : course de jour (moment de la course : ") + (m ? m : "?") + ")");
+        verifier(s.tod == "jour", "parcours : course de jour (moment demandé par « Rouler », écrit dans la sauvegarde : " + s.tod + ")");   // Game : sauvegarde().tod = nuit ? « nuit » : « jour »
         verifier(g.ecran() == Ecran::Course && cuit("p208", 5), "« Choisir » → « Rouler » : la 208 roule avec ses 5 autocollants");
         capture("parcours-course", "parcours : la 208 en course de jour avec ses autocollants");
         g.allerA(Ecran::Garage); images(30);
