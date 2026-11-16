@@ -834,6 +834,8 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     const auto advAvant = sauvegarde().adversaires;
     sauvegarde().adversaires = {"Sam"};   // WFS-558 (RG-07) : un ancien adversaire simulé (listes non vides dans le panneau)
     g.allerA(Ecran::Salon); pas(30);
+    // WFS-558 : le salon de Nadia arrive par le réseau local après quelques annonces : on attend qu'il soit affiché (≤ 5 s)
+    for (int i = 0; i < 300 && !(g_liste.size() && (!duel3d::vue().active || g_salons[0].w > 0)); i++) { pas(1); g.render(t); }
     capture("salon-accueil", "salon de Nadia listé");
     if (duel3d::vue().active) {   // WFS-558 (revue du lead dev, #430) : la tuile « Rejoindre Nadia » du panneau fait entrer dans son salon
         g.render(t); const bool tuile = g_salons[0].w > 0; toucher(26, g_salons[0]); pas(10);
