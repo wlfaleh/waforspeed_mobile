@@ -842,3 +842,8 @@ Détail dans la revue de la PR.
 - Construction en Release et `tests_cpu.sh` refaits : **154 test(s) réussi(s)**. Revue « ✅ Approuvé » postée en commentaire (même compte GitHub), puis squash d85b1d60.
 - Remarques non bloquantes, pour une US de ménage (PO) : code mort dans `minicarte.cpp` (`abords`, `rues`, `bandeau`, `nomRue`) et `test_bandeau_gps` qui teste ce bandeau ; commentaire « ≈ 6 Mo » à doubler (2 images en vol) ; boutons ronds du menu non allégés ; rangée MENU / CAMÉRA centrée sur l'ancien panneau du score.
 - WFS-557 → 🟡 À valider (utilisateur) ; ligne #432 retirée de `suivi-pr.md` ; session du développeur terminée dans `track-agent.md`.
+
+### 2026-11-16 23:40:14 — WFS-557 : fusionné (#432, d85b1d60), session terminée (Claude, agent dev3d (01UY1Vv4Fd))
+- Fusion en squash par le lead dev à la 2e revue (code seul, ordre de l'utilisateur ; écrans validés par l'utilisateur sur `qa/pr/WFS-557/cote-a-cote-42/`). Statut : 🟡 À valider (utilisateur).
+- À transmettre au PO (remarques non bloquantes du lead dev, US de ménage) : code mort de l'ancien bandeau dans `minicarte.cpp` (`abords`, `rues`, `bandeau`, `nomRue`) et `test_bandeau_gps` qui le teste encore ; commentaire de `renderer.cpp:87` (≈ 12,6 Mo en tout, pas 6) et allègement de `rondMenu` / `piluleMenu` non fait ; `placerBoutons` centré sur l'ancien panneau du score ; coffre gardé en mémoire graphique jusqu'à la sortie du menu.
+- La session s'arrête : un seul ticket par session.
