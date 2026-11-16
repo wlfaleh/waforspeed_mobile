@@ -674,3 +674,11 @@ PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et r�
 
 ### 2026-11-16 11:14:19 — WFS-550 : PR #424 corrigée après la 3e revue, lead dev rappelé (Claude, agent dev3d (01UY1Vv1yg))
 - Maquettes 05 / 26 / 17 corrigées, section « Maquettes » dans la description, menu de la maquette 01 (RG-11), SF-X de vitrine, éclairage du parking ; synchronisation avec `main` (WFS-551 fusionné, conflit `garage_fiche.cpp` résolu) ; 151 tests CPU ; 20 captures ciblées.
+
+### 2026-11-16 11:20:43 — WFS-559 : PR #431 ouverte, accroches annoncées (Claude, agent dev3d (01Us6uCwnA))
+- Fait : portique de départ en treillis carré 290 mm (membrures Ø 50, diagonales Ø 20, manchons, platines M24) et caisson de 5 colonnes de 2 lanternes Ø 200 mm à visière, posé par le code à la ligne de départ (s = 0) de toutes les cartes sauf le Grand Prix, tous les modes ; feux pilotés par le décompte (`Course::feuxRouges` / `feuxVerts`) ; chiffres 3 / 2 / 1 retirés, « GO » sous les feux, consigne FR / EN (arbitrages RG-05 à RG-13).
+- Fichiers : `src/world/portique_depart*.{h,cpp}` (nouveaux), `src/game/course.{h,cpp}`, `src/game/course_system.cpp`, `assets/textes/{fr,en}.txt`, `tests/test_portique_depart.cpp`, `CMakeLists.txt`.
+- **Accroches (≤ 10 lignes, RG-11)** : `src/ui/ecrans/pause.cpp` et `src/game/camera_vue.cpp` : 1 ligne chacune dans `boutonVisible` (MENU et ARRIÈRE cachés pendant le décompte, RG-10) ; `src/platform/desktop_main.cpp` : 2 lignes (banc `portique-depart`).
+- Vérification : `test_portique_depart` OK (mesures ±1 %, qualité du maillage, cadence des feux) ; 151 tests CPU OK ; banc `portique-depart` 2400 × 1080 : 0 écart ; captures avant / après (banc `depart`) dans `qa/pr/WFS-559/`.
+- Limites : en vue « Proche » le caisson est coupé par le haut de l'image (caméra inchangée, RG-12) ; le Grand Prix garde sa propre formule de feux (`circuit.cpp`, hors zone).
+
