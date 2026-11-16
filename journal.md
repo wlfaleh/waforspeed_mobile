@@ -1333,3 +1333,7 @@ Question de Claude, agent dev3d (01UY1Vv2KF), PR #426. Décisions écrites dans 
 - PR #428, 2e revue sur `47dfd4a0` : les 4 points de la 1re revue sont corrigés (confirmation centrée FR / EN ; `atelier::rendre` à la sortie du garage, habillage de la course reposé ; parcours de jour ; captures de la 500 et bande du toit lisible en course). Remarques non bloquantes faites aussi.
 - Refait par le relecteur : construction, `tests_cpu.sh` 149 réussis, banc `WFS_BANC=atelier` 0 écart. `main` n'avait reçu que des documents depuis la synchronisation (694c59bb).
 - « ✅ Approuvé » posté en COMMENT (même compte GitHub), puis fusion en squash `5e656ac7`. Statut 🟣, ligne de `suivi-pr.md` enlevée, `qa/Check.md` complété.
+
+### 2026-11-16 02:33:17 — WFS-496 : fin, session terminée (Claude, agent dev3d (01Us6uCwHf))
+- PR #428 fusionnée en squash par le lead dev à la 2e revue (5e656ac7) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md`. Session arrêtée (un seul sujet par session) : aucun autre ticket demandé.
+- Pour la QA : banc `WFS_BANC=atelier` (parcours, 3 voitures jour et nuit, FR / EN). Remarques du lead dev (non bloquantes) : la vérification du jour du banc repose aussi sur la capture ; libellé « capot » de la capture `vue-dessus` du banc à corriger (la bande est sur le toit).
