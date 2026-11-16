@@ -9,11 +9,13 @@ namespace {
 // son centre à 58 % de la largeur et à 57 % de la hauteur (depuis le haut) ; la console du menu tient le tiers gauche
 constexpr float DEMI_HAUTEUR = 0.57f;   // demi-hauteur visée (NDC) : avis de l'agent 3D (PR #421), 15 % plus près que la maquette mesurée
 constexpr float DEMI_LARGEUR_MAX = 0.48f;   // demi-largeur au plus (NDC) : la voiture ne passe pas sous la console
-constexpr float CENTRE_X = 0.10f, CENTRE_Y = -0.21f;   // WFS-550 : maquette 01 (avant : 0,22 ; −0,12)   // bord gauche de la voiture à x ≥ −0,26 : à droite de la console (revue du lead dev)   // centre visé (NDC, y vers le haut)
-constexpr float OEIL_Y = 1.0f;
-// WFS-550 (maquette 01) : rapprochement de la caméra après le calcul de la boîte, centre de la boîte qui met la voiture visible au
-// centre de la maquette (0,15 ; −0,155), et bord gauche de la boîte au plus loin (la voiture visible arrive au bord de la console)
-constexpr float RAPPROCHE = 0.78f, BORD_GAUCHE = -0.62f;          // caméra à 1 m du sol, horizontale : verticales droites (piliers), objectif décentré
+// centre visé de la boîte de la voiture (NDC, y vers le haut) ; WFS-550 (maquette 01) : il met la voiture visible au centre mesuré sur
+// la maquette (0,15 ; −0,155) (avant : 0,22 ; −0,12, bord gauche à x ≥ −0,26)
+constexpr float CENTRE_X = 0.10f, CENTRE_Y = -0.21f;
+constexpr float OEIL_Y = 1.0f;          // caméra à 1 m du sol, horizontale : verticales droites (piliers), objectif décentré
+// WFS-550 (maquette 01, demandé et validé par l'utilisateur) : rapprochement de la caméra après le calcul de la boîte (la voiture
+// visible passe de 38 % à 49 % de la demi-hauteur), et bord gauche de la boîte au plus loin (la voiture visible arrive au bord de la console)
+constexpr float RAPPROCHE = 0.78f, BORD_GAUCHE = -0.62f;
 
 Emprise mesurer(const Cadrage& c, float L, float W, float H, float aspect) {
     const mat4 V = lookAt(c.oeil, c.cible, {0, 1, 0});

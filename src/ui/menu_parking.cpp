@@ -345,7 +345,8 @@ bool Parking::init(Renderer& r) {
         mat_[k].flags |= flags;
     };
     mat(BETON, {0.30f, 0.30f, 0.29f}, 0.90f, 0, MAT_FACADE, 0.2f * 4);    // béton brut de décoffrage (appareil « béton » de decor.glsl)
-    mat(SOL, {0.06f, 0.062f, 0.066f}, 0.42f, 0, MAT_FACADE, 0.2f * 4);   // WFS-550 (maquette 01, sol ≈ 45 sur 255) : plus foncé et moins verni (avant : 0,12 ; 0,26)     // dalle surfacée et vernie (résine époxy gris anthracite clair)
+    // dalle surfacée et vernie (résine époxy gris anthracite) ; WFS-550 (maquette 01, sol ≈ 45 sur 255) : plus foncée et moins vernie (avant : 0,12 ; 0,26)
+    mat(SOL, {0.06f, 0.062f, 0.066f}, 0.42f, 0, MAT_FACADE, 0.2f * 4);
     mat(BLANC, {0.72f, 0.72f, 0.70f}, 0.55f, 0);                          // peinture routière blanche
     mat(JAUNE, lin(0xF0B20A), 0.50f, 0);                                  // jaune de signalisation (RAL 1003)
     mat(NOIR, lin(0x1C1C1E), 0.55f, 0);                                   // noir de signalisation (RAL 9004)

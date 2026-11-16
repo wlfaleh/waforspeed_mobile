@@ -2,8 +2,10 @@
 #include "paquets.h"   // WFS-306 (accroche) : proposition des paquets ouverte depuis le bandeau
 #include "menu.h"
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include "../../core/log.h"
+#include "../../core/memoire.h"   // WFS-550 : mémoire de la vitrine
 #include "../../core/system.h"
 #include "../../game/cars.h"
 #include "../../game/course_system.h"
@@ -80,32 +82,21 @@ public:
     const char* name() const override { return "menu"; }
     // WFS-552 (RG-05) : parking préparé au chargement de la partie ; mémoire refusée → fond d'avant (scène de la course figée)
     void init(Renderer& r, const GameView&) override {
+        r_ = &r;
         if (!parking_.pret() && !std::getenv("WFS_MENU_SANS_PARKING")) parking_.init(r);
-        // WFS-550 (ordre de l'utilisateur du 2026-11-16 : « la voiture dans le menu doit être exactement la même, c'est l'image
-        // de marque du jeu ») : la SF-X de la maquette 01 (orange, finition caméléon, skin bleu ciel) est la voiture de vitrine
-        // du menu, quelle que soit la voiture du joueur (la course, le garage et la sauvegarde ne changent pas)
-        if (parking_.pret() && !vitrine_.ok) {
-            if (loadCarModel(r, carById(VITRINE).file, vitrine_)) {
-                vehicule_skin::poser(r, vitrine_, VITRINE, "ciel");
-                // maquette 01 : pas de plaque sur la voiture de vitrine ; la plaque de la SF-X est sa propre pièce (matériau n° 9 de
-                // tools/plaques_voitures.mjs), retirée de cette copie seulement (la voiture de course garde ses plaques)
-                auto sansPlaque = [](std::vector<ModelPart>& v) { v.erase(std::remove_if(v.begin(), v.end(), [](const ModelPart& p) { return p.material == MATERIAU_PLAQUE || p.material == MATERIAU_PLAQUE_AVANT; }), v.end()); };
-                sansPlaque(vitrine_.parts); sansPlaque(vitrine_.partsLod);
-                for (auto& n : vitrine_.partsNiveaux) sansPlaque(n);
-                // maquette 01 : prises d'air du capot, crochet et détails jaunes d'origine (matériau n° 11) en bleu ciel, comme la skin
-                if (MATERIAU_JAUNE < vitrine_.mats.size()) {
-                    auto lin = [](float c) { return std::pow(c, 2.2f); };
-                    vitrine_.mats[MATERIAU_JAUNE].color = {lin(0x9A / 255.f), lin(0xDC / 255.f), lin(0xF2 / 255.f), 1};
-                }
-            }
-            else WFS_ERR("menu : voiture de vitrine %s introuvable (la voiture du joueur reste affichée)", VITRINE);
-        }
     }
-    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); if (vitrine_.ok) r.destroy(vitrine_); vitrine_ = Model{}; }
+    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); libererVitrine(r); }
+    // WFS-550 (revue du lead dev, PR #424 : 98 Mo de mémoire graphique, 254 ms) : la vitrine n'existe qu'au menu : chargée en y
+    // entrant (1re image du menu), libérée en le quittant ; la course et le chargement d'une partie ne paient rien
+    void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
+        surEcran(ancien, nouveau, g);
+        if (ancien == Ecran::Menu && nouveau != Ecran::Menu && vitrine_.ok && r_) { r_->vk().waitIdle(); libererVitrine(*r_); }
+    }
     // WFS-552 (RG-01, RG-04, RG-06) : derrière le menu, la voiture du joueur (sa peinture, sa finition et sa skin, dessinées par
     // Game) garée dans le parking souterrain, en caméra rapprochée ; l'interface du menu reste dessinée par-dessus
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         if (g.ecran != Ecran::Menu || !parking_.pret() || !g.car || !g.player || !g.track) return false;
+        if (!vitrine_.ok && r_) chargerVitrine(*r_);   // 1re image du menu
         voiture_ = matriceVoiture(g);
         parking_.regler(fp, s, g, vitrine_.ok ? carById(VITRINE) : *g.car, voiture_);   // WFS-550 : cadrage sur la SF-X de vitrine
         if (vitrine_.ok) s.joueur = false;   // la voiture du joueur n'est pas dessinée au menu : la vitrine la remplace
@@ -131,7 +122,7 @@ public:
             }
         }
     }
-    void onEcran(Ecran, Ecran nouveau, const GameView&) override {
+    void surEcran(Ecran, Ecran nouveau, const GameView&) {
         if (nouveau == Ecran::Menu) t0_ = -1;
         presse_ = -1; doigt_ = -1;
         for (Zone& z : g_zones) z.ok = false;
@@ -259,6 +250,33 @@ public:
         compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:
+    void libererVitrine(Renderer& r) { vehicule_skin::libererVitrine(r); if (vitrine_.ok) r.destroy(vitrine_); vitrine_ = Model{}; }
+    void chargerVitrine(Renderer& r) {
+        // WFS-550 (ordre de l'utilisateur du 2026-11-16 : « la voiture dans le menu doit être exactement la même, c'est l'image
+        // de marque du jeu ») : la SF-X de la maquette 01 (orange, finition caméléon, skin bleu ciel) est la voiture de vitrine
+        // du menu, quelle que soit la voiture du joueur (la course, le garage et la sauvegarde ne changent pas)
+        if (parking_.pret() && !vitrine_.ok && !vitrineEchec_) {
+            const auto t0 = std::chrono::steady_clock::now();
+            const double mo0 = memoire::gpuMo();
+            if (loadCarModel(r, carById(VITRINE).file, vitrine_)) {
+                vehicule_skin::poserVitrine(r, vitrine_, VITRINE, "ciel");   // 2e emplacement : la skin du joueur reste posée
+                // maquette 01 : pas de plaque sur la voiture de vitrine ; la plaque de la SF-X est sa propre pièce (matériau n° 9 de
+                // tools/plaques_voitures.mjs), retirée de cette copie seulement (la voiture de course garde ses plaques)
+                auto sansPlaque = [](std::vector<ModelPart>& v) { v.erase(std::remove_if(v.begin(), v.end(), [](const ModelPart& p) { return p.material == MATERIAU_PLAQUE || p.material == MATERIAU_PLAQUE_AVANT; }), v.end()); };
+                sansPlaque(vitrine_.parts); sansPlaque(vitrine_.partsLod);
+                for (auto& n : vitrine_.partsNiveaux) sansPlaque(n);
+                // maquette 01 : prises d'air du capot, crochet et détails jaunes d'origine (matériau n° 11) en bleu ciel, comme la skin
+                if (MATERIAU_JAUNE < vitrine_.mats.size()) {
+                    auto lin = [](float c) { return std::pow(c, 2.2f); };
+                    vitrine_.mats[MATERIAU_JAUNE].color = {lin(0x9A / 255.f), lin(0xDC / 255.f), lin(0xF2 / 255.f), 1};
+                }
+                // revue du lead dev (PR #424) : coût de la vitrine, au journal (temps de chargement, mémoire graphique)
+                WFS_LOG("menu : voiture de vitrine %s chargée en %.0f ms, %.1f Mo de mémoire graphique en plus (WFS-550)", VITRINE,
+                        std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count(), memoire::gpuMo() - mo0);
+            }
+            else { vitrineEchec_ = true; WFS_ERR("menu : voiture de vitrine %s introuvable (la voiture du joueur reste affichée)", VITRINE); }
+        }
+    }
     // repère de la voiture du joueur posée sur la piste (même calcul que Game::carMatrix : tracé lissé, cap, pente)
     static mat4 matriceVoiture(const GameView& g) {
         const TrackPoint p = g.track->pointLisse(g.player->dist, g.player->playerX * RW);
@@ -268,7 +286,9 @@ private:
     static constexpr const char* VITRINE = "sf90";   // Cavallo SF-X (nom inventé du catalogue)
     static constexpr uint32_t MATERIAU_PLAQUE = 9, MATERIAU_PLAQUE_AVANT = 53;   // plaques arrière et avant de sf90.wfm (tools/plaques_voitures.mjs)
     static constexpr uint32_t MATERIAU_JAUNE = 11;      // détails jaunes d'origine de sf90.wfm (couleur 0,97 / 0,70 / 0,01)
-    Model vitrine_;              // WFS-550 : voiture de vitrine du menu
+    Model vitrine_;              // WFS-550 : voiture de vitrine du menu (seulement pendant le menu)
+    bool vitrineEchec_ = false;  // modèle introuvable : pas de nouvel essai à chaque image
+    Renderer* r_ = nullptr;      // pour charger / libérer la vitrine aux changements d'écran
     mat4 voiture_ = mat4::identity();
     double t0_ = -1;
     bool finVue_ = false;

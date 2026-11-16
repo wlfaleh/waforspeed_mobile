@@ -117,7 +117,12 @@ private:
         double rd[8]; bool fixe[8];
         const int n = g.player ? poursuitePolice(rd, fixe, 8) : 0;
         double d = 1e9;
-        for (int i = 0; i < n; i++) if (!fixe[i]) d = std::min(d, std::fabs(rd[i] - g.player->dist) * M);
+        const double tour = g.track ? g.track->length() : 0;   // revue du lead dev (PR #424) : écart pris sur le tour du circuit
+        for (int i = 0; i < n; i++) if (!fixe[i]) {
+            double e = std::fabs(rd[i] - g.player->dist);
+            if (tour > 0) { e = std::fmod(e, tour); e = std::min(e, tour - e); }
+            d = std::min(d, e * M);
+        }
         if (d < 60 && dPolice_ >= 60 && attentePolice_ <= 0) { pousser({ui::tr("toast.police_approche"), "", BAD}); attentePolice_ = 8; }
         dPolice_ = d;
     }

@@ -21,8 +21,8 @@
 #include "profil.h"   // WFS-482 : écran Profil (compteur caché dessous)
 #include "market_ecran.h"   // WFS-513 : écran Market (compteur caché dessous)
 #include "../../game/course5.h"   // choixModeOuvert
-#include "../verre.h"
-#include "../../game/commandes_tactiles.h"   // WFS-550 : dessin2d (pilule arrondie)   // WFS-548 : rien sous une fenêtre de verre (verre::couvert)
+#include "../verre.h"   // WFS-548 : rien sous une fenêtre de verre (verre::couvert)
+#include "../../game/commandes_tactiles.h"   // WFS-550 : dessin2d (pilule arrondie)
 
 namespace wfs::ecrans::compteur_etoiles {
 
