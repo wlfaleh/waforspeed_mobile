@@ -282,7 +282,7 @@ private:
         const TrackPoint p = g.track->pointLisse(g.player->dist, g.player->playerX * RW);
         return translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + g.player->heading + g.player->spinYaw)) * rotateX((float)p.slope);
     }
-    parking::Parking parking_;   // WFS-552
+    parking::Parking& parking_ = parking::commun();   // WFS-552 ; WFS-558 : instance partagée avec le duel en ligne
     static constexpr const char* VITRINE = "sf90";   // Cavallo SF-X (nom inventé du catalogue)
     static constexpr uint32_t MATERIAU_PLAQUE = 9, MATERIAU_PLAQUE_AVANT = 53;   // plaques arrière et avant de sf90.wfm (tools/plaques_voitures.mjs)
     static constexpr uint32_t MATERIAU_JAUNE = 11;      // détails jaunes d'origine de sf90.wfm (couleur 0,97 / 0,70 / 0,01)

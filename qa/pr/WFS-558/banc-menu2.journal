@@ -1,0 +1,87 @@
+[info] salon (WFS-558) : digicode, plaque et gaine préparés : 6400 triangles, 9 appels de dessin
+[ERREUR] éclairage (WFS-213) : capture abandonnée (face sans exposition connue)
+[info] salon (WFS-558) : digicode, plaque et gaine préparés : 6400 triangles, 9 appels de dessin
+[info] salon (WFS-558) : digicode, plaque et gaine préparés : 6400 triangles, 9 appels de dessin
+[info] Écran : menu → salon
+[info] salon : accueil
+[info] capture salon-accueil : écran salon, salon de Nadia listé (tuile affichée)
+[info] salon : rejoint n4d1 (hôte Nadia)
+[info] salon (WFS-558) : tuile « Rejoindre Nadia » du panneau touchée → salon n4d1 rejoint : 0 écart
+[info] salon : « Créer un salon » ybs2 (ville/jour, 4 km)
+[info] capture salon-hote : écran salon, code, voiture, terrain, distance, 2 pilotes
+[info] salon : prêt
+[info] capture salon-pret : écran salon, les deux pilotes prêts
+[info] salon : tous prêts, départ sur ville (jour)
+[info] duel : manche 1, salon ybs2, graine 2311499124, 4 km (second joueur, UDP)
+[info] Écran : salon → course
+[info] duel : manche 1, salon ybs2, graine 2311499124, 4 km
+[ERREUR] éclairage (WFS-213) : capture abandonnée (face sans exposition connue)
+[info] salon : moi graine 2311499124, Nadia graine 2311499124, trafficClock 63.314 / 63.402 s, 1 adversaire(s) vu(s), 0 message(s) ignoré(s)
+[info] Écran : course → salon
+[info] course : figée (écran salon)
+[info] salon : accueil
+[info] capture salon-code : écran salon, bloc « Rejoindre avec un code » (4 cases vides, clavier)
+[info] salon (WFS-558) : vue rapprochée du digicode
+[info] capture salon-digicode-glisse : écran salon, WFS-558 : caméra en route vers le digicode (0,13 s sur 0,4 s)
+[info] capture salon-digicode-proche : écran salon, WFS-558 (RG-05) : vue rapprochée, digicode vide
+[info] capture salon-code-saisi : écran salon, code K7QX saisi, « Rejoindre » actif
+[info] salon : « Retour » : cadrage large
+[info] salon (WFS-558) : vue large du digicode
+[info] capture salon-digicode-retour : écran salon, WFS-558 (RG-05) : « Retour » : cadrage large, code K7Q gardé sur l'afficheur
+[info] salon (WFS-558) : « Retour » en vue rapprochée → cadrage large, écran Salon gardé : 0 écart
+[info] salon (WFS-558) : vue rapprochée du digicode
+[info] capture salon-code-efface : écran salon, « effacer » maintenu (10 mouvements) puis 2e appui à 50 ms : un seul caractère retiré (K7Q)
+[info] salon (WFS-545) : code K7QX saisi touche par touche (4 caractères), « effacer » maintenu + appui à 50 ms → K7Q : 0 écart
+[info] salon : « Créer un salon » r6cf (ville/jour, 4 km)
+[info] capture salon-internet : écran salon, adversaire arrivé par Internet (relais), 2 pilotes, ping
+[info] salon : Internet, salon r6cf, 1 adversaire(s) vu(s)
+[info] salon : « Créer un salon » 79kd (ville/jour, 4 km)
+[info] capture salon-hors-ligne : écran salon, sans Internet : serveur du duel injoignable (note orange), salon ouvert
+[info] salon : « Réessayer » : nouvelle connexion au salon 79kd
+[info] salon : « Quitter le salon »
+[info] salon : « Retour »
+[info] Écran : salon → menu
+[info] salon (parcours) : relais coupé → Réessayer (connexion relancée) → Quitter → Retour → menu : 0 écart
+[info] parcours duel : accueil (ok)
+[info] parcours duel : accueil : panneau des modes fermé (ok)
+[info] Écran : menu → salon
+[info] salon : accueil
+[info] parcours duel : « Duel en ligne » → salon (ok)
+[info] salon : « Créer un salon » q9c7 (ville/jour, 4 km)
+[info] parcours duel : « Créer un duel » : code affiché (ok)
+[info] parcours duel : connecté au relais (ok)
+[info] salon : « Inviter » (pas de partage sur cette plateforme)
+[info] parcours duel : « Inviter » : lien partagé avec le code (ok)
+[info] parcours duel : invitation « Viens me défier sur WaForSpeed ! Duel entre amis, code Q9C7 : http://127.0.0.1:46025/d/q9c7 »
+[info] parcours duel : 3 amis rejoignent par le lien : 4 pilotes au salon (ok)
+[info] capture salon-amis : écran salon, code, « Inviter », lien, 4 pilotes, ping
+[info] salon : prêt
+[info] salon : tous prêts, départ sur ville (jour)
+[info] Écran : salon → course
+[info] duel : manche 1, salon q9c7, graine 2328680298, 4 km
+[info] parcours duel : les 4 « Prêt » → course, même manche et même graine (ok)
+[info] parcours duel : course sans trafic (WFS-110 RG-07) (ok)
+[info] parcours duel : arrivée des 4 pilotes (ok)
+[info] parcours duel : écran de fin : classement 1 à 4 (moi, Nadia, Sam, Lou) et temps (ok)
+[info] parcours duel : écran de fin : vrais temps (vainqueur ≥ 10 s) et écarts croissants (ok)
+[info] parcours duel : temps 179.3 / 180.8 / 182.3 / 183.8 s
+[info] capture salon-amis-fin : écran course, fin du duel : victoire, temps, « Revanche » et « Retour »
+[info] parcours duel : bouton « Revanche » affiché (ok)
+[info] parcours duel : « Revanche » : prêt pour la manche suivante (ok)
+[info] duel : manche 2, salon q9c7, graine 2328681275, 4 km
+[info] parcours duel : « Revanche » à 4 → nouvelle manche, même graine (ok)
+[info] parcours duel : course sans trafic (WFS-110 RG-07) (ok)
+[info] parcours duel : arrivée des 4 pilotes (ok)
+[ERREUR] parcours duel : écran de fin : classement 1 à 4 (moi, Nadia, Sam, Lou) et temps (ÉCHEC)
+[ERREUR] parcours duel : écran de fin : vrais temps (vainqueur ≥ 10 s) et écarts croissants (ÉCHEC)
+[info] parcours duel : temps 0.0 / 0.0 / 0.0 / 0.0 s
+[info] parcours duel : bouton « Retour » affiché (ok)
+[info] parcours duel : « Retour » → menu principal (duel quitté, WFS-517 RG-05) (ok)
+[info] Écran : menu → salon
+[info] salon : accueil
+[info] parcours duel : salon : « Derniers adversaires », 3 noms (ok)
+[info] capture salon-derniers : écran salon, WFS-122 : 3 derniers adversaires, le plus récent en haut
+[info] salon : « Créer un salon » cqhj (ville/jour, 4 km)
+[info] salon : dernier adversaire « Sam » : « Inviter » (pas de partage sur cette plateforme)
+[info] parcours duel : dernier adversaire touché : duel créé et « Inviter » ouvert (ok)
+[info] parcours duel : ÉCHEC (2 écart(s))
