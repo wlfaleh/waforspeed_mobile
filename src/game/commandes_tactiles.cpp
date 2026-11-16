@@ -66,7 +66,7 @@ void frangeAretes(Renderer& r, const vec2* p, int n, float d, const vec4& c) {
 
 // jetons du skill design-street-racing (codes sRGB)
 const vec4 TEXTE = hex(0xF2F4F8), SUR_ACCENT = hex(0x0A0B10), ACCENT = hex(0xFF6A00), DANGER = hex(0xFF1F4B),
-           ICONE_FREIN = hex(0xFF6A85), SUCCES = hex(0xB6FF00);
+           ICONE_FREIN = hex(0xFF6A85);
 
 // .nt-icon (index.html l. 93, viewBox 24) : flamme aplatie (courbes de Bézier découpées à ≈ 0,1 unité) et triangulée.
 // Le tracé se recoupe en (12,84 ; 5,87) : corps + pointe, deux polygones horaires.
@@ -166,25 +166,37 @@ void boutonNitro(Renderer& r, float cx, float cy, float k, const EtatCommandes& 
         return vec4{(v.x * 0.2f + l * 0.8f) * 0.8f, (v.y * 0.2f + l * 0.8f) * 0.8f, (v.z * 0.2f + l * 0.8f) * 0.8f, v.w};
     };
     const float sc = e.nitro ? 0.93f : 1.f, u = k * sc, R = 34 * u;   // .nitro-touch.down : scale(.93)
-    const vec4 vert = filtre(SUCCES);
-    if (e.nitroActive) {   // .nitro-touch.active : 0 0 16px rgba(182,255,0,.6), 0 0 36px rgba(182,255,0,.25)
-        dessin2d::couronne(r, cx, cy, R, R + 36 * u, alpha(vert, 0.12f), alpha(vert, 0));
-        dessin2d::couronne(r, cx, cy, R, R + 16 * u, alpha(vert, 0.3f), alpha(vert, 0));
-    } else {               // box-shadow 0 4px 16px rgba(0,0,0,.45)
+    // WFS-557 (ordre de l'utilisateur du 2026-11-16 : maquettes R19 à 100 %, maquette 17) : flamme et halo orange (avant : vert
+    // acide), libellé pêche ; anneau de charge dégradé orange → cyan dans le sens horaire depuis le haut, bout arrondi, piste gris
+    // anthracite ; disque sombre et liseré noir
+    const vec4 orange = filtre(ACCENT), cyan = filtre(hex(0x10DDEE)), peche = filtre(hex(0xF4C4A2));
+    if (e.nitroActive) {
+        dessin2d::couronne(r, cx, cy, R, R + 36 * u, alpha(orange, 0.12f), alpha(orange, 0));
+        dessin2d::couronne(r, cx, cy, R, R + 16 * u, alpha(orange, 0.3f), alpha(orange, 0));
+    } else {
         dessin2d::couronne(r, cx, cy + 4 * u, 30 * u, 48 * u, {0, 0, 0, 0.3f}, {0, 0, 0, 0});
     }
-    // radial-gradient(circle at 50% 38%, rgba(44,50,40,.9), rgba(14,16,22,.9) 68%)
-    // WFS-551 (RG-06, maquette 17b) : seule la couleur de fond change : verre gris anthracite (avant : vert sombre)
-    dessin2d::disqueRadial(r, cx, cy, R, cx, cy - 8.16f * u, 36.8f * u, filtre({64 / 255.f, 66 / 255.f, 74 / 255.f, 0.9f}),
-                           filtre({18 / 255.f, 19 / 255.f, 24 / 255.f, 0.9f}));
-    // conic-gradient(var(--success) n × 360deg, rgba(255,255,255,.1) 0), masqué sous 27,5 px
-    const float a = 2 * PI * nq / 40.f;
-    if (nq > 0) dessin2d::anneau(r, cx, cy, 27.5f * u, R, vert, 0, a);
-    if (nq < 40) dessin2d::anneau(r, cx, cy, 27.5f * u, R, filtre({1, 1, 1, 0.1f}), a, 2 * PI);
+    dessin2d::anneau(r, cx, cy, R, R + 1.6f * u, {0.05f, 0.05f, 0.06f, 0.85f});
+    dessin2d::disqueRadial(r, cx, cy, R, cx, cy - 8.16f * u, 36.8f * u, filtre(hex(0x34353A, 0.94f)), filtre(hex(0x1B1C20, 0.94f)));
+    const float ri = 29.6f * u, a = 2 * PI * nq / 40.f;
+    dessin2d::anneau(r, cx, cy, ri, R, filtre(hex(0x3A3B40, 0.95f)), a, 2 * PI);
+    auto teinte = [&](float t) {   // t : position le long de la partie pleine (0 = haut)
+        const float m = std::clamp((t - 0.55f) / 0.3f, 0.f, 1.f);
+        return vec4{orange.x + (cyan.x - orange.x) * m, orange.y + (cyan.y - orange.y) * m, orange.z + (cyan.z - orange.z) * m, 1};
+    };
+    const int nt = std::max(1, (int)std::lround(nq * 1.5f));
+    for (int i = 0; i < nt && nq > 0; i++)
+        dessin2d::anneau(r, cx, cy, ri, R, teinte((i + 0.5f) / nt), a * i / nt, a * (i + 1) / nt + 0.003f);
+    if (nq > 0 && nq < 40) {   // bout arrondi
+        const float rc = (R - ri) / 2, rm = (R + ri) / 2;
+        r.uiCircle(cx + std::sin(a) * rm, cy - std::cos(a) * rm, rc, teinte(1));
+    }
+    const vec4 vert = orange;   // flamme
+    dessin2d::couronne(r, cx, cy - 4 * u, 0, 16 * u, alpha(orange, 0.22f), alpha(orange, 0));   // lueur de la flamme
     iconeNitro(r, cx, cy - 4 * u, 26 * u / 24, vert);   // 26 px, margin-top −8 px
     const float px = std::round(std::max(11.f, 10 * k)) * sc;   // 10 px du web, 11 au moins pour rester lisible
     static textes::Capitales libNitro{"hud.nitro"};   // WFS-506 (RG-01)
-    ui::text(r, cx, cy + 14.3f * u - 0.4768f * px, px, libNitro(), vert, ui::CENTRE, 0.14f, false);
+    ui::text(r, cx, cy + 14.3f * u - 0.4768f * px, px, libNitro(), peche, ui::CENTRE, 0.14f, false);
 }
 
 } // namespace

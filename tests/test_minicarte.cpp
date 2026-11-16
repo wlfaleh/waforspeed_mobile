@@ -32,7 +32,7 @@ int main() {
                           nomsMarges[mi], pours ? "Poursuite" : "Checkpoint");
             if (c.w <= 0) { masquees++; std::printf("place : %s : carte masquée (pas assez de place)\n", quoi); continue; }
             dessinees++;
-            VERIFIE(c.w == c.h && c.w >= COTE_MIN * k - 1e-3f && c.w <= COTE * k + 1e-3f, "%s : côté %.1f hors de [%.1f ; %.1f]", quoi, c.w, COTE_MIN * k, COTE * k);
+            VERIFIE(c.w >= c.h - 1e-3f && c.w <= c.h * LARGEUR_SUR_HAUT + 1e-3f && c.h >= COTE_MIN * k - 1e-3f && c.h <= COTE * k + 1e-3f, "%s : hauteur %.1f hors de [%.1f ; %.1f]", quoi, c.h, COTE_MIN * k, COTE * k);
             VERIFIE(c.x >= m.gauche && c.x + c.w <= W - m.droite && c.y >= m.haut && c.y + c.h <= H - m.bas, "%s : carte hors de la zone sûre", quoi);
             VERIFIE(std::fabs(c.x + c.w - (W - m.droite - GOUTTIERE * k)) < 1e-3f, "%s : bord droit pas sur celui du score", quoi);
             VERIFIE(std::fabs(c.y - (m.haut + (pours ? HAUT_POURSUITE : HAUT) * k)) < 1e-3f, "%s : haut à %.1f", quoi, c.y);
@@ -44,14 +44,14 @@ int main() {
     grandsBoutons() = false;
     std::printf("place : %d cas, %d cartes dessinées, %d masquées\n", dessinees + masquees, dessinees, masquees);
     VERIFIE(dessinees >= 7 * 2 * 2 * 3 * 2 - 8, "trop de cartes masquées (%d)", masquees);
-    {   // les deux écrans de référence ont la taille pleine (150 px en 1280 x 720, 225 px en 2400 x 1080)
+    {   // les deux écrans de référence ont la taille pleine (WFS-557 : 149 px de haut en 1280 x 720, 223,5 px en 2400 x 1080)
         const Cadre a = placer(1280, 720, {}, obstacles(1280, 720, {}, false, false), false);
         const Cadre b = placer(2400, 1080, {}, obstacles(2400, 1080, {}, false, false), false);
-        VERIFIE(std::fabs(a.w - 150) < 1e-3f && std::fabs(b.w - 225) < 1e-3f, "tailles de référence : %.1f et %.1f", a.w, b.w);
+        VERIFIE(std::fabs(a.h - 149) < 1e-3f && std::fabs(b.h - 223.5f) < 1e-3f, "tailles de référence : %.1f et %.1f", a.h, b.h);
         // un obstacle sous le coin : le carré rétrécit et garde l'écart ; trop près : pas de carte
-        Obstacles o; o.ajouter({1100, 240, 200, 40});
+        Obstacles o; o.ajouter({1100, 270, 200, 40});
         const Cadre c = placer(1280, 720, {}, o, false);
-        VERIFIE(c.w > 0 && std::fabs(c.y + c.w - (240 - ECART)) < 1e-3f, "rétrécissement : côté %.1f", c.w);
+        VERIFIE(c.w > 0 && std::fabs(c.y + c.h - (270 - ECART)) < 1e-3f, "rétrécissement : hauteur %.1f", c.h);
         Obstacles o2; o2.ajouter({1100, 150, 200, 40});
         VERIFIE(placer(1280, 720, {}, o2, false).w == 0, "sous 100 k : la carte doit être masquée");
     }

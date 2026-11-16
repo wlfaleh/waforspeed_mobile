@@ -102,14 +102,14 @@ private:
         if (e.detail) {
             const float pts = ui::width(3.2f * s, "+000");
             for (const score::Ligne& l : e.lignes) {   // RG-01 : libellé à gauche, points à droite
-                ui::textBoite(r, xg, yy, lw - pts - 1.5f * s, 3.2f * s, 3.2f * s, ui::tr(l.cle), ui::GRIS, ui::GAUCHE, 0.f, false);
-                ui::text(r, xd, yy, 3.2f * s, "+" + std::to_string(l.points), TEXTE, ui::DROITE, 0.f, false, true);
+                { ui::AvecPolice inter(ui::Police::Inter); ui::textBoite(r, xg, yy, lw - pts - 1.5f * s, 3.2f * s, 3.0f * s, ui::tr(l.cle), ui::GRIS, ui::GAUCHE, 0.f, false); }   // WFS-557 : Inter (maquettes 31 à 33)
+                ui::text(r, xd, yy, 3.2f * s, "+" + ui::nombre(l.points), TEXTE, ui::DROITE, 0.f, false, true);   // WFS-557 : « +1 000 »
                 yy += ligneH;
             }
             r.uiRect(xg, yy + 0.2f * s, lw, std::max(1.f, 0.25f * s), TRAIT);
             yy += 1.8f * s;
             ui::textBoite(r, xg, yy, lw * 0.6f, 3.6f * s, 3.6f * s, ui::majuscules(ui::tr("fin.score.total")), TEXTE, ui::GAUCHE, 0.16f, false);
-            ui::text(r, xd, yy - 0.3f * s, 4.2f * s, std::to_string(e.total), ui::ORANGE, ui::DROITE, 0.f, false, true);
+            ui::text(r, xd, yy - 0.3f * s, 4.2f * s, ui::nombre(e.total), ui::ORANGE, ui::DROITE, 0.f, false, true);   // WFS-557 : « 1 050 »
             yy += 5.2f * s;
         }
         if (etoiles) {   // RG-02 : « +N ★ » compté de 0 à N en 0,8 s, son court existant à la fin du compte

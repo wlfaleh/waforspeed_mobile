@@ -37,8 +37,8 @@ float panneauOnglet(Renderer& r, const MiseEnPage& mp, float w) {
 
 void nomMontre(Renderer& r, const MiseEnPage& mp, const std::string& nom, bool apercu) {
     const float k = mp.k, op = mp.op;
-    ui::text(r, mp.cxBouton, mp.yNom, 22 * k, ui::majuscules(nom), hex(TEXTE, op), ui::CENTRE, 0.02f, true, true);
-    if (apercu) ui::text(r, mp.cxBouton, mp.yNom + 28 * k, 12 * k, ui::tr("garage.apercu_pas_a_toi"), hex(MUTED, op), ui::CENTRE, 0, false);
+    ui::text(r, mp.cxBouton, mp.yNom, 26 * k, ui::majuscules(nom), hex(TEXTE, op), ui::CENTRE, 0.02f, true, true);   // WFS-557 : nom de 26
+    if (apercu) { ui::AvecPolice inter(ui::Police::Inter); ui::text(r, mp.cxBouton, mp.yNom + 30 * k, 13 * k, ui::tr("garage.apercu_pas_a_toi"), hex(0xA3A8B5, op), ui::CENTRE, 0, false); }   // WFS-557 : Inter de 13 (maquettes 06, 07, 16)
 }
 
 namespace onglets {
@@ -50,7 +50,7 @@ void dessiner(Renderer& r, const MiseEnPage& mp) {
         const std::string t = ui::majuscules(ui::tr(CLES[o]));
         if (o == g_onglet) {
             // onglet ouvert : titre en néon cyan (tube blanc, lueur cyan), lumière qui tombe dessous (maquettes)
-            const float px = 34 * k;
+            const float px = 46 * k;   // WFS-557 : néon de 128 × 28 (maquettes 13, 15)
             dessin2d::couronne(r, cx, y + h * 0.9f, 0, 46 * k, hex(ACCENT2, 0.30f * op), hex(ACCENT2, 0));
             r.uiCircle(cx, y + h * 0.95f, 7 * k, hex(0xBFFBFF, 0.85f * op));
             // maquettes : lettres en tube de néon (contour creux), lueur cyan autour, carré de lumière dessous
@@ -70,7 +70,7 @@ void dessiner(Renderer& r, const MiseEnPage& mp) {
             r.uiRect(x + 2 * k, y + h * 0.55f, w - 4 * k, h * 0.45f - 2 * k, hex(0xC9CCD3, op));
             dessin2d::contour(r, p, n, 1.5f * k, hex(0x2A2D36, op));
             r.uiRect(x + 4 * k, y + 5 * k, 6 * k, h - 10 * k, hex(ACCENT, op));
-            ui::textBoite(r, cx + 6 * k, y, w - 22 * k, h, 19 * k, t, hex(0x111318, op), ui::CENTRE, 0.0f, false, false);
+            ui::textBoite(r, cx + 6 * k, y, w - 22 * k, h, 26 * k, t, hex(0x111318, op), ui::CENTRE, 0.0f, false, false);   // WFS-557 : capitales de 16 de haut (maquettes)
         }
         g_z.ongletsGarage[o] = {cx - w / 2 - 6 * k, y - 8 * k, w + 12 * k, h + 16 * k};
         manette::focus(g_z.ongletsGarage[o]);
@@ -89,47 +89,51 @@ bool dansSolde(float x, float y) { return g_solde.contient(x, y); }
 void boutonRond(Renderer& r, float cx, float cy, float R, const std::string& titre, const std::string& sousTitre, float op, bool grise) {
     const float d = 2 * R, x = cx - R, y = cy - R;
     // même dessin que le Start/Stop de WFS-549 en forme ronde ; le sous-titre (prix avec ★) est posé ici, l'étoile dessinée
-    const float px = 0.14f * d;   // maquettes : « ACHETER » petit au centre du bouton
-    ui::boutons::startStop(r, x, y, d, d, titre, op, false, sousTitre.empty() ? "" : " ", px, grise);
+    // WFS-557 (maquettes 13 et 15 : « CHOISIR » / « ACHETER » au même chrome brillant que les boutons du menu, maquette 01)
+    (void)d; (void)x; (void)y;
+    const float kk = R / 117.f;
+    ui::boutons::rondMenu(r, cx, cy, kk, titre, "", op, false, grise);
     if (sousTitre.empty()) return;
-    const float s = px * 0.75f, total = s + px * 0.25f + px + px * 0.8f, yt = y + d / 2 - total / 2 + s + px * 0.25f;
-    texteEtoiles(r, cx, yt + px + px * 0.09f, px * 0.62f, sousTitre, hex(0xC9CDDA, op), ui::CENTRE, 0.04f);
+    texteEtoiles(r, cx, cy + 22 * kk, 22 * kk, sousTitre, hex(0xC6C7CC, op), ui::CENTRE, 0.04f);
 }
 
 void fleches(Renderer& r, const MiseEnPage& mp) {
     // maquettes 13 et 15 : grosses flèches pleines à 46 % de la hauteur ; précédente en bois sombre, suivante en orange vif
-    const float k = mp.k, op = mp.op, w = 74 * k, h = 54 * k, y = mp.H * 0.46f - h / 2;
+    const float k = mp.k, op = mp.op, w = 88 * k, h = 60 * k, y = mp.H * 0.46f - h / 2;   // WFS-557 : 88 × 60 (maquettes 13, 15)
     for (int s = 0; s < 2; s++) {
-        const float x = s == 0 ? mp.gl + 12 * k : mp.W - mp.gr - 12 * k - w;
+        const float x = s == 0 ? mp.gl + 14 * k : mp.W - mp.gr - 15 * k - w;
         auto X = [&](float u) { return s == 1 ? x + u * w : x + (1 - u) * w; };   // flèche gauche : miroir
-        vec2 tige[4] = {{X(0), y + 0.26f * h}, {X(0.46f), y + 0.26f * h}, {X(0.46f), y + 0.74f * h}, {X(0), y + 0.74f * h}};   // tige épaisse
-        vec2 tete[3] = {{X(0.40f), y - 0.04f * h}, {X(1), y + 0.5f * h}, {X(0.40f), y + 1.04f * h}};                          // pointe large
-        if (s == 0) { std::swap(tige[1], tige[3]); std::swap(tete[0], tete[2]); }   // miroir : sens horaire gardé
-        const vec4 haut = s ? hex(0xFFC24A, op) : hex(0x7A5638, op), bas = s ? hex(0xFF7A00, op) : hex(0x3E2A1A, op);
+        // WFS-557 (maquettes 13, 15) : flèche d'un seul tenant (tige de la moitié de la hauteur, pointe sur 45 %), dégradé vertical,
+        // arête claire autour du contour entier (pas de trait entre la tige et la pointe)
+        vec2 tige[4] = {{X(0), y + 0.27f * h}, {X(0.56f), y + 0.27f * h}, {X(0.56f), y + 0.73f * h}, {X(0), y + 0.73f * h}};
+        vec2 tete[3] = {{X(0.55f), y}, {X(1), y + 0.5f * h}, {X(0.55f), y + h}};
+        vec2 tour[7] = {{X(0), y + 0.27f * h}, {X(0.55f), y + 0.27f * h}, {X(0.55f), y}, {X(1), y + 0.5f * h}, {X(0.55f), y + h},
+                        {X(0.55f), y + 0.73f * h}, {X(0), y + 0.73f * h}};
+        if (s == 0) { std::swap(tige[1], tige[3]); std::swap(tete[0], tete[2]); for (int i = 0; i < 3; i++) std::swap(tour[i], tour[6 - i]); }   // miroir : sens horaire gardé
+        const vec4 haut = s ? hex(0xFFC94F, op) : hex(0x7E5A3B, op), bas = s ? hex(0xFF8A00, op) : hex(0x3E2A1A, op);
         const dessin2d::Teinte t{haut, bas, y, y + h};
-        if (s) { dessin2d::halo(r, tete, 3, 10 * k, hex(ACCENT, 0.30f * op)); dessin2d::halo(r, tige, 4, 10 * k, hex(ACCENT, 0.30f * op)); }
+        if (s) dessin2d::halo(r, tour, 7, 12 * k, hex(ACCENT, 0.30f * op));
+        else dessin2d::halo(r, tour, 7, 8 * k, {0, 0, 0, 0.45f * op});
         dessin2d::polygone(r, tige, 4, t);
         dessin2d::polygone(r, tete, 3, t);
         if (!s) for (int i = 0; i < 3; i++)   // veines du bois sur la tige
-            r.uiRect(std::min(X(0), X(0.42f)), y + (0.36f + 0.12f * i) * h, std::fabs(X(0.42f) - X(0)), 1.2f * k, hex(0x2A1C10, 0.55f * op));
-        r.uiRect(std::min(X(0.02f), X(0.42f)), y + 0.29f * h, std::fabs(X(0.42f) - X(0.02f)), 2 * k, {1, 1, 1, (s ? 0.45f : 0.18f) * op});   // reflet
-        dessin2d::contour(r, tige, 4, 1.4f * k, s ? hex(0xB04E00, op) : hex(0xC9A07A, 0.8f * op));
-        dessin2d::contour(r, tete, 3, 1.4f * k, s ? hex(0xB04E00, op) : hex(0xC9A07A, 0.8f * op));
+            r.uiRect(std::min(X(0.03f), X(0.5f)), y + (0.38f + 0.11f * i) * h, std::fabs(X(0.5f) - X(0.03f)), 1.2f * k, hex(0x2A1C10, 0.45f * op));
+        dessin2d::contour(r, tour, 7, 1.6f * k, s ? hex(0xFFE2A0, 0.9f * op) : hex(0xE8DCCB, 0.85f * op));   // arête claire (maquettes)
         (s == 0 ? g_z.prev : g_z.next) = {x - 8 * k, y - 12 * k, w + 16 * k, h + 24 * k};
     }
 }
 
 void solde(Renderer& r, const MiseEnPage& mp, long long etoiles) {
     // maquettes : en haut à droite, cadre de verre sombre incliné, étoile orange et solde en italique
-    const float k = mp.k, op = mp.op, px = 20 * k;
+    const float k = mp.k, op = mp.op, px = 25 * k;   // WFS-557 (maquettes 13, 15) : cadre de 40 de haut, solde de 16 de haut
     const std::string t = ui::nombre(etoiles);
-    const float w = ui::width(px, t) + 58 * k, h = 38 * k, x = mp.W - mp.gr - 18 * k - w, y = mp.gt + 6 * k;
+    const float w = ui::width(px, t) + 62 * k, h = 40 * k, x = mp.W - mp.gr - 16 * k - w, y = mp.gt + 12 * k;
     g_solde = {x - 6 * k, y - 6 * k, w + 12 * k, h + 12 * k};
     dessin2d::biseau(r, x, y, w, h, 8 * k, dessin2d::uni(hex(0x0E1016, 0.85f * op)));
     const vec2 c[4] = {{x + 8 * k, y}, {x + w, y}, {x + w - 8 * k, y + h}, {x, y + h}};
     dessin2d::contour(r, c, 4, 1.2f * k, {1, 1, 1, 0.22f * op});
-    etoile(r, x + 24 * k, y + h / 2, 10 * k, hex(ACCENT, op));
-    ui::text(r, x + 40 * k, y + h / 2 - px * 0.6f, px, t, hex(TEXTE, op), ui::GAUCHE, 0, false, true);
+    etoile(r, x + 26 * k, y + h / 2, 12 * k, hex(ACCENT, op));
+    ui::text(r, x + 44 * k, y + h / 2 - px * 0.6f, px, t, hex(TEXTE, op), ui::GAUCHE, 0, false, true);
 }
 
 } // namespace onglets

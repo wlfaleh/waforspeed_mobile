@@ -131,6 +131,7 @@ int benchGains(Game& g, Renderer& r, const std::string& out) {
             boutonCadeau("retour"); images(10);
             const int p = peintureParId(coloris.objet.c_str());
             if (p >= 0 && partie(coloris.voiture.c_str(), Ecran::Garage)) {
+                choisirOnglet(ONGLET_PEINTURE); images(2);   // WFS-557 : garage en onglets depuis WFS-551 (pastilles sur l'onglet « Peinture »)
                 for (int i = 0; i < 12 && g_z.chevrons[0].w > 0; i++) toucherZone(g_z.chevrons[0]);   // début de la rangée
                 bool vu = false;
                 for (int i = 0; i < 12 && !vu; i++) { vu = toucherZone(g_z.peintures[p]); if (!vu && !toucherZone(g_z.chevrons[1])) break; }
@@ -164,6 +165,7 @@ int benchGains(Game& g, Renderer& r, const std::string& out) {
             int o = 0;
             for (int i = 1; i < SkinGarage::NB; i++) if (skin.objet == BOUTIQUE_SKINS_IDS[SkinGarage::catalogue(i)]) o = i;
             if (o > 0 && partie(skin.voiture.c_str(), Ecran::Garage)) {
+                choisirOnglet(ONGLET_SKINS); images(2);   // WFS-557 : garage en onglets depuis WFS-551 (skins sur l'onglet « Skins »)
                 for (int i = 0; i < 6 && g_z.skins[o].w <= 0 && g_z.chevronsSkin[1].w > 0; i++) toucherZone(g_z.chevronsSkin[1]);
                 verifier(toucherZone(g_z.skins[o]), "garage : bouton de la skin gagnée trouvé");
                 images(6);

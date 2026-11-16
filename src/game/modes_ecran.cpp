@@ -18,6 +18,8 @@
 #include "course_system.h"
 #include "../ui/text.h"
 #include "../ui/boutons.h"   // WFS-549 (accroche E23) : boutons au modèle R19
+#include "../ui/verre.h"     // WFS-557 : fond flouté (images provisoires des modes, RG-22)
+#include "commandes_tactiles.h"   // WFS-557 : cartes inclinées (dessin2d)
 #include "../ui/langue.h"   // WFS-505 : textes du choix du mode en français ou en anglais
 #include "../ui/ecrans/textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "course5.h"
@@ -91,13 +93,7 @@ public:
         }
         if (appui_.consomme(t.id, t.down)) return true;
         if (!t.down) return true;
-        for (int i = 0; i < NB_CARTES; i++)
-            if (cartes_[i].contient(t.x, t.y)) {
-                appui_.prendre(t.id);
-                if (!CARTES[i].dispo) { WFS_LOG("modes : « %s » pas encore disponible", CARTES[i].titre); return true; }
-                choix_ = CARTES[i].mode; WFS_LOG("modes : « %s »", CARTES[i].titre);
-                return true;
-            }
+        // WFS-557 (RG-21) : distance et difficulté sont dans la carte « Course à 5 » : testées avant les cartes
         if (choix_ == ModeCourse::Course5)
             for (int i = 0; i < 4; i++)
                 if (kms_[i].contient(t.x, t.y)) { appui_.prendre(t.id); km_ = KMS[i]; WFS_LOG("modes : %d km", km_); return true; }
@@ -107,6 +103,13 @@ public:
                     appui_.prendre(t.id); diff_ = (course5::Difficulte)i;
                     WFS_LOG("modes : difficulté %s", course5::cleDifficulte(diff_)); return true;
                 }
+        for (int i = 0; i < NB_CARTES; i++)
+            if (cartes_[i].contient(t.x, t.y)) {
+                appui_.prendre(t.id);
+                if (!CARTES[i].dispo) { WFS_LOG("modes : « %s » pas encore disponible", CARTES[i].titre); return true; }
+                choix_ = CARTES[i].mode; WFS_LOG("modes : « %s »", CARTES[i].titre);
+                return true;
+            }
         // WFS-115 : « Continuer » et « Retour » agissent au relâcher, sur le bouton appuyé. Ils agissaient à l'appui : le
         // panneau se fermait sous le doigt encore posé, et ses mouvements (Android : un appui par mouvement) arrivaient
         // comme des appuis neufs à l'écran suivant — sur « Retour » du garage, juste sous « Continuer » en 20/9 : retour au
@@ -120,74 +123,62 @@ public:
         const ecrans::textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         // WFS-517 (RG-04) : dernier mode = duel (ou inconnu) → Checkpoint présélectionné
         if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); diff_ = course5::difficulte(); ouverture_ = false; }
-        const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
-        r.uiRect(0, 0, W, H, hex(BG, 0.92f));   // WFS-141 (RG-04, ANO-54) : voile #0A0B10 à 0,92 (le menu ne dessine plus ses textes dessous)
-        const float L = g.marges.gauche, R = W - g.marges.droite, cx = (L + R) / 2;
-        ui::text(r, cx, g.marges.haut + 7 * u, 2.6f * u, ui::majuscules(ui::tr("modes.surtitre")), hex(ACC2), ui::CENTRE, 0.16f, false);
-        ui::text(r, cx, g.marges.haut + 11 * u, 8 * u, ui::majuscules(ui::tr("modes.titre")), hex(TXT), ui::CENTRE, 0.04f, false, true);
-        // WFS-517 (RG-01, RG-03) : trois cartes côte à côte, même largeur qu'avant (42 u au plus), le bloc reste centré
-        // (pas de trou à la place de l'ancienne 4e carte) ; « Retour » et « Continuer » suivent les bords du bloc
-        const float gap = 2.4f * u, cw = std::min(42 * u, ((R - L) - 8 * u - (NB_CARTES - 1) * gap) / NB_CARTES), ch = 34 * u, y0 = g.marges.haut + 26 * u;
-        const float blocW = NB_CARTES * cw + (NB_CARTES - 1) * gap, x0 = cx - blocW / 2;
+        // WFS-557 (maquette 02 ; arbitrages du PO du 2026-11-16 : maquette à 100 %, RG-21, RG-22). Unité k = H / 720 (maquette
+        // 1600 × 720), depuis la zone sûre. Titre et « Étape 1 sur 3 » en haut à gauche ; 3 grandes cartes inclinées ; image du mode
+        // provisoire = la scène du jeu floutée (RG-22, vraies images : WFS-562) ; nom du mode choisi en orange ; « Distance » et
+        // « Difficulté » seulement dans la carte du mode qui s'en sert (Course à 5), au bas de la carte (RG-21) ; « Retour / Menu
+        // principal » en autocollant en bas à gauche ; « Suivant » en bouton rond en bas à droite.
+        const float W = g.uiWidth, H = g.uiHeight, k = std::min(H / 720.f, (W - g.marges.gauche - g.marges.droite) / 1600.f);   // 16:9 : réduit, centré
+        const float ox = g.marges.gauche + (W - g.marges.gauche - g.marges.droite - 1600 * k) / 2, oy = g.marges.haut + (H - g.marges.haut - g.marges.bas - 720 * k) / 2;
+        (void)W;
+        verre::fondFloute(r); verre::assombrir(r, W, H, 0.62f);
+        ui::text(r, ox + 44 * k, oy + 40 * k, 56 * k, ui::majuscules(ui::tr("modes.titre")), hex(TXT), ui::GAUCHE, 0.01f, false, true);
+        { ui::AvecPolice inter(ui::Police::Inter); ui::text(r, ox + 44 * k, oy + 98 * k, 13 * k, ui::tr("modes.etape"), hex(0xC9CDDA), ui::GAUCHE, 0, false); }
         manette::zonesImage().clear();   // WFS-517 (RG-03) : panneau ouvert → seuls ses boutons ont le focus (comme les réglages)
+        for (auto& z : kms_) z = {};
+        for (auto& z : diffs_) z = {};
+        const float cw = 470 * k, ch = 356 * k, biais = 40 * k, y0 = oy + 140 * k;
         for (int i = 0; i < NB_CARTES; i++) {
             const Carte& c = CARTES[i];
-            const float x = x0 + i * (cw + gap);
+            const float x = ox + (90 + 506 * i) * k;
             const bool sel = c.dispo && c.mode == choix_;
             cartes_[i] = {x, y0, cw, ch};
             manette::focus(cartes_[i]);
-            r.uiRect(x, y0, cw, ch, hex(sel ? SURF2 : SURF, c.dispo ? 0.96f : 0.6f));
-            r.uiRect(x, y0, cw, 0.6f * u, sel ? hex(ACC) : hex(SURF2));
-            if (sel) { r.uiRect(x, y0 + ch - 0.4f * u, cw, 0.4f * u, hex(ACC)); r.uiRect(x, y0, 0.4f * u, ch, hex(ACC)); r.uiRect(x + cw - 0.4f * u, y0, 0.4f * u, ch, hex(ACC)); }
-            char num[8]; std::snprintf(num, sizeof num, "0%d", i + 1);
-            ui::text(r, x + 2.4f * u, y0 + 3 * u, 2.4f * u, num, hex(c.dispo ? ACC2 : MUTE), ui::GAUCHE, 0.16f, false);
-            ui::text(r, x + 2.4f * u, y0 + 8 * u, 4.6f * u, ui::majuscules(ui::tr(c.cle)), hex(sel ? ACC : (c.dispo ? TXT : MUTE)), ui::GAUCHE, 0.02f, false, true);
-            descr(r, x + 2.4f * u, y0 + 16 * u, cw - 4.8f * u, 2.5f * u, descCarte(c), hex(MUTE));
-            if (!c.dispo) {
-                r.uiRect(x + 2.4f * u, y0 + ch - 7 * u, 14 * u, 4.2f * u, hex(SURF2));
-                ui::text(r, x + 9.4f * u, y0 + ch - 6.2f * u, 2.4f * u, ui::majuscules(ui::tr("modes.bientot")), hex(MUTE), ui::CENTRE, 0.14f, false);
+            const vec2 q[4] = {{x + biais, y0}, {x + cw, y0}, {x + cw - biais, y0 + ch}, {x, y0 + ch}};
+            dessin2d::polygone(r, q, 4, {hex(0x1A1C22, 0.30f), hex(0x0B0C10, 0.94f), y0, y0 + ch});
+            dessin2d::contour(r, q, 4, 1 * k, sel ? hex(TXT, 0.30f) : hex(TXT, 0.12f));
+            const bool reglages = sel && c.mode == ModeCourse::Course5;   // RG-21 : distance et difficulté dans la carte
+            const float yn = y0 + (reglages ? 160 : 270) * k;
+            ui::textBoite(r, x + 26 * k, yn, cw - 70 * k, 50 * k, 48 * k, ui::majuscules(ui::tr(c.cle)), hex(sel ? 0xFF8A3D : TXT, c.dispo ? 1.f : 0.5f), ui::GAUCHE, 0.01f, false, true);
+            { ui::AvecPolice inter(ui::Police::Inter); descr(r, x + 22 * k, yn + 58 * k, cw - 70 * k, 14 * k, descCarte(c), hex(0xE6E8EE)); }
+            if (!reglages) continue;
+            // rangées de verre : 2 · 4 · 6 · 10 km ; Facile · Normale · Difficile (zones ≥ 44 px, dans la carte)
+            const float rh = 44 * k, xr = x + 18 * k, wr = cw - 70 * k, yk = yn + 102 * k, yd = yk + rh + 10 * k;
+            ui::boutons::selecteurFond(r, xr, yk, wr, rh);
+            for (int j = 0; j < 4; j++) {
+                const float w = (wr - 8 * k) / 4, xj = xr + 4 * k + j * w;
+                kms_[j] = {xj, yk, w, rh}; manette::focus(kms_[j]);
+                char t[16]; std::snprintf(t, sizeof t, "%d KM", KMS[j]);
+                ui::boutons::selecteurChoix(r, xj, yk + 4 * k, w, rh - 8 * k, "", KMS[j] == km_);
+                ui::AvecPolice inter(ui::Police::InterMedium);
+                ui::text(r, xj + w / 2, yk + (rh - 14 * k) / 2, 14 * k, t, KMS[j] == km_ ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
+            }
+            ui::boutons::selecteurFond(r, xr, yd, wr, rh);
+            for (int j = 0; j < 3; j++) {
+                const float w = (wr - 8 * k) / 3, xj = xr + 4 * k + j * w;
+                diffs_[j] = {xj, yd, w, rh}; manette::focus(diffs_[j]);
+                ui::boutons::selecteurChoix(r, xj, yd + 4 * k, w, rh - 8 * k, "", j == (int)diff_);
+                ui::AvecPolice inter(ui::Police::InterMedium);
+                ui::textBoite(r, xj + w / 2, yd, w - 10 * k, rh, 14 * k, ui::majuscules(ui::tr(DIFFS[j])), j == (int)diff_ ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
             }
         }
-        // puces de distance sous la carte « Course à 5 »
-        const float ky = y0 + ch + 3 * u, kh = 6.5f * u;
-        for (auto& z : kms_) z = {};
-        if (choix_ == ModeCourse::Course5) {
-            ui::text(r, x0, ky + 1.6f * u, 2.6f * u, ui::majuscules(ui::tr("modes.distance")), hex(MUTE), ui::GAUCHE, 0.16f, false);
-            const float kw = 12 * u, kx0 = x0 + 17 * u;
-            for (int i = 0; i < 4; i++) {
-                const float x = kx0 + i * (kw + 1.6f * u);
-                const bool sel = KMS[i] == km_;
-                kms_[i] = {x, ky, kw, kh};
-                manette::focus(kms_[i]);
-                r.uiRect(x, ky, kw, kh, sel ? hex(ACC) : hex(SURF2));
-                char t[16]; std::snprintf(t, sizeof t, "%d KM", KMS[i]);
-                ui::text(r, x + kw / 2, ky + 1.6f * u, 3.2f * u, t, sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
-            }
-        }
-        // WFS-133 (RG-01) : puces de difficulté sous les distances, même dessin, sélection cyan
-        const float dy = ky + kh + 2 * u;
-        for (auto& z : diffs_) z = {};
-        if (choix_ == ModeCourse::Course5) {
-            ui::text(r, x0, dy + 1.6f * u, 2.6f * u, ui::majuscules(ui::tr("modes.difficulte")), hex(MUTE), ui::GAUCHE, 0.16f, false);
-            const float dw = 17 * u, dx0 = x0 + 17 * u;   // alignées sur les puces de distance
-            for (int i = 0; i < 3; i++) {
-                const float x = dx0 + i * (dw + 1.6f * u);
-                const bool sel = i == (int)diff_;
-                diffs_[i] = {x, dy, dw, kh};
-                manette::focus(diffs_[i]);
-                r.uiRect(x, dy, dw, kh, sel ? hex(ACC2) : hex(SURF2));
-                // WFS-505 (RG-03) : texte dans la puce (y + 1,6 % de H comme avant), police réduite de 20 % au plus si besoin
-                ui::textBoite(r, x + dw / 2, dy + 1.6f * u - (kh - 3.2f * u) / 2, dw - 1.6f * u, kh, 3.2f * u, ui::majuscules(ui::tr(DIFFS[i])), sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
-            }
-        }
-        // « Retour » et « Continuer »
-        const float bw = 28 * u, bh = 8 * u, by = H - g.marges.bas - bh - 6 * u;
-        retour_ = {x0, by, bw, bh};
-        continuer_ = {x0 + blocW - bw, by, bw, bh};
+        // « Retour / Menu principal » (autocollant 154 × 64) et « Suivant » (rond, 130 px)
+        retour_ = {ox + 66 * k, oy + 604 * k, 168 * k, 72 * k};
+        const float d = 130 * k;
+        continuer_ = {ox + 1460 * k - d / 2, oy + 600 * k - d / 2, d, d};
         manette::focus(retour_, true); manette::focus(continuer_);
-        // WFS-549 (RG-01, RG-02) : « Retour » en autocollant, « Continuer » (le « Suivant » de la maquette 02) en Start/Stop ; mêmes rectangles
-        ui::boutons::autocollant(r, retour_.x, by, bw, bh, ui::majuscules(ui::tr("modes.retour")), 1, false, 3.6f * u);   // WFS-505 (RG-03)
-        ui::boutons::startStop(r, continuer_.x, by, bw, bh, ui::majuscules(ui::tr("modes.continuer")), 1, false, "", 3.4f * u);
+        ui::boutons::autocollant(r, retour_.x, retour_.y, retour_.w, retour_.h, ui::majuscules(ui::tr("modes.retour")), 1, bouton_ == 2, 28 * k, ui::tr("reglages.surtitre.menu"));
+        ui::boutons::startStop(r, continuer_.x, continuer_.y, d, d, ui::majuscules(ui::tr("modes.suivant")), 1, bouton_ == 1, "", 18 * k);
     }
 
 private:
@@ -198,7 +189,7 @@ private:
         for (size_t i = 0; i <= s.size(); i++) {
             if (i < s.size() && s[i] != ' ') { mot += s[i]; continue; }
             const std::string essai = ligne.empty() ? mot : ligne + " " + mot;
-            if (!ligne.empty() && ui::width(px, essai) > w) { vider(); ligne = mot; } else ligne = essai;
+            if (!ligne.empty() && ui::width(px, essai) > w) { vider(); ligne = mot; } else ligne = essai;   // police de l'appelant (Inter)
             mot.clear();
         }
         vider();

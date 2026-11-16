@@ -79,6 +79,12 @@ void autocollant(Renderer& r, float x, float y, float w, float h, const std::str
 // RG-03 : pilule chrome (liseré cyan, petite voiture dessinée au trait à gauche)
 void piluleChrome(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
                   float px = 0, const std::string& sousTitre = "");
+// WFS-557 (maquette 01 mesurée au pixel, ordre de l'utilisateur du 2026-11-16) : boutons du menu principal, k = unité maquette
+// (1600 × 720). rondMenu : centre (cx, cy), bague chrome brillante de 103 k de rayon (reflet blanc en haut, lueur au-dessus),
+// centre gris foncé, anneau orange fin de 81 k, icône, titre crème et sous-titre gris. piluleMenu : bague chrome, fond noir bleuté,
+// liseré cyan néon, voiture au trait cyan et texte gris clair (« GARAGE »).
+void rondMenu(Renderer& r, float cx, float cy, float k, const std::string& titre, const std::string& sousTitre, float op = 1, bool appuye = false, bool grise = false);
+void piluleMenu(Renderer& r, float x, float y, float w, float h, float k, const std::string& texte, float op = 1, bool appuye = false);
 // RG-04 : bouton de prix orange, texte sombre (le texte peut contenir « ★ », dessinée par l'appelant s'il le faut)
 void prix(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
           float px = 0, bool grise = false);
@@ -89,6 +95,18 @@ void selecteurChoix(Renderer& r, float x, float y, float w, float h, const std::
 // RG-06 : bouton de verre cerclé d'orange (texte orange)
 void verreOrange(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
                  float px = 0);
+// WFS-557 : icônes au trait des maquettes R19, dessinées dans un carré de côté s centré en (cx, cy)
+enum class Icone { Aucune, Recommencer, Sortie, Engrenage, Crayon, Etoile, Document, Croix, Ecran, Volant, HautParleur };
+void icone(Renderer& r, Icone i, float cx, float cy, float s, const vec4& c);
+// WFS-557 : bouton de verre arrondi des maquettes R19 (19 « Recommencer », « Quitter la course », « Réglages » ; 21 « Modifier » ;
+// 14 « Crédits », « Conditions d'utilisation ») : icône à gauche du texte en capitales italiques, l'ensemble centré.
+// bord = 0 : liseré clair ; sinon liseré de cette couleur (rouge « Quitter la course ») ; texte de couleur `couleurTexte` (blanc si nul).
+// Texte vide : icône seule centrée (bouton rond « Réglages » du menu, maquette 01).
+struct OptionsVerre { float rayon = -1; unsigned bord = 0; const vec4* couleurTexte = nullptr; float espacement = 0.12f; };
+void verreIcone(Renderer& r, float x, float y, float w, float h, Icone i, const std::string& texte, float op = 1, bool appuye = false,
+                float px = 0, const OptionsVerre& o = {});
+// WFS-557 (maquettes 10, 11) : bouton « MENU » en plaque d'immatriculation : plaque claire, bande orange à gauche, texte sombre
+void plaque(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false);
 // bouton de verre neutre (bord clair) : actions secondaires des maquettes (« Crédits », « Conditions d'utilisation »)
 void verre(Renderer& r, float x, float y, float w, float h, const std::string& texte, float op = 1, bool appuye = false,
            float px = 0, const vec4* couleurTexte = nullptr);

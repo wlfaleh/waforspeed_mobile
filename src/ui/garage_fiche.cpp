@@ -34,15 +34,15 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
     const std::string id = ficheDe(car.id).id;   // WFS-507 : type et accroche par ui::tr (garage.type.<id>, garage.accroche.<id>)
     // ---------- .show-head : marque · index, nom, type + accroche ----------
     {
-        const float x = gl + std::clamp(W * 0.04f, 0.f, 64 * k);
-        float y = gt + 8 * k;
-        float np = std::min(60 * k, std::max(40 * k, W * 0.07f * 0.8f));   // WFS-551 (maquettes) : nom de 60 px au plus
+        const float x = gl + std::clamp(W * 0.04f, 0.f, 28 * k);   // WFS-557 : bord gauche à 44 (maquettes 13, 15)
+        float y = gt + 16 * k;
+        float np = std::min(70 * k, std::max(40 * k, W * 0.07f));   // WFS-557 (maquettes 13, 15) : nom de 70 px
         {
             const textes::NomPropre nomPropre;   // WFS-507 : marque et modèle inventés, inchangés en anglais (RC-E20-03)
             // WFS-551 (accroche, maquettes 06, 07, 13, 15, 16) : la marque seule, en gris clair (la place « 05 / 17 » est sous le plateau)
             const std::string eb = ui::majuscules(marque(car));
-            ui::text(r, x, y, 12 * k, eb, hex(0xC9CDDA, op), ui::GAUCHE, 0.22f, false);
-            y += 22 * k;
+            { ui::AvecPolice inter(ui::Police::InterMedium); ui::text(r, x, y, 14 * k, eb, hex(0xC9CDDA, op), ui::GAUCHE, 0.22f, false); }   // WFS-557 : Inter Medium de 14
+            y += 17 * k;
             const std::string nm = ui::majuscules(modele(car));   // WFS-191 : nom de configgame.json
             if (const float nw = ui::width(np, nm); nw > W * 0.5f) np *= W * 0.5f / nw;   // WFS-191 (RG-08) : nom long réduit pour tenir
             ui::text(r, x, y, np, nm, hex(TEXTE, op), ui::GAUCHE, 0, true, true);
@@ -50,7 +50,7 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
             if (const Sauvegarde& sv = sauvegarde(); voitureBloquee(sv, car.id))
                 cadenasJauge(r, x + ui::width(np, nm) + np * 0.28f, y + np * 0.08f, np * 0.92f, partJauge(boutique::solde(sv), boutique::prixVoiture(car.id)), op);
         }
-        y += np * 1.0f + 8 * k;
+        y += np * 0.92f + 4 * k;
         // WFS-147 (ANO-47) : libellé de 13 px au moins (règle du HUD : 11 px du web portés à 13 px), calé au pixel entier
         // (en 720p, le « I » de « HYBRIDE » tombait entre deux pixels et le « D » perdait son trait) ; dès 13 px
         // (2400x1080 : 16,5 px), taille et place inchangées
@@ -59,7 +59,8 @@ void FicheGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         const float cw = ui::width(cp, body, 0.16f) + 20 * k;
         biseau(r, x, y, cw, 20 * k, 3.5f * k, hex(TEXTE, op));   // .chip : WFS-551 (accroche, maquettes) : étiquette blanche, texte noir
         ui::text(r, std::round(x + 10 * k), std::round(y + cy), cp, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false, true);
-        ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, mp.sousTitre.empty() ? ui::tr(("garage.accroche." + id).c_str()) : mp.sousTitre, hex(TEXTE, op), ui::GAUCHE, 0, true);   // WFS-551 : couleur · finition · skin selon l'onglet
+        ui::AvecPolice inter(ui::Police::Inter);   // WFS-557 : accroche en Inter de 15 (maquettes 13, 15)
+        ui::text(r, x + cw + 12 * k, y + 1.5f * k, 15 * k, mp.sousTitre.empty() ? ui::tr(("garage.accroche." + id).c_str()) : mp.sousTitre, hex(TEXTE, op), ui::GAUCHE, 0, true);   // WFS-551 : couleur · finition · skin selon l'onglet
         // WFS-551 (maquette 15, RG-11) : la place des segments ; WFS-550 (RG-04) : leur dessin (position()), onglet Voiture seulement
         if (mp.onglet != ONGLET_VOITURE) { viderZones(); return; }   // maquettes 06, 07, 16 : pas de segments
         position(r, mp, e.index);
@@ -97,48 +98,42 @@ void FicheGarage::position(Renderer& r, const MiseEnPage& mp, int index) const {
     }
 }
 
+// WFS-557 (maquettes 13 et 15 mesurées, ordre de l'utilisateur du 2026-11-16 : maquette à 100 %) : places relevées depuis le coin
+// haut gauche du panneau (894 × 140) : cadrans centrés à 81, 212 et 342 (rayon 46, à 66 du haut), libellés à 130 ; barres : libellés
+// à 434, barres de 538 à 838, valeurs alignées à 870, rangées à 35, 57, 79 et 101
 float FicheGarage::specs(Renderer& r, const MiseEnPage& mp, const CarDef& car) const {
-    const float k = mp.k, op = mp.op, statH = mp.statH, y1 = mp.y1;
-    float x = mp.px0 + mp.padX;
-    // .specs : Puissance (ch), 0 à 100 (s), Vitesse max (km/h) ; WFS-550 (RG-01, maquette 13) : trois cadrans à arc fin
-    // cyan → orange (valeur au centre, unité dessous, libellé sous le cadran) ; chiffres et libellés inchangés
-    {
-        const std::string val[3] = {std::to_string(car.spec.ch), virgule(car.spec.s100), std::to_string(car.spec.vmax)};
-        const char* dt[3] = {ui::tr("garage.puissance").c_str(), ui::tr("garage.zero_cent").c_str(), ui::tr("garage.vmax").c_str()};   // WFS-507
-        const char* un[3] = {"ch", "s", "km/h"};   // unités inchangées en anglais (WFS-507 RG-01)
-        const float fr[3] = {fractionPuissance(car.spec), fractionZeroCent(car.spec), fractionVmax(car.spec)};
-        const float rayon = 38 * k, ep = 4.5f * k, cy = y1 + 2 * k + rayon, ly = y1 + statH - 11 * k;   // maquette 13 : grands cadrans
-        for (int i = 0; i < 3; i++) {
-            const std::string lib = ui::majuscules(dt[i]);
-            const float colonne = std::max(2 * rayon + 16 * k, ui::width(11 * k, lib, 0.16f) + 8 * k), cx = x + colonne / 2;
-            jauges::cadran(r, cx, cy, rayon, ep, fr[i], op);
-            float vp = 30 * k;   // valeur réduite si elle ne tient pas dans l'arc (« 1000 »)
-            if (const float vw = ui::width(vp, val[i]); vw > 2 * rayon - 14 * k) vp *= (2 * rayon - 14 * k) / vw;
-            ui::text(r, cx, cy - vp * 0.62f, vp, val[i], hex(TEXTE, op), ui::CENTRE, 0, false, true);
-            ui::text(r, cx, cy + vp * 0.42f, 11 * k, un[i], hex(MUTED, op), ui::CENTRE, 0.04f, false);
-            ui::text(r, cx, ly, 11 * k, lib, hex(MUTED, op), ui::CENTRE, 0.16f, false);
-            x += colonne + 14 * k;
-        }
-        x += 18 * k;
+    const float k = mp.k, op = mp.op, x0 = mp.px0, y0 = mp.py0;
+    const std::string val[3] = {std::to_string(car.spec.ch), virgule(car.spec.s100), std::to_string(car.spec.vmax)};
+    const char* dt[3] = {ui::tr("garage.puissance").c_str(), ui::tr("garage.zero_cent").c_str(), ui::tr("garage.vmax").c_str()};   // WFS-507
+    const char* un[3] = {"ch", "s", "km/h"};   // unités inchangées en anglais (WFS-507 RG-01)
+    const float fr[3] = {fractionPuissance(car.spec), fractionZeroCent(car.spec), fractionVmax(car.spec)};
+    const float cxs[3] = {81, 212, 342}, rayon = 46 * k, ep = 5 * k, cy = y0 + 66 * k;
+    for (int i = 0; i < 3; i++) {
+        const float cx = x0 + cxs[i] * k;
+        jauges::cadran(r, cx, cy, rayon, ep, fr[i], op);
+        float vp = 32 * k;   // valeur réduite si elle ne tient pas dans l'arc (« 1000 »)
+        if (const float vw = ui::width(vp, val[i]); vw > 2 * rayon - 18 * k) vp *= (2 * rayon - 18 * k) / vw;
+        ui::text(r, cx, cy - 5 * k - vp * 0.5f, vp, val[i], hex(TEXTE, op), ui::CENTRE, 0, false, true);
+        ui::AvecPolice inter(ui::Police::InterMedium);
+        ui::text(r, cx, cy + 16 * k - 5 * k, 10.5f * k, un[i], hex(0xB8BCC8, op), ui::CENTRE, 0.02f, false);
+        ui::text(r, cx, y0 + 130 * k - 6 * k, 11 * k, ui::majuscules(dt[i]), hex(0xB8BCC8, op), ui::CENTRE, 0.18f, false);
     }
-    return x;
+    return x0 + 434 * k;
 }
 
 void FicheGarage::stats(Renderer& r, const MiseEnPage& mp, const CarDef& car, float x) const {
-    const float k = mp.k, op = mp.op, y1 = mp.y1, bx = mp.bx;
+    const float k = mp.k, op = mp.op, x0 = mp.px0, y0 = mp.py0;
     // .statlist : 4 barres sur 10 (Vitesse, Accélération, Maniabilité, Puissance)
-    {
-        const Stats st = carStats(car);
-        const int v[4] = {st.v, st.a, st.m, st.p};
-        const std::string* lab[4] = {&ui::tr("garage.note.vitesse"), &ui::tr("garage.note.acceleration"), &ui::tr("garage.note.maniabilite"), &ui::tr("garage.note.puissance")};   // WFS-507
-        const float sx = x, sw = bx - 32 * k - sx, barX = sx + 112 * k + 12 * k, barW = sw - 112 * k - 12 * k - 12 * k - 28 * k;
-        for (int i = 0; i < 4; i++) {
-            const float yy = y1 + i * 24 * k;
-            ui::text(r, sx, yy, 13 * k, *lab[i], hex(TAG, op), ui::GAUCHE, 0, false);
-            // WFS-550 (RG-01, maquette 13) : barre fine graduée (10 cases), dégradé cyan → orange de WFS-548 sur toute la largeur
-            jauges::barreFine(r, barX, yy + 7 * k, barW, 3 * k, v[i] / 10.f, op, 10);
-            ui::text(r, barX + barW + 12 * k + 28 * k, yy, 14 * k, std::to_string(v[i]), hex(TEXTE, op), ui::DROITE, 0, false, true);
-        }
+    const Stats st = carStats(car);
+    const int v[4] = {st.v, st.a, st.m, st.p};
+    const std::string* lab[4] = {&ui::tr("garage.note.vitesse"), &ui::tr("garage.note.acceleration"), &ui::tr("garage.note.maniabilite"), &ui::tr("garage.note.puissance")};   // WFS-507
+    const float barX = x0 + 538 * k, barW = 300 * k;
+    for (int i = 0; i < 4; i++) {
+        const float yc = y0 + (35 + 22 * i) * k;
+        { ui::AvecPolice inter(ui::Police::Inter); ui::text(r, x, yc - 7.5f * k, 14.5f * k, *lab[i], hex(0xE2E4EA, op), ui::GAUCHE, 0, false); }
+        // WFS-550 (RG-01, maquette 13) : barre fine graduée (10 cases), dégradé cyan → orange de WFS-548 sur toute la largeur
+        jauges::barreFine(r, barX, yc - 2 * k, barW, 4 * k, v[i] / 10.f, op, 10);
+        ui::text(r, x0 + 870 * k, yc - 9 * k, 18 * k, std::to_string(v[i]), hex(TEXTE, op), ui::DROITE, 0, false, true);
     }
 }
 

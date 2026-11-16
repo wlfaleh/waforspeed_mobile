@@ -24,6 +24,7 @@
 #include "../ui/ecrans/cgu.h"
 #include "../ui/ecrans/compteur_etoiles.h"
 #include "../ui/ecrans/creation_profil.h"   // WFS-481 : écran « Crée ton pilote »
+#include "../ui/ecrans/market_ecran.h"   // WFS-557 : le compteur ouvre le Market (banc)
 #include "../ui/langue.h"
 #include "boutique.h"
 #include "course.h"
@@ -68,6 +69,7 @@ int benchScoreFin(Game& g, Renderer& r, const std::string& out) {
     auto jusquaFin = [&](int maxImages) { for (int i = 0; i < maxImages && !finie(); i++) { g.update(1.0 / 60); t += 1.0 / 60; } images(120); };
     auto demarrer = [&](ModeCourse m) {
         modeCourse() = m;
+        s.voituresPossedees.insert("golf");   // WFS-557 : la Golf du banc est achetée (sinon, essai gratuit fait à la course solo : retour au garage, WFS-499)
         s.mode = poursuite::cleMode(m); s.km5 = kmCourse5();   // le mode est relu de la sauvegarde active à chaque partie (modes_ecran.cpp)
         if (!g.init(r, "golf", "ville")) { verifier(false, std::string("chargement ") + nomMode(m)); return false; }
         g.setAutopilot(true); g.camMode = 0;
@@ -140,10 +142,10 @@ int benchScoreFin(Game& g, Renderer& r, const std::string& out) {
             capture("score-parcours-" + code + "-menu");
             verifier(ecrans::compteur_etoiles::texteLecteur() == ui::tr(singulier(boutique::solde(s), code == "en") ? "menu.etoiles.lecteur.un" : "menu.etoiles.lecteur", nombreEtoiles(boutique::solde(s), code == "en")),
                      "parcours accueil → course → fin → menu : compteur = nouveau solde (RG-08)");
-            // ---------- 7. appui sur le compteur → garage (RG-09) ----------
+            // ---------- 7. appui sur le compteur → Market (RG-09 changée par WFS-513 / 537 : menu.cpp, « le compteur ouvre le Market ») ----------
             if (ecrans::compteur_etoiles::centre(x, y)) toucher(x, y);
             images(20);
-            verifier(g.ecran() == Ecran::Garage, "appui sur le compteur → garage (RG-09)");
+            verifier(ecrans::market_ecran::ouvert(), "appui sur le compteur → Market (RG-09, WFS-513)");
             g.shutdown();
         }
         // ---------- 3. course à 5 (2 km) gagnée ----------

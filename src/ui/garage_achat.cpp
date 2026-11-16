@@ -84,13 +84,13 @@ void AchatGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& 
         g_z.essai = Zone{};
     }
     // WFS-551 (maquettes 13, 15, 16) : « Retour » en autocollant en bas à gauche
-    const float rw = 126 * k, rh = 52 * k, rx = mp.gl + std::max(40 * k, mp.W * 0.05f), ry = mp.py0 + mp.panelH / 2 - rh / 2;
-    ui::boutons::autocollant(r, rx, ry, rw, rh, ui::majuscules(ui::tr("garage.retour")), op, false, 17 * k, ui::tr("reglages.surtitre.menu"));   // WFS-549 (RG-02) : sortie, « Menu principal » dessous
+    const float rw = 124 * k, rh = 52 * k, rx = mp.gl + 94 * k, ry = mp.py0 + mp.panelH / 2 - rh / 2 - 4 * k;   // WFS-557 : 110 à 234 (maquettes 13, 15)
+    ui::boutons::autocollant(r, rx, ry, rw, rh, ui::majuscules(ui::tr("garage.retour")), op, false, 22 * k, ui::tr("reglages.surtitre.menu"));   // WFS-549 (RG-02) : sortie, « Menu principal » dessous
     g_z.retour = {rx, ry, rw, rh};
     // WFS-551 (maquettes 15, 16) : solde d'étoiles sous le bouton rond ; voiture bloquée : « ★ solde / prix » (valeurs réelles)
-    {
+    if (!(mp.onglet == ONGLET_VOITURE && !bloquee)) {   // WFS-557 : maquette 13 (voiture à soi) : pas de solde sous le bouton
         const std::string t1 = "★ " + nombreLangue(boutique::solde(s)), t2 = bloquee && !pretAttente ? " / " + nombreLangue(boutique::prixVoiture(car)) : "";
-        const float p1 = 20 * k, p2 = 14 * k, w1 = largeurEtoiles(p1, t1), w2 = t2.empty() ? 0 : ui::width(p2, t2), y0 = cy + R + 18 * k;
+        const float p1 = 26 * k, p2 = 18 * k,   /* WFS-557 : « ★ 1 250 » de 26 (maquettes 06, 07, 15, 16) */ w1 = largeurEtoiles(p1, t1), w2 = t2.empty() ? 0 : ui::width(p2, t2), y0 = cy + R + 14 * k;
         const float x0 = cx - (w1 + w2) / 2;
         etoile(r, x0 + p1 * LARGEUR_ETOILE / 2, y0 + p1 * 0.52f, p1 * 0.42f, hex(ACCENT, op));   // maquettes : étoile orange
         ui::text(r, x0 + p1 * LARGEUR_ETOILE, y0, p1, t1.substr(4), hex(TEXTE, op), ui::GAUCHE, 0, false, true);

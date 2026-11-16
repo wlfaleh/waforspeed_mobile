@@ -857,36 +857,23 @@ private:
         resultats3d::boutons(r, g.uiWidth, g.uiHeight, g.marges.gauche, g.marges.droite, libRejouer(), false, zm, zb);
         rejouerZ_ = {zb[0], zb[1], zb[2], zb[3]}; menuZ_ = {zm[0], zm[1], zm[2], zm[3]};
     }
+    // WFS-557 (maquette 32) : mise en page commune des fins R19 (course_system.h : panneauFinR19 …) ; « Échappé · 0:10,2 » en
+    // sous-titre ; dernière ligne (voitures de police semées) en orange comme sur la maquette
     void resultat(Renderer& r, float W, float H, float u) {
-        verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // WFS-548 (RG-02) : écran arrêté : course floutée et assombrie
-        const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
-        const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
-        verre::panneau(r, px0, py0, pw, ph, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli
-        score_fin::poser(px0, py0, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
+        const FinR19 f = panneauFinR19(r, W, H);
         static std::string sur;   // WFS-506 (RG-03) : « POURSUITE POLICE · 10 KM » / « POLICE PURSUIT · 10 KM »
-        textes::remplir(sur, "police.surtitre", "10");   // valeur affichée inchangée (10 km)
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, verre::hexa(verre::SUR_TITRE), ui::CENTRE, 0.16f, false);   // WFS-548 (RG-03) : gris
+        textes::remplir(sur, "police.surtitre", "10");
         const bool v = etat_.gagne;
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::tr(v ? "fin.victoire" : "police.arrete"), v ? ui::ORANGE : verre::hexa(verre::PERTE), ui::CENTRE, 0.04f, false, true);   // WFS-548 (RG-05) : rouge = perte
-        if (!v && etat_.parPolice) ui::text(r, W / 2, py0 + 16.2f * u, 2.6f * u, ui::tr("police.arrete_police"), TEXTE, ui::CENTRE, 0.16f, false);   // WFS-540 (RG-03)
-        float y = py0 + 20 * u;
-        auto ligne = [&](const std::string& a, const std::string& b) {
-            ui::text(r, px0 + 6 * u, y, 3.4f * u, a, MUTED, ui::GAUCHE, 0.f, false);
-            ui::text(r, px0 + pw - 6 * u, y, 3.4f * u, b, TEXTE, ui::DROITE, 0.f, false, true);
-            y += 5.6f * u;
-        };
-        ligne(ui::tr("police.score_final"), std::to_string(etat_.score));   // WFS-506 (RG-03)
-        ligne(ui::tr("fin.temps"), ui::chrono(ftJoueur_));
-        ligne(ui::tr("police.chocs"), std::to_string(etat_.chocsTrafic) + " / " + std::to_string(etat_.chocsGlissiere) + " / " + std::to_string(etat_.chocsPolice));
-        ligne(ui::tr("police.voitures"), std::to_string(policeMobiles()));
-        const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
-        if (rec) dessinerRecord(r, W / 2, y + 0.5f * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
-        rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
-        // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe, texte réduit de 20 % au plus s'il dépasse
-        static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
-        ui::boutons::startStop(r, rejouerZ_.x, by, bw, bh, libRejouer(), 1, false, "", 3.4f * u);   // WFS-549 (RG-01) : même rectangle
-        biseauFin(r, menuZ_.x, by, bw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // « Menu » de la fin Checkpoint (#1E2130)
-        ui::textBoite(r, menuZ_.x + bw / 2, by + 1.9f * u, bw - 28 * H / 720, 3.4f * u, 3.4f * u, libMenu(), TEXTE, ui::CENTRE, 0.08f, false);
+        const std::string sous = v ? ui::tr("fin.echappe") + " · " + ui::chrono(ftJoueur_) : (etat_.parPolice ? ui::tr("police.arrete_police") : ui::chrono(ftJoueur_));   // WFS-540 (RG-03)
+        enTeteFinR19(r, f, sur, ui::tr(v ? "fin.victoire" : "police.arrete"), v ? ui::ORANGE : verre::hexa(verre::PERTE), sous);   // WFS-548 (RG-05) : rouge = perte
+        ligneFinR19(r, f, 0, ui::tr("police.score_final"), std::to_string(etat_.score), false, false);   // WFS-506 (RG-03)
+        ligneFinR19(r, f, 1, ui::tr("police.chocs"), std::to_string(etat_.chocsTrafic) + " / " + std::to_string(etat_.chocsGlissiere) + " / " + std::to_string(etat_.chocsPolice), false, false);
+        ligneFinR19(r, f, 2, ui::tr("police.voitures"), std::to_string(policeMobiles()), true, false);
+        if (sauvegarde().actif()) dessinerRecord(r, f.x + f.w / 2, basLignesFinR19(f, 3) + 6 * f.k, f.y + f.h - 20 * f.k, u, texteRecord(), nouveauRecord_);   // WFS-125 (RG-04)
+        float zr[4], zb[4];
+        static textes::Capitales libRejouer{"fin.rejouer"};
+        boutonsFinR19(r, f, libRejouer(), false, zr, zb);
+        rejouerZ_ = {zb[0], zb[1], zb[2], zb[3]}; menuZ_ = {zr[0], zr[1], zr[2], zr[3]};
     }
 
     Renderer* r_ = nullptr;

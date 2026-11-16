@@ -24,6 +24,8 @@
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "../boutons.h"   // WFS-549 : boutons au modèle R19
+#include "../../game/boutique.h"   // WFS-557 : solde d'étoiles (maquette 23)
+#include "../garage_achat.h"   // WFS-557 : étoile dessinée (garage::etoile)
 #include "../verre.h"   // WFS-548 (R19) : fenêtres de verre, sur-titres gris, couleurs d'état, fond flouté
 #include "../langue.h"   // WFS-505 : textes du salon en français ou en anglais
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
@@ -271,17 +273,17 @@ public:
         // WFS-548 (RG-02, maquette 23) : écran arrêté : fond flouté et assombri (avant : voile --bg à 94 %)
         // WFS-558 (RG-05, RG-08) : accueil sur la scène 3D nette (maquette 04) ; salon : la même scène, floutée (maquette 23)
         if (!duel3d::vue().active || duelSession().inRoom()) { verre::fondFloute(r); verre::assombrir(r, W, H, 0.55f); }
+        if (duelSession().inRoom()) { dessinerSalonR19(r, g); return; }   // WFS-557 : maquette 23 (en-tête compris)
         // en-tête (#lobby) : .eyebrow + .big (petit écran : resserré, @media (max-height: 520px) du web)
         const float hy = mg.haut + (cp_ ? 12 : 26) * k;
         verre::surTitre(r, zl, hy, (cp_ ? 12 : 13) * k, ui::tr("salon.surtitre"));   // WFS-548 (RG-03) : gris
-        ui::text(r, zl, hy + (cp_ ? 18 : 20) * k, (cp_ ? 28 : 44) * k, ui::majuscules(ui::tr("salon.titre")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        ui::text(r, zl, hy + (cp_ ? 18 : 20) * k, (cp_ ? 28 : 44) * k, ui::majuscules(ui::tr("salon.titre.accueil")), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         g_inviter = {};
         // WFS-168 (RG-01) : boutons du bas à leur taille d'avant WFS-147, calés en bas de leur barre (même place)
         g_kb = H / 720.f;
         const float bh = 56 * g_kb, by = H - mg.bas - (cp_ ? 12 : 24) * k - bh;
         const float y0 = hy + (cp_ ? 56 : 92) * k;
-        if (duelSession().inRoom()) { if (cp_) dessinerSalonPetit(r, g, zl, zr, y0, by, bh, k); else dessinerSalon(r, g, zl, zr, y0, by, bh, k); }
-        else dessinerAccueil(r, zl, zr, y0, by, bh, k);
+        dessinerAccueil(r, zl, zr, y0, by, bh, k);
     }
 
 private:
@@ -454,158 +456,118 @@ private:
         else { g_rejoindre = {}; const Zone z = bouton(r, zr, ry, rh, k, "salon.rejoindre", false, true); r.uiRect(z.x, z.y, z.w, z.h, hex(BG, 0.5f)); }   // grisé
     }
 
-    // #lobbyRoom : code, voiture, terrain, distance, joueurs, « Prêt », « Quitter le salon »
-    void dessinerSalon(Renderer& r, const GameView& g, float zl, float zr, float y, float by, float bh, float k) {
+    // WFS-557 (maquette 23 ; arbitrage du PO du 2026-11-16 : maquette à 100 %). Unité k = H / 720 (maquette 1600 × 720), réduite
+    // en 16:9 pour tenir en largeur ; une seule mise en page (téléphone et PC). Fenêtre de gauche : code du salon (orange, grand),
+    // « Inviter » (bouton de prix), aide, « Ta voiture », « Terrain », « Distance » (sélecteur de verre, l'hôte seul le change) ;
+    // fenêtre de droite : « Pilotes » et « n / 4 », 4 rangées (toi en orange, « Prêt » en pastille verte, places libres), note ;
+    // « Quitter / Le salon » en autocollant en bas à gauche, « Prêt » en bouton rond en bas à droite.
+    void dessinerSalonR19(Renderer& r, const GameView& g) {
         const duel::Session& s = duelSession();
         g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {}; for (Zone& z : g_derniers) z = {};
-        {   // WFS-548 (RG-01, maquette 23) : deux fenêtres de verre, réglages du salon à gauche, pilotes à droite (rien ne bouge)
-            const float pxc = std::max(zl + 620 * k, zr - 420 * k), haut = y - 16 * k, hc = by - 16 * k - haut;
-            verre::panneau(r, zl - 18 * k, haut, pxc - 28 * k - (zl - 18 * k), hc, {14 * k, 1.5f * g_kb});
-            verre::panneau(r, pxc - 14 * k, haut, zr - pxc + 28 * k, hc, {14 * k, 1.5f * g_kb});
+        const float W = g.uiWidth, H = g.uiHeight, k = std::min(H / 720.f, (W - g.marges.gauche - g.marges.droite) / 1600.f);
+        const float ox = g.marges.gauche + (W - g.marges.gauche - g.marges.droite - 1600 * k) / 2, oy = g.marges.haut + (H - g.marges.haut - g.marges.bas - 720 * k) / 2;
+        verre::surTitre(r, ox + 56 * k, oy + 36 * k, 15 * k, ui::tr("salon.surtitre"));
+        ui::text(r, ox + 57 * k, oy + 44 * k, 54 * k, ui::majuscules(ui::tr("salon.titre")), hex(TEXTE), ui::GAUCHE, 0.01f, false, true);
+        {   // WFS-557 (revue de la PR #432) : solde d'étoiles en pilule de verre en haut à droite (maquette 23 : 107 × 45, bord droit à 1570)
+            const std::string nb = ui::nombre(boutique::solde(sauvegarde()));
+            const float tp = 19 * k, h = 45 * k, w = ui::width(tp, nb, 0) + tp + 44 * k, x = ox + 1570 * k - w, y = oy + 22 * k;
+            vec2 q[ui::boutons::MAX_SOMMETS];
+            const int n = ui::boutons::contourArrondi(q, x, y, w, h, h / 2);
+            dessin2d::polygone(r, q, n, dessin2d::uni(hex(0x15171D, 0.85f)));
+            dessin2d::contour(r, q, n, 1 * k, hex(TEXTE, 0.18f));
+            garage::etoile(r, x + 22 * k + tp * 0.45f, y + h / 2, tp * 0.50f, hex(ACCENT));
+            ui::text(r, x + 22 * k + tp + 5 * k, y + (h - tp) / 2, tp, nb, hex(TEXTE), ui::GAUCHE, 0, false, true);
         }
-        verre::surTitre(r, zl, y, 12 * k, ui::tr("salon.code"));
-        ui::text(r, zl, y + 16 * k, 72 * k, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
-        // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
-        const float cx = zl + ui::width(72 * k, ui::majuscules(s.code()), 0.18f) + 28 * k;
-        g_inviter = bouton(r, cx, y + 24 * k, 52 * k, k, "salon.inviter", true, false, Style::Prix);
-        const duel::Transport* tr = s.transport();
-        std::string sous = reseau::lienInvitation(s.code());
-        if (tr && tr->expireDansMs() >= 0) {
-            const int mn = (int)std::ceil(tr->expireDansMs() / 60000);
-            sous += " · " + (mn > 0 ? ui::tr("salon.valable", std::to_string(mn)) : ui::tr("salon.expire"));   // WFS-505
+        // ---- fenêtre de gauche (756 × 450)
+        const float lx = ox + 60 * k, ly = oy + 120 * k, lw = 756 * k, lh = 450 * k, xi = lx + 24 * k, xd = lx + lw - 30 * k;
+        verre::panneau(r, lx, ly, lw, lh, {18 * k, 1.5f * k});
+        verre::surTitre(r, xi, ly + 26 * k, 13 * k, ui::tr("salon.code"));
+        const std::string code = ui::majuscules(s.code());
+        ui::text(r, xi, ly + 46 * k, 96 * k, code, hex(ACCENT), ui::GAUCHE, 0.28f, false, true);
+        {   // « Inviter » : bouton de prix orange, icône de partage
+            const float ix = xi + ui::width(96 * k, code, 0.28f) + 22 * k, iw = 146 * k, ih = 46 * k, iy = ly + 70 * k;
+            g_inviter = {ix, iy, iw, ih};
+            ui::boutons::prix(r, ix, iy, iw, ih, "", 1, false, 18 * k);
+            const vec4 c = hex(BG);
+            const float sx = ix + 30 * k, sy = iy + ih / 2, rr = 3.2f * k;   // icône « partager » : trois points reliés
+            const vec2 a1[2] = {{sx - 6 * k, sy}, {sx + 6 * k, sy - 6 * k}}, a2[2] = {{sx - 6 * k, sy}, {sx + 6 * k, sy + 6 * k}};
+            dessin2d::trait(r, a1, 2, 1.6f * k, c); dessin2d::trait(r, a2, 2, 1.6f * k, c);
+            dessin2d::anneau(r, sx - 6 * k, sy, 0, rr, c); dessin2d::anneau(r, sx + 6 * k, sy - 6 * k, 0, rr, c); dessin2d::anneau(r, sx + 6 * k, sy + 6 * k, 0, rr, c);
+            ui::textBoite(r, ix + 46 * k, iy, iw - 56 * k, ih, 18 * k, ui::majuscules(ui::tr("salon.inviter")), c, ui::GAUCHE, 0.10f, false, true);
         }
-        // WFS-183 (RG-03, ANO-90) : hors ligne, l'URL (inutile) n'est plus dessinée et le bandeau monte à y + 82 (fin à
-        // y + 110, avant « TA VOITURE » à y + 112) ; seule sa position change (tailles gelées)
-        if (!horsLigne()) ui::text(r, cx, y + 84 * k, 13 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
-        // WFS-146 (RG-08, ANO-44) : aide de RG-07 de WFS-89 sous le code (12 px #8A90A6), dans l'espace libre avant les lignes
-        if (!bandeauHorsLigne(r, zl, y + 82 * k, k))
-        ui::text(r, zl, y + 96 * k, 12 * k, ui::tr("salon.aide_code"), hex(MUTED), ui::GAUCHE, 0, false);
-        // lignes .car-line
-        float ly = y + 112 * k;
-        auto ligne = [&](const std::string& lib, const std::string& val) {
-            ui::text(r, zl, ly + 6 * k, 12 * k, ui::majuscules(lib), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        if (!bandeauHorsLigne(r, xi, ly + 140 * k, k)) {
+            ui::AvecPolice inter(ui::Police::Inter);
+            ui::textBoite(r, xi, ly + 145 * k, lw - 48 * k, 16 * k, 13 * k, ui::tr("salon.aide_code"), hex(0xD7DAE2), ui::GAUCHE, 0);
+        }
+        auto ligne = [&](float y, const std::string& lib, const std::string& val) {
+            verre::surTitre(r, xi, y - 6 * k, 13 * k, lib);
             const textes::NomPropre np;   // WFS-505 : nom de la voiture, nom de la carte (noms propres inchangés, RC-E20-03)
-            ui::text(r, zl + 150 * k, ly, 22 * k, val, hex(TEXTE), ui::GAUCHE, 0, false);
-            ly += 44 * k;
+            ui::text(r, xd, y - 14 * k, 26 * k, ui::majuscules(val), hex(TEXTE), ui::DROITE, 0.02f, false, true);
         };
         const CarDef& cd = carById(g.car ? g.car->id : "golf");
-        ligne(ui::tr("salon.voiture"), std::string(marque(cd)) + " " + modele(cd));
-        ligne(ui::tr("salon.terrain"), libelleCarte(carteHote(s, g)));
-        // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change)
-        ui::text(r, zl, ly + 14 * k, 12 * k, ui::majuscules(ui::tr("salon.distance")), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        for (int i = 0; i < 4; i++) {
-            const float bw = 84 * k, bx = zl + 150 * k + i * (bw + 6 * k), bhh = 40 * k;
-            const bool on = s.km() == duel::KMS[i];
-            g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
-            // WFS-549 (RG-05, RG-07) : sélecteur de verre, choix actif = pilule blanche ; l'invité le voit grisé ; mêmes zones
-            if (i == 0) ui::boutons::selecteurFond(r, bx, ly, 4 * bw + 3 * 6 * k, bhh, s.host() ? 1.f : 0.5f);
-            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 17 * k, !s.host());
+        ligne(ly + 212 * k, ui::tr("salon.voiture"), std::string(marque(cd)) + " " + modele(cd));
+        ligne(ly + 280 * k, ui::tr("salon.terrain"), libelleCarte(carteHote(s, g)));
+        {   // distance : sélecteur de verre calé à droite (l'hôte seul la change ; l'invité le voit grisé)
+            verre::surTitre(r, xi, ly + 342 * k, 13 * k, ui::tr("salon.distance"));
+            const float bh = 42 * k, in = 4 * k, cw = 76 * k, tw = 4 * cw + 2 * in, bx = xd - tw, by = ly + 320 * k;
+            ui::boutons::selecteurFond(r, bx, by, tw, bh, s.host() ? 1.f : 0.5f);
+            for (int i = 0; i < 4; i++) {
+                const float x = bx + in + i * cw;
+                const bool on = s.km() == duel::KMS[i];
+                g_km[i] = s.host() ? Zone{x, by, cw, bh} : Zone{};
+                ui::boutons::selecteurChoix(r, x, by + in, cw, bh - 2 * in, "", on, 1, false, 0, !s.host());
+                ui::AvecPolice inter(ui::Police::InterMedium);
+                ui::text(r, x + cw / 2, by + (bh - 14 * k) / 2, 14 * k, std::to_string(duel::KMS[i]) + " KM", on ? hex(BG) : hex(TEXTE, s.host() ? 1.f : 0.6f), ui::CENTRE, 0.06f, false);
+            }
         }
-        // joueurs (#players) : à droite
-        const float px = std::max(zl + 620 * k, zr - 420 * k), pw = zr - px;
-        float py = y;
-        verre::surTitre(r, px, py, 12 * k, ui::tr("salon.pilotes"));
-        py += 22 * k;
-        auto joueur = [&](const std::string& nom, bool pret, bool moi) {
-            // WFS-548 (RG-05) : tuile de verre ; toi en orange (liseré et pseudo), « Prêt » en vert
-            verre::Style st; st.rayon = 8 * k; st.lisere = 1.2f * g_kb; st.ombre = false; st.force = 0.6f; st.bord = moi ? verre::TOI : 0;
-            verre::panneau(r, px, py, pw, 50 * k, st);
-            ui::text(r, px + 16 * k, py + 14 * k, 20 * k, nom, moi ? verre::hexa(verre::TOI) : hex(TEXTE), ui::GAUCHE, 0, false);
-            ui::text(r, px + pw - 16 * k, py + 17 * k, 14 * k, ui::majuscules(ui::tr(pret ? "salon.pret" : "salon.en_salon")), pret ? verre::hexa(verre::PRET) : hex(MUTED), ui::DROITE, 0.12f, false);
-            py += 58 * k;
-        };
-        joueur(ui::tr("salon.toi", s.nick()) + (s.host() ? " · " + ui::tr("salon.hote") : std::string()), s.status() == duel::Status::Ready, true);
+        // ---- fenêtre de droite (700 × 450) : pilotes
+        const float rx = ox + 840 * k, rw = 700 * k, xr = rx + 28 * k, wr = rw - 56 * k;
+        verre::panneau(r, rx, ly, rw, lh, {18 * k, 1.5f * k});
         const auto os = s.others();
-        for (const duel::PeerView& p : os) joueur(duel::peerName(p.f) + (duel::str(p.f, "host") == "1" ? " · " + ui::tr("salon.hote") : std::string()), duel::str(p.f, "st") == "ready", false);
-        if (os.empty()) ui::text(r, px + 16 * k, py + 4 * k, 15 * k, ui::tr("salon.attente"), hex(0xC9CDDA), ui::GAUCHE, 0, false);
-        // WFS-112 : état du lien (RG-05 : ping, reconnexion) ; échec : message clair (code inconnu, expiré, complet…)
-        if (const reseau::TransportDouble* dbl = doubleActuel()) {
-            bool warn = false;
-            const std::string net = etatLien(*dbl, warn);
-            ui::text(r, px + 16 * k, py + (os.empty() ? 34 : 4) * k, 14 * k, net, warn ? hex(ACCENT) : hex(0xC9CDDA), ui::GAUCHE, 0, false);
-        }
-        // boutons
-        boutonsSalon(r, zl, by, bh, k);
-    }
-
-    // WFS-147 (RG-01, RG-02, RG-06, ANO-38) : salon sur téléphone couché (k = pixels par dp), d'après la carte de salon de
-    // WFS-102 : une carte sur toute la largeur ; à gauche le code (48 dp) et « Inviter », l'aide et le lien (14 dp), voiture,
-    // terrain (libellés 12 dp, valeurs 18 dp) et distance (choix de 48 dp) ; à droite les pilotes en liste (48 dp) et
-    // l'état du lien. Tout tient au-dessus des boutons du bas (400 dp de haut).
-    void dessinerSalonPetit(Renderer& r, const GameView& g, float zl, float zr, float y, float by, float bh, float k) {
-        const duel::Session& s = duelSession();
-        g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {}; for (Zone& z : g_derniers) z = {};
-        // WFS-168 : la carte garde sa hauteur de WFS-147 (barre du bas de 48 dp), seuls les boutons reprennent leur taille
-        const float pad = 20 * k, haut = y - 12 * k, hc = by + bh - 48 * k - 12 * k - haut;
-        verre::panneau(r, zl, haut, zr - zl, hc, {12 * k, 1.5f * g_kb});   // WFS-548 (RG-01) : fenêtre de verre
-        const float xl = zl + pad, xr = zr - pad, gauche = std::min(470 * k, (xr - xl) * 0.6f);   // colonne de gauche
-        verre::surTitre(r, xl, y, 12 * k, ui::tr("salon.code"));
-        const float cpx = 48 * k;
-        ui::text(r, xl, y + 16 * k, cpx, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
-        // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
-        const float ix = xl + ui::width(cpx, ui::majuscules(s.code()), 0.18f) + 24 * k;
-        g_inviter = bouton(r, ix, y + 16 * k, 52 * g_kb, k, "salon.inviter", true, false, Style::Prix);   // WFS-168 : hauteur d'avant WFS-147
-        const duel::Transport* tr = s.transport();
-        std::string sous = reseau::lienInvitation(s.code());
-        if (tr && tr->expireDansMs() >= 0) {
-            const int mn = (int)std::ceil(tr->expireDansMs() / 60000);
-            sous += " · " + (mn > 0 ? ui::tr("salon.valable", std::to_string(mn)) : ui::tr("salon.expire"));   // WFS-505
-        }
-        // WFS-146 (RG-08, ANO-44) : aide de RG-07 de WFS-89 sous le code, sur deux lignes, puis le lien (14 dp)
-        float ly = y + 74 * k;
-        if (!bandeauHorsLigne(r, xl, ly - 4 * k, k)) {
-        ui::text(r, xl, ly, 14 * k, ui::tr("salon.aide_code1"), hex(MUTED), ui::GAUCHE, 0, false);
-        ui::text(r, xl, ly + 19 * k, 14 * k, ui::tr("salon.aide_code2"), hex(MUTED), ui::GAUCHE, 0, false); }
-        ui::text(r, xl, ly + 38 * k, 14 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
-        ly += 64 * k;
-        // lignes .car-line : libellé 12 dp, valeur 18 dp
-        auto ligne = [&](const std::string& lib, const std::string& val) {
-            ui::text(r, xl, ly + 4 * k, 12 * k, ui::majuscules(lib), hex(MUTED), ui::GAUCHE, 0.16f, false);
-            const textes::NomPropre np;   // WFS-505 : nom de la voiture, nom de la carte (noms propres inchangés, RC-E20-03)
-            ui::text(r, xl + 110 * k, ly, 18 * k, val, hex(TEXTE), ui::GAUCHE, 0, false);
-            ly += 30 * k;
+        verre::surTitre(r, xr, ly + 26 * k, 13 * k, ui::tr("salon.pilotes"));
+        { const textes::NomPropre np; ui::AvecPolice inter(ui::Police::InterMedium);
+          ui::text(r, xr + wr, ly + 27 * k, 13 * k, std::to_string(1 + os.size()) + " / 4", hex(0xA3A8B5), ui::DROITE, 0.16f, false); }
+        int n = 0;
+        auto joueur = [&](const std::string& nom, int etat, bool moi) {   // etat : 1 prêt, 0 en attente, −1 place libre
+            const float y = ly + (50 + 50 * n) * k, h = 42 * k;
+            verre::Style st; st.rayon = 8 * k; st.lisere = moi ? 1.5f * k : 0.8f * k; st.ombre = false; st.force = etat < 0 ? 0.3f : 0.6f; st.bord = moi ? verre::TOI : 0;
+            verre::panneau(r, xr, y, wr, h, st);
+            { ui::AvecPolice inter(ui::Police::InterMedium); const textes::NomPropre np;
+              ui::textBoite(r, xr + 16 * k, y, wr * 0.6f, h, 14 * k, nom, etat < 0 ? hex(TEXTE, 0.35f) : moi ? verre::hexa(verre::TOI) : hex(TEXTE), ui::GAUCHE, 0); }
+            if (etat >= 0) {   // pastille d'état
+                ui::AvecPolice inter(ui::Police::InterMedium);
+                const std::string t = ui::majuscules(ui::tr(etat ? "salon.pret" : "salon.en_salon"));
+                const float pw = ui::width(11 * k, t, 0.12f) + 16 * k, ph = 20 * k, px = xr + wr - 12 * k - pw, py = y + (h - ph) / 2;
+                vec2 q[ui::boutons::MAX_SOMMETS];
+                const int m = ui::boutons::contourArrondi(q, px, py, pw, ph, 4 * k);
+                dessin2d::polygone(r, q, m, dessin2d::uni(etat ? verre::hexa(verre::PRET) : hex(0x2C2F3A)));
+                ui::text(r, px + pw / 2, py + (ph - 11 * k) / 2, 11 * k, t, etat ? hex(BG) : hex(0xC9CDDA), ui::CENTRE, 0.12f, false);
+            }
+            n++;
         };
-        const CarDef& cd = carById(g.car ? g.car->id : "golf");
-        ligne(ui::tr("salon.voiture"), std::string(marque(cd)) + " " + modele(cd));
-        ligne(ui::tr("salon.terrain"), libelleCarte(carteHote(s, g)));
-        // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change) ; choix de 48 dp de haut (RG-02)
-        // WFS-168 (RG-01) : choix de 84 x 40 d'avant WFS-147, bornés par la place de la colonne
-        const float bhh = 40 * g_kb, bw = std::min(84 * g_kb, (gauche - 110 * k - 18 * k) / 4);
-        ui::text(r, xl, ly + (bhh - 12 * k) / 2, 12 * k, ui::majuscules(ui::tr("salon.distance")), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        for (int i = 0; i < 4; i++) {
-            const float bx = xl + 110 * k + i * (bw + 6 * k);
-            const bool on = s.km() == duel::KMS[i];
-            g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
-            // WFS-549 (RG-05, RG-07) : sélecteur de verre, choix actif = pilule blanche ; l'invité le voit grisé ; mêmes zones
-            if (i == 0) ui::boutons::selecteurFond(r, bx, ly, 4 * bw + 3 * 6 * k, bhh, s.host() ? 1.f : 0.5f);
-            ui::boutons::selecteurChoix(r, bx, ly, bw, bhh, std::to_string(duel::KMS[i]) + " KM", on, 1, false, 18 * k, !s.host());
+        joueur(ui::tr("salon.toi", s.nick()) + (s.host() ? " · " + ui::tr("salon.hote") : std::string()), s.status() == duel::Status::Ready ? 1 : 0, true);
+        for (const duel::PeerView& p : os) joueur(duel::peerName(p.f) + (duel::str(p.f, "host") == "1" ? " · " + ui::tr("salon.hote") : std::string()), duel::str(p.f, "st") == "ready" ? 1 : 0, false);
+        while (n < 4) joueur(ui::tr("salon.place_libre"), -1, false);
+        {
+            ui::AvecPolice inter(ui::Police::Inter);
+            ui::text(r, xr, ly + 262 * k, 13 * k, ui::tr("salon.note"), hex(0xC9CDDA), ui::GAUCHE, 0, false);
+            // WFS-112 : état du lien (RG-05 : ping, reconnexion) ; échec : message clair (code inconnu, expiré, complet…)
+            if (const reseau::TransportDouble* dbl = doubleActuel()) {
+                bool warn = false;
+                const std::string net = etatLien(*dbl, warn);
+                ui::text(r, xr, ly + 286 * k, 13 * k, net, warn ? hex(ACCENT) : hex(0xA3A8B5), ui::GAUCHE, 0, false);
+            }
         }
-        // joueurs (#players) : colonne de droite de la carte
-        const float px = xl + gauche + 24 * k, pw = xr - px;
-        float py = y;
-        r.uiRect(px - 12 * k, y, 1 * k, ly + bhh - y, hex(TEXTE, 0.08f));   // séparation des deux colonnes
-        verre::surTitre(r, px, py, 12 * k, ui::tr("salon.pilotes"));
-        py += 20 * k;
-        auto joueur = [&](const std::string& nom, bool pret, bool moi) {
-            // WFS-548 (RG-05) : tuile de verre ; toi en orange (liseré et pseudo), « Prêt » en vert
-            verre::Style st; st.rayon = 8 * k; st.lisere = 1.2f * g_kb; st.ombre = false; st.force = 0.6f; st.bord = moi ? verre::TOI : 0;
-            verre::panneau(r, px, py, pw, 48 * k, st);
-            ui::text(r, px + 14 * k, py + 15 * k, 18 * k, nom, moi ? verre::hexa(verre::TOI) : hex(TEXTE), ui::GAUCHE, 0, false);
-            ui::text(r, px + pw - 14 * k, py + 18 * k, 12 * k, ui::majuscules(ui::tr(pret ? "salon.pret" : "salon.en_salon")), pret ? verre::hexa(verre::PRET) : hex(MUTED), ui::DROITE, 0.12f, false);
-            py += 54 * k;
-        };
-        joueur(ui::tr("salon.toi", s.nick()) + (s.host() ? " · " + ui::tr("salon.hote") : std::string()), s.status() == duel::Status::Ready, true);
-        const auto os = s.others();
-        for (const duel::PeerView& p : os) joueur(duel::peerName(p.f) + (duel::str(p.f, "host") == "1" ? " · " + ui::tr("salon.hote") : std::string()), duel::str(p.f, "st") == "ready", false);
-        if (os.empty()) { ui::text(r, px + 14 * k, py + 2 * k, 15 * k, ui::tr("salon.attente"), hex(0xC9CDDA), ui::GAUCHE, 0, false); py += 24 * k; }
-        // WFS-112 : état du lien (RG-05 : ping, reconnexion) ; échec : message clair (code inconnu, expiré, complet…)
-        if (const reseau::TransportDouble* dbl = doubleActuel()) {
-            bool warn = false;
-            const std::string net = etatLien(*dbl, warn);
-            ui::text(r, px + 14 * k, py + 4 * k, 14 * k, net, warn ? hex(ACCENT) : hex(0xC9CDDA), ui::GAUCHE, 0, false);
-        }
-        // boutons
-        boutonsSalon(r, zl, by, bh, k);
+        // ---- boutons : « Quitter / Le salon » (autocollant) ; « Prêt » (rond, enfoncé quand tu es prêt, grisé hors ligne)
+        const bool pret = s.status() == duel::Status::Ready, hl = horsLigne();
+        g_quitter = {ox + 56 * k, oy + 610 * k, 208 * k, 86 * k};
+        ui::boutons::autocollant(r, g_quitter.x, g_quitter.y, g_quitter.w, g_quitter.h, ui::majuscules(ui::tr("salon.quitter.court")), 1, false, 34 * k, ui::tr("salon.quitter.sous"));
+        const float d = 116 * k;
+        g_pret = {ox + 1440 * k - d / 2, oy + 640 * k - d / 2, d, d};
+        ui::boutons::startStop(r, g_pret.x, g_pret.y, d, d, ui::majuscules(ui::tr("salon.pret")), 1, pret && !hl, "", 18 * k, hl);
+        if (hl) { g_reessayer = {g_pret.x - 26 * k - 190 * k, g_pret.y + (d - 50 * k) / 2, 190 * k, 50 * k};
+                  ui::boutons::prix(r, g_reessayer.x, g_reessayer.y, g_reessayer.w, g_reessayer.h, ui::majuscules(ui::tr("salon.reessayer")), 1, false, 18 * k); g_pret = {}; }
+        else g_reessayer = {};
     }
 
     // WFS-141 (RG-05, ANO-62) : relais injoignable ou lien perdu, sans adversaire sur le Wi-Fi : bandeau orange 16 dp sous le code, « Prêt » grisé, « Réessayer »
@@ -616,15 +578,7 @@ private:
         r.uiRect(x, y, ui::width(16 * k, msg) + 24 * k, 28 * k, hex(ACCENT));
         ui::text(r, x + 12 * k, y + 6 * k, 16 * k, msg, hex(BG), ui::GAUCHE, 0, false); return true;
     }
-    void boutonsSalon(Renderer& r, float zl, float by, float bh, float k) {
-        const bool pret = duelSession().status() == duel::Status::Ready, hl = horsLigne();
-        // WFS-549 (RG-01) : « Prêt » en bouton Start/Stop ; déjà prêt : bouton enfoncé (une touche l'annule) ; hors ligne : grisé
-        g_pret = bouton(r, zl, by, bh, k, "salon.pret", !hl, false, Style::StartStop, pret && !hl);
-        if (hl) g_reessayer = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "salon.reessayer", true); else g_reessayer = {};
-        const Zone z = hl ? g_reessayer : g_pret; if (hl) g_pret = {};   // grisé : sans effet
-        g_quitter = bouton(r, z.x + z.w + 10 * k, by, bh, k, "salon.quitter", false, false, Style::Autocollant);   // WFS-549 (RG-02)
-    }
-    // WFS-112 : texte de l'état du lien (partagé par les deux mises en page du salon)
+    // WFS-112 : texte de l'état du lien
     static std::string etatLien(const reseau::TransportDouble& dbl, bool& warn) {
         warn = false;
         const duel::Lien l = dbl.lien();

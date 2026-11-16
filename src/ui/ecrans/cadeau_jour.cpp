@@ -15,6 +15,8 @@
 #include "../petit_ecran.h"
 #include "../text.h"
 #include "../boutons.h"   // WFS-549 : boutons au modèle R19
+#include "../../game/boutique.h"   // WFS-557 : solde d'étoiles (maquette 05)
+#include <array>
 #include "../../core/log.h"
 #include "../../game/cars.h"
 #include "../../game/commandes_tactiles.h"   // dessin2d
@@ -109,12 +111,6 @@ void poly(Renderer& r, vec2* p, int n, const dessin2d::Teinte& t) {
     if (aire < 0) std::reverse(p, p + n);
     dessin2d::polygone(r, p, n, t);
 }
-void polyContour(Renderer& r, vec2* p, int n, float ep, const vec4& c) {
-    float aire = 0;
-    for (int i = 0; i < n; i++) { const vec2 &a = p[i], &b = p[(i + 1) % n]; aire += a.x * b.y - b.x * a.y; }
-    if (aire < 0) std::reverse(p, p + n);
-    dessin2d::contour(r, p, n, ep, c);
-}
 // rectangle (x, y, w, h) tourné de a autour de (px, py)
 void rectTourne(vec2* q, float x, float y, float w, float h, float px, float py, float a) {
     const float c = std::cos(a), s = std::sin(a);
@@ -123,66 +119,6 @@ void rectTourne(vec2* q, float x, float y, float w, float h, float px, float py,
         const float dx = coins[i].x - px, dy = coins[i].y - py;
         q[i] = {px + dx * c - dy * s, py + dx * s + dy * c};
     }
-}
-void pieceNeon(Renderer& r, vec2* q, float k, float a, bool halo) {
-    if (halo) dessin2d::halo(r, q, 4, 16 * k, hex(ACCENT, 0.45f * a));
-    dessin2d::Teinte t{hex(SURFACE2, 0.97f * a), hex(0x12141C, 0.97f * a), std::min({q[0].y, q[1].y, q[2].y, q[3].y}), std::max({q[0].y, q[1].y, q[2].y, q[3].y})};
-    poly(r, q, 4, t);
-    polyContour(r, q, 4, 2.5f * k, hex(ACCENT, a));
-}
-
-// boîte cadeau en 2D (néons) : corps, ruban, couvercle, nœud ; t : temps depuis le début de l'animation (s)
-void dessinerBoite(Renderer& r, float cx, float bas, float k, float t, float a) {
-    k *= 1.45f;   // boîte grande au centre du panneau
-    const float bw = 150 * k, bh = 104 * k, lh = 28 * k, lw = bw + 18 * k, rib = 20 * k;
-    // tremblement (0 → 0,9 s), de plus en plus fort ; ouverture du couvercle (0,9 → 1,3 s)
-    const float tr = std::clamp(t / 0.9f, 0.f, 1.f), tremble = t < 0.9f ? std::sin(t * 2 * PI * 9) * 0.07f * tr : 0.f;
-    const float ouv = ease((t - 0.9f) / 0.4f);
-    const float haut = bas - bh;
-    // lumière qui sort de la boîte (dès 0,95 s) : rayons et lueur, derrière le couvercle
-    if (t > 0.95f) {
-        const float l = std::clamp((t - 0.95f) / 0.25f, 0.f, 1.f) * (t < 1.25f ? 1.f : std::max(0.25f, 1 - (t - 1.25f) / 0.25f * 0.75f));
-        dessin2d::couronne(r, cx, haut, 0, 200 * k, hex(0xFFB066, 0.75f * l * a), hex(ACCENT, 0));
-        for (int i = 0; i < 11; i++) {
-            const float ang = PI + PI * (i + 0.5f) / 11, lg = (150 + 70 * (i % 2)) * k * l, ep = 0.06f;
-            vec2 ray[3] = {{cx, haut}, {cx + std::cos(ang - ep) * lg, haut + std::sin(ang - ep) * lg}, {cx + std::cos(ang + ep) * lg, haut + std::sin(ang + ep) * lg}};
-            poly(r, ray, 3, dessin2d::uni(hex(i % 2 ? ACCENT2 : 0xFFB066, 0.6f * l * a)));
-        }
-    }
-    vec2 q[4];
-    // corps
-    rectTourne(q, cx - bw / 2, haut, bw, bh, cx, bas, tremble);
-    pieceNeon(r, q, k, a, true);
-    rectTourne(q, cx - rib / 2, haut, rib, bh, cx, bas, tremble);
-    poly(r, q, 4, dessin2d::uni(hex(ACCENT2, 0.85f * a)));
-    // couvercle : il monte, part à gauche et bascule
-    const float ly = haut - lh - ouv * 74 * k, lx = cx - lw / 2 - ouv * 26 * k, la = tremble - ouv * 0.42f;
-    const float pcx = lx + lw / 2, pcy = ly + lh;
-    rectTourne(q, lx, ly, lw, lh, pcx, pcy, la);
-    pieceNeon(r, q, k, a, ouv < 0.5f);
-    rectTourne(q, pcx - rib / 2, ly, rib, lh, pcx, pcy, la);
-    poly(r, q, 4, dessin2d::uni(hex(ACCENT2, 0.85f * a)));
-    // nœud : deux boucles en losange sur le couvercle
-    const float c = std::cos(la), s = std::sin(la);
-    auto pt = [&](float dx, float dy) { return vec2{pcx + dx * c - (dy - lh) * s, pcy + dx * s + (dy - lh) * c}; };
-    for (int cote = -1; cote <= 1; cote += 2) {
-        vec2 b[4] = {pt(0, 0), pt(cote * 14 * k, -22 * k), pt(cote * 40 * k, -26 * k), pt(cote * 34 * k, -4 * k)};
-        poly(r, b, 4, dessin2d::uni(hex(SURFACE2, a)));
-        polyContour(r, b, 4, 2.5f * k, hex(ACCENT2, a));
-    }
-}
-
-// bouton du panneau : principal (orange en biseau, comme « Retour » des Crédits) ou secondaire (vitré à liseré cyan)
-void bouton(Renderer& r, const Zone& z, float kb, float tp, const char* cle, bool principal, bool presse, float largeurTexte) {
-    const std::string t = ui::majuscules(ui::tr(cle));
-    if (std::strcmp(cle, "cadeau.retour") == 0) { ui::boutons::autocollant(r, z.x, z.y, z.w, z.h, t, 1, presse, tp); return; }   // WFS-549 (RG-02) : sortie
-    if (principal) dessin2d::biseau(r, z.x, z.y, z.w, z.h, 14 * kb, dessin2d::uni(hex(presse ? ACCENT_PRESSE : ACCENT)));
-    else {
-        dessin2d::biseau(r, z.x - kb, z.y - kb, z.w + 2 * kb, z.h + 2 * kb, 14 * kb, dessin2d::uni(BORD));
-        dessin2d::biseau(r, z.x, z.y, z.w, z.h, 14 * kb, dessin2d::uni(GLASS));
-        if (presse) dessin2d::biseau(r, z.x, z.y, z.w, z.h, 14 * kb, dessin2d::uni(hex(ACCENT2, 0.22f)));
-    }
-    ui::textBoite(r, z.x + z.w / 2, z.y, largeurTexte, z.h, tp, t, principal ? hex(BG) : hex(ACCENT2), ui::CENTRE, 0.12f, false);
 }
 // RC-E20-04 : largeur d'un bouton mesurée sur le plus long de ses deux textes (même bouton dans les deux langues)
 float largeurTexte(float tp, const char* cle) {
@@ -208,56 +144,118 @@ int cibleSous(float x, float y) {
 }
 
 // ---------------------------------------------------------------- contenus du panneau
-// gain (RG-03) ; a : opacité, e : agrandissement d'entrée (0,8 → 1)
-void dessinerGain(Renderer& r, const cadeau::Resultat& res, float cx, float cy, float largeur, float k, float a, float e) {
-    dessin2d::couronne(r, cx, cy, 0, 260 * k, hex(ACCENT, 0.30f * a), hex(ACCENT, 0));
-    const float gros = 76 * k * e, phrase = 24 * k;
+// WFS-557 (ordre de l'utilisateur du 2026-11-16 : maquettes R19 à 100 %, maquette 05 mesurée sur l'image 2400 × 1080) ; unités de
+// la maquette ramenée à 1600 × 720 (k), origine (ox, oy) du cadre centré
+struct Cadre05 { float ox = 0, oy = 0, k = 1; float X(float u) const { return ox + u * k; } float Y(float u) const { return oy + u * k; } };
+// étoile orange au liseré chrome (gros « +23 ★ » de la maquette 05)
+void etoileChrome(Renderer& r, float cx, float cy, float R, float k, float a) {
+    garage::etoile(r, cx + 3 * k, cy + 5 * k, R + 3 * k, hex(0x1A0E06, 0.55f * a));   // ombre portée
+    garage::etoile(r, cx, cy, R + 4.5f * k, hex(0xB9BCC2, a));                       // liseré chrome
+    garage::etoile(r, cx, cy, R + 2 * k, hex(0x3A3C42, a));
+    garage::etoile(r, cx, cy, R, hex(0xF98E2E, a));
+}
+// gros texte du gain (Rajdhani gras italique 240, orange, ombre brune décalée), centré en x, ligne de base `base`
+void grosTexte(Renderer& r, float cx, float base, float px, const std::string& t, const vec4& c, float k, float a) {
+    ui::text(r, cx + 4 * k, base + 6 * k - 0.7288f * px, px, t, hex(0x2A1606, 0.6f * a), ui::CENTRE, 0, false, true);
+    ui::text(r, cx, base - 0.7288f * px, px, t, c, ui::CENTRE, 0, false, true);
+}
+// gain (RG-03) au modèle de la maquette 05 : gros « +23 ★ » au-dessus de la scène, panneau « TU AS GAGNÉ » en haut à droite ;
+// a : opacité, e : agrandissement d'entrée (0,8 → 1)
+void dessinerGain(Renderer& r, const cadeau::Resultat& res, const Cadre05& f, float a, float e) {
+    const float k = f.k;
     std::string titre, voiture, objet;
-    const char* type = "cadeau.type.etoiles";
     switch (res.gain) {
-        case cadeau::Gain::Etoiles: titre = "+" + ui::nombre(res.etoiles) + " ★"; break;
-        case cadeau::Gain::Coloris: separer(res, voiture, objet); titre = objet; type = "cadeau.type.coloris"; break;
-        case cadeau::Gain::Skin: separer(res, voiture, objet); titre = objet; type = "cadeau.type.skin"; break;
-        case cadeau::Gain::Voiture: titre = nomVoiture(res.voiture); type = "cadeau.type.voiture"; break;
+        case cadeau::Gain::Etoiles: titre = "+" + ui::nombre(res.etoiles); break;
+        case cadeau::Gain::Coloris: separer(res, voiture, objet); titre = objet; break;
+        case cadeau::Gain::Skin: separer(res, voiture, objet); titre = objet; break;
+        case cadeau::Gain::Voiture: titre = nomVoiture(res.voiture); break;
     }
-    float y = cy - 104 * k;
-    ui::text(r, cx, y, 14 * k, ui::majuscules(ui::tr(type)), hex(ACCENT2, a), ui::CENTRE, 0.22f, false);
-    y += 30 * k;
-    if (res.gain == cadeau::Gain::Coloris) {   // pastille de la couleur gagnée, à gauche du nom
-        const float tw = std::min(ui::width(gros, ui::majuscules(titre), 0.02f), largeur - 80 * k), rp = 22 * k;
-        const float px = cx - tw / 2 - 18 * k - rp, py = y + gros * 0.5f;
-        dessin2d::couronne(r, px, py, rp, rp + 12 * k, hex(ACCENT2, 0.45f * a), hex(ACCENT2, 0));
-        dessin2d::disqueRadial(r, px, py, rp, px - rp * 0.35f, py - rp * 0.35f, rp * 1.4f, hex(0xFFFFFF, 0.55f * a), hex(teinteColoris(res.objet), a));
-        dessin2d::anneau(r, px, py, rp, rp + 2 * k, hex(TEXTE, 0.8f * a));
-    }
-    {
+    // gros gain : « +23 » de 586,7 à 856,7, étoile de rayon 76,7 centrée en (970, 196,7), ligne de base à 256,7
+    dessin2d::couronne(r, f.X(815), f.Y(196), 0, 330 * k, hex(0xFF8A3D, 0.22f * a), hex(0xFF8A3D, 0));
+    if (res.gain == cadeau::Gain::Etoiles) {
+        const float px = 240 * k * e, R = 76.7f * k * e, tw = ui::width(px, titre, 0), gap = 37 * k * e, total = tw + gap + 2 * R;
+        const float x0 = f.X(815) - total / 2;
+        grosTexte(r, x0 + tw / 2, f.Y(256.7f), px, titre, hex(0xF88F33, a), k, a);
+        etoileChrome(r, x0 + tw + gap + R, f.Y(196.7f), R, k, a);
+    } else {
         std::optional<textes::NomPropre> np;   // nom d'une voiture : inchangé en anglais (RC-E20-03)
         if (res.gain == cadeau::Gain::Voiture) np.emplace();
-        texteCase(r, cx, y, largeur, gros * 1.1f, gros, ui::majuscules(titre), res.gain == cadeau::Gain::Etoiles ? hex(ACCENT, a) : hex(TEXTE, a),
-                  ui::CENTRE, 0.02f, true);
+        const std::string t = ui::majuscules(titre);
+        const float px = std::min(120 * k, 1100 * k / std::max(1.f, ui::width(1, t, 0.02f))) * e;
+        grosTexte(r, f.X(815), f.Y(236), px, t, res.gain == cadeau::Gain::Coloris ? hex(teinteColoris(res.objet), a) : hex(0xF88F33, a), k, a);
     }
-    y += gros * 1.1f + 18 * k;
-    texteCase(r, cx, y, largeur, phrase * 1.3f, phrase, phraseGain(res), hex(TEXTE, 0.92f * a), ui::CENTRE);
-    if (res.gain == cadeau::Gain::Voiture) {   // la voiture se garde 24 h avant d'être activée (WFS-502)
-        char h1[16], h2[16];
-        std::snprintf(h1, sizeof h1, "%g", config().cadeau.activationHeures);
-        std::snprintf(h2, sizeof h2, "%g", config().cadeau.pretHeures);
-        ui::textBoite(r, cx, y + phrase * 1.6f, largeur, 20 * k, 15 * k, ui::tr("cadeau.voiture.aide", h1, h2), hex(MUTED, a), ui::CENTRE, 0, false);
+    // panneau « TU AS GAGNÉ » : (1288, 110,7) 272 × 93,3, verre sombre
+    const float px0 = f.X(1288), py0 = f.Y(110.7f), pw = 272 * k, ph = 93.3f * k;
+    r.uiRect(px0, py0, pw, ph, hex(0x18191E, 0.86f * a));
+    dessin2d::contour(r, std::array<vec2, 4>{vec2{px0, py0}, {px0 + pw, py0}, {px0 + pw, py0 + ph}, {px0, py0 + ph}}.data(), 4, 1 * k, hex(TEXTE, 0.10f * a));
+    {
+        ui::AvecPolice inter(ui::Police::InterMedium);
+        const float p = 12 * k;
+        ui::text(r, px0 + 16.7f * k, py0 + 18.7f * k - 0.8006f * p, p, ui::majuscules(ui::tr("cadeau.gagne")), hex(0xB8BCC8, a), ui::GAUCHE, 0.2f, false);
+    }
+    const float lp = 39.7f * k, base2 = py0 + 52.7f * k, lw = pw - 16.7f * k - 12 * k;
+    std::string ligne;
+    float xl = px0 + 16.7f * k;
+    if (res.gain == cadeau::Gain::Etoiles) {
+        garage::etoile(r, f.X(1323.3f), f.Y(151.3f), 15.3f * k, hex(ACCENT, a));
+        xl = f.X(1344.7f);
+        ligne = ui::majuscules(ui::tr("cadeau.etoiles_n", ui::nombre(res.etoiles)));
+    } else ligne = ui::majuscules(ui::tr(res.gain == cadeau::Gain::Voiture ? "cadeau.type.voiture" : res.gain == cadeau::Gain::Skin ? "cadeau.type.skin" : "cadeau.type.coloris"));
+    const float lpx = std::min(lp, lp * (px0 + pw - 12 * k - xl) / std::max(1.f, ui::width(lp, ligne, 0)));
+    ui::text(r, xl, base2 - 0.7288f * lpx, lpx, ligne, hex(TEXTE, a), ui::GAUCHE, 0, false, true);
+    {
+        ui::AvecPolice inter(ui::Police::Inter);
+        const long long s = secondesAvantProchain(sauvegarde().cadeau, heure());
+        const std::string p3 = res.gain == cadeau::Gain::Etoiles ? (s >= 0 ? ui::tr("cadeau.prochain", texteHeures(s)) : ui::tr("cadeau.bientot")) : phraseGain(res);
+        const float p = 14.4f * k;
+        texteCase(r, px0 + 16.7f * k, py0 + 74 * k - 0.8006f * p, lw, p, p, p3, hex(0xC8CBD2, a), ui::GAUCHE);
     }
 }
-
-void dessinerAttente(Renderer& r, float cx, float cy, float largeur, float k) {
-    const EtatCadeau& c = sauvegarde().cadeau;
-    const long long s = secondesAvantProchain(c, heure());
-    float y = cy - 80 * k;
-    ui::text(r, cx, y, 15 * k, ui::majuscules(ui::tr("cadeau.attente.titre")), hex(MUTED), ui::CENTRE, 0.16f, false);
-    y += 30 * k;
-    const std::string prochain = s >= 0 ? ui::tr("cadeau.prochain", texteHeures(s)) : ui::tr("cadeau.bientot");
-    ui::textBoite(r, cx, y, largeur, 40 * k, 32 * k, prochain, hex(ACCENT2), ui::CENTRE, 0.02f, false);
-    y += 72 * k;
-    if (g.res) {   // RG-02 : dernier gain réaffiché (cadeau-dernier de la sauvegarde)
-        ui::text(r, cx, y, 13 * k, ui::majuscules(ui::tr("cadeau.dernier")), hex(MUTED), ui::CENTRE, 0.16f, false);
-        texteCase(r, cx, y + 22 * k, largeur, 30 * k, 22 * k, phraseGain(*g.res), hex(TEXTE), ui::CENTRE);
+// autocollant cyan « CHANCES » de la maquette 05 : (78, 595) 170 × 67 incliné de −4°, liseré blanc, texte sombre
+void autocollantChances(Renderer& r, const Zone& z, float k, bool presse, int nGains) {
+    const float a = -4 * PI / 180, cx = z.x + z.w / 2, cy = z.y + z.h / 2, s = presse ? 0.96f : 1.f;
+    vec2 q[4], b[4], o[4];
+    rectTourne(q, cx - z.w / 2 * s, cy - z.h / 2 * s, z.w * s, z.h * s, cx, cy, a);
+    rectTourne(b, cx - z.w / 2 * s - 3 * k, cy - z.h / 2 * s - 3 * k, z.w * s + 6 * k, z.h * s + 6 * k, cx, cy, a);
+    rectTourne(o, cx - z.w / 2 * s + 2 * k, cy - z.h / 2 * s + 6 * k, z.w * s + 4 * k, z.h * s + 4 * k, cx, cy, a);
+    poly(r, o, 4, dessin2d::uni({0, 0, 0, 0.35f}));                                 // ombre
+    poly(r, b, 4, dessin2d::uni(hex(0xF4F8F9)));                                   // liseré blanc
+    poly(r, q, 4, {hex(presse ? 0x5FC2CC : 0x8EE6EE), hex(presse ? 0x2FA8B8 : 0x48C8D8), std::min(q[0].y, q[1].y), std::max(q[2].y, q[3].y)});
+    const float c = std::cos(a), sn = std::sin(a);
+    auto P = [&](float dx, float dy) { return vec2{cx + dx * c - dy * sn, cy + dx * sn + dy * c}; };
+    // texte : on ne tourne pas les glyphes ; ils suivent la pente par leur point de départ (−4° : écart d'un pixel)
+    const vec2 t1 = P(-z.w / 2 + 12 * k, -z.h / 2 + 7 * k);
+    ui::text(r, t1.x, t1.y, 37 * k, ui::majuscules(ui::tr("cadeau.chances")), hex(0x0F2A30), ui::GAUCHE, 0.02f, false, true);
+    const vec2 t2 = P(-z.w / 2 + 12 * k, -z.h / 2 + 46 * k);
+    ui::AvecPolice inter(ui::Police::InterMedium);
+    ui::text(r, t2.x, t2.y, 11.5f * k, ui::tr("cadeau.gains_possibles", std::to_string(nGains)), hex(0x0F2A30), ui::GAUCHE, 0, false);
+}
+// pastille du solde de la maquette 05 : parallélogramme sombre (1459,3 ; 26) 110 × 40, biais 5,7 ; étoile orange, chiffres italiques
+void soldeIncline(Renderer& r, const Cadre05& f) {
+    const float k = f.k, x = f.X(1459.3f), y = f.Y(26), w = 110 * k, h = 40 * k;
+    const std::string nb = ui::nombre(boutique::solde(sauvegarde()));
+    const float tp = 26.5f * k, wt = ui::width(tp, nb, 0), ww = std::max(w, 48 * k + wt + 14 * k), xx = x + w - ww;
+    dessin2d::biseau(r, xx - 1 * k, y - 1 * k, ww + 2 * k, h + 2 * k, 5.7f * k, dessin2d::uni(hex(TEXTE, 0.20f)));
+    dessin2d::biseau(r, xx, y, ww, h, 5.7f * k, dessin2d::uni(hex(0x15171D, 0.92f)));
+    garage::etoile(r, xx + 33.4f * k, f.Y(45), 11 * k, hex(ACCENT));
+    ui::text(r, xx + 48 * k, f.Y(52.7f) - 0.7288f * tp, tp, nb, hex(TEXTE), ui::GAUCHE, 0, false, true);
+}
+// attente (cadeau déjà ouvert) : compte à rebours en grand au centre, dernier gain dans le panneau de droite
+void dessinerAttente(Renderer& r, const Cadre05& f) {
+    const float k = f.k;
+    const long long s = secondesAvantProchain(sauvegarde().cadeau, heure());
+    {
+        ui::AvecPolice inter(ui::Police::InterMedium);
+        ui::text(r, f.X(815), f.Y(150), 15 * k, ui::majuscules(ui::tr("cadeau.attente.titre")), hex(0xB8BCC8), ui::CENTRE, 0.2f, false);
+    }
+    const std::string t = s >= 0 ? texteHeures(s) : ui::tr("cadeau.bientot");
+    grosTexte(r, f.X(815), f.Y(290), s >= 0 ? 130 * k : 60 * k, t, hex(TEXTE), k, 1);
+    if (g.res) {
+        const float px0 = f.X(1288), py0 = f.Y(110.7f), pw = 272 * k, ph = 93.3f * k;
+        r.uiRect(px0, py0, pw, ph, hex(0x18191E, 0.86f));
+        ui::AvecPolice inter(ui::Police::InterMedium);
+        ui::text(r, px0 + 16.7f * k, py0 + 18.7f * k - 0.8006f * 12 * k, 12 * k, ui::majuscules(ui::tr("cadeau.dernier")), hex(0xB8BCC8), ui::GAUCHE, 0.2f, false);
+        texteCase(r, px0 + 16.7f * k, py0 + 34 * k, pw - 30 * k, 40 * k, 16 * k, phraseGain(*g.res), hex(TEXTE), ui::GAUCHE);
     }
 }
 
@@ -317,53 +315,73 @@ void dessiner(Renderer& r, float W, float H, const Marges& m, double temps) {
     if (g.vue == Vue::Animation && g.t0 < 0) g.t0 = temps;
     const float ta = g.vue == Vue::Animation ? (float)(temps - g.t0) : (float)DUREE;
     if (g.vue == Vue::Animation && ta >= DUREE) g.vue = Vue::Gain;
-    const bool cp = ui::petitEcran(W, H);
-    const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
     g.dp = ui::pixelsParDp(W);
-    r.uiRect(0, 0, W, H, hex(BG, 0.86f));   // voile : la scène du menu reste devinée derrière
-    const float zl = m.gauche + 16 * k, zr = W - m.droite - 16 * k;
-    const float pw = std::min(zr - zl, 860 * k), px = zl + (zr - zl - pw) / 2;
-    const float py = m.haut + (cp ? 8 : 24) * k, ph = H - py - m.bas - (cp ? 8 : 24) * k;
-    r.uiRect(px, py, pw, ph, SURFACE);
-    r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
-    const float x0 = px + 24 * k;
-    ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(ui::tr("cadeau.surtitre")), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
-    const float tt = (cp ? 26 : 34) * k;
-    ui::text(r, x0, py + 32 * k, tt, ui::majuscules(ui::tr(g.vue == Vue::Chances ? "cadeau.chances.titre" : "cadeau.titre")), hex(TEXTE), ui::GAUCHE,
-             0.02f, false, true);
-    // boutons du bas (RC-E19-01 : jamais d'offre payante) ; largeur fixe dans les deux langues (RC-E20-04)
-    const float bh = 50 * kb, tp = (cp ? 18 : 20) * k, by = py + ph - 14 * k - bh;
+    // WFS-557 (ordre de l'utilisateur du 2026-11-16 : maquette 05 à 100 %) : la scène 3D du parking reste visible (voile léger),
+    // bandeau noir de 86,7 en haut avec le titre (Rajdhani gras italique 53), solde incliné en haut à droite, gain au-dessus de la
+    // scène, panneau « TU AS GAGNÉ », bouton rond « PRENDRE » (1436,7 ; 578) de rayon 78, autocollant cyan « CHANCES » en bas à gauche
+    Cadre05 f;
+    f.k = std::min(H / 720.f, (W - m.gauche - m.droite) / 1600.f);
+    f.ox = m.gauche + (W - m.gauche - m.droite - 1600 * f.k) / 2; f.oy = m.haut + (H - m.haut - m.bas - 720 * f.k) / 2;
+    const float k = f.k;
+    r.uiRect(0, 0, W, H, hex(BG, g.vue == Vue::Chances ? 0.55f : 0.12f));
+    r.uiRect(0, 0, W, f.Y(86.7f), {0, 0, 0, 0.92f});
+    ui::text(r, f.X(43.3f), f.Y(66.7f) - 0.7288f * 53 * k, 53 * k, ui::majuscules(ui::tr(g.vue == Vue::Chances ? "cadeau.chances.titre" : "cadeau.titre")),
+             hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+    soldeIncline(r, f);
     g.retour = g.chances = g.activer = {};
+    const bool appui = g.doigt >= 0;
+    // bouton rond (« PRENDRE » sur un gain, « RETOUR » ailleurs) ; voiture prêtée en attente : « PRENDRE » active le prêt, et
+    // « RETOUR » (autocollant) la garde pour plus tard (WFS-502, RG-01)
+    const float rb = 78 * k, bcx = f.X(1436.7f), bcy = f.Y(578);
     if (g.vue != Vue::Animation) {
-        // WFS-502 (RG-01) : « Activer » seulement tant que le prêt attend (réaffichage après activation ou perte : « Retour » seul)
         const bool voiture = g.vue == Vue::Gain && g.res && g.res->gain == cadeau::Gain::Voiture && pret::etat(sauvegarde().cadeau) == pret::Etat::EnAttente;
-        float xd = px + pw - 24 * k;   // bord droit du prochain bouton
-        auto poser = [&](Zone& z, const char* cle) {
-            const float w = largeurTexte(tp, cle) + 56 * kb;
-            z = {xd - w, by, w, bh}; xd -= w + 14 * k;
-        };
-        if (voiture) poser(g.activer, "cadeau.activer");
-        poser(g.retour, "cadeau.retour");
-        if (g.vue != Vue::Chances) poser(g.chances, "cadeau.chances");
-        const bool appui = g.doigt >= 0;
-        if (g.activer.w > 0) { bouton(r, g.activer, kb, tp, "cadeau.activer", true, appui && g.cible == ACTIVER, largeurTexte(tp, "cadeau.activer")); manette::focus(g.activer); }
-        bouton(r, g.retour, kb, tp, "cadeau.retour", !voiture, appui && g.cible == RETOUR, largeurTexte(tp, "cadeau.retour"));
-        manette::focus(g.retour, true);
-        if (g.chances.w > 0) { bouton(r, g.chances, kb, tp, "cadeau.chances", false, appui && g.cible == CHANCES, largeurTexte(tp, "cadeau.chances")); manette::focus(g.chances); }
-    } else ui::text(r, x0, by + (bh - 14 * k) / 2, 14 * k, ui::tr("cadeau.aide.passer"), hex(MUTED), ui::GAUCHE, 0.02f, false);
-    // contenu, entre le titre et les boutons
-    const float haut = py + 32 * k + tt + 12 * k, bas = by - 12 * k, cx = px + pw / 2, cy = (haut + bas) / 2, largeur = pw - 48 * k;
+        Zone& rond = voiture ? g.activer : g.retour;
+        rond = {bcx - rb, bcy - rb, 2 * rb, 2 * rb};
+        const char* cle = g.vue == Vue::Gain ? "cadeau.prendre" : "cadeau.retour";
+        ui::boutons::rondMenu(r, bcx, bcy, k * 78 / 117, ui::majuscules(ui::tr(cle)), "", 1, appui && g.cible == (voiture ? ACTIVER : RETOUR));
+        manette::focus(rond, true);
+        if (voiture) {
+            const float tp = 20 * k, w = largeurTexte(tp, "cadeau.retour") + 56 * k;
+            g.retour = {bcx - rb - 24 * k - w, bcy - 25 * k, w, 50 * k};
+            ui::boutons::autocollant(r, g.retour.x, g.retour.y, g.retour.w, g.retour.h, ui::majuscules(ui::tr("cadeau.retour")), 1, appui && g.cible == RETOUR, tp);
+            manette::focus(g.retour);
+        }
+        if (g.vue != Vue::Chances) {
+            g.chances = {f.X(78), f.Y(595), 170 * k, 67 * k};
+            autocollantChances(r, g.chances, k, appui && g.cible == CHANCES, (int)lignesChances(config().cadeau).size());
+            manette::focus(g.chances);
+        }
+    } else {
+        ui::AvecPolice inter(ui::Police::Inter);
+        ui::text(r, f.X(815), f.Y(660), 14 * k, ui::tr("cadeau.aide.passer"), hex(MUTED), ui::CENTRE, 0.02f, false);
+    }
     switch (g.vue) {
         case Vue::Animation: {
-            const float fin = std::clamp((ta - 1.15f) / 0.25f, 0.f, 1.f), aBoite = 1 - fin;   // la boîte descend et s'efface, le gain monte
-            if (aBoite > 0) dessinerBoite(r, cx, cy + 110 * k + fin * 90 * k, k, ta, aBoite);
-            if (ta > 1.2f && g.res) { const float e = ease((ta - 1.2f) / 0.3f); dessinerGain(r, *g.res, cx, cy, largeur, k, e, 0.8f + 0.2f * e); }
+            // WFS-557 : le coffre en bois 3D du parking tremble puis s'ouvre (ouvertureCoffre, trembleCoffre) ; le gain monte au-dessus
+            if (ta > 1.2f && g.res) { const float e = ease((ta - 1.2f) / 0.3f); dessinerGain(r, *g.res, f, e, 0.8f + 0.2f * e); }
             break;
         }
-        case Vue::Gain: if (g.res) dessinerGain(r, *g.res, cx, cy, largeur, k, 1, 1); break;
-        case Vue::Attente: dessinerAttente(r, cx, cy, largeur, k); break;
-        case Vue::Chances: dessinerChances(r, x0, haut + 6 * k, pw - 48 * k, k); break;
+        case Vue::Gain: if (g.res) dessinerGain(r, *g.res, f, 1, 1); break;
+        case Vue::Attente: dessinerAttente(r, f); break;
+        case Vue::Chances: {
+            const float px = f.X(300), py = f.Y(130), pw = 1000 * k, ph = 400 * k;
+            verre::panneau(r, px, py, pw, ph, {18 * k, 1.5f * k});
+            dessinerChances(r, px + 30 * k, py + 26 * k, pw - 60 * k, k);
+            break;
+        }
     }
+}
+
+float ouvertureCoffre() {
+    if (!g.ouvert) return 0;
+    if (g.vue == Vue::Gain) return 1;
+    if (g.vue != Vue::Animation || g.t0 < 0) return 0;
+    return ease(((float)(g.temps - g.t0) - 0.9f) / 0.4f);   // ouverture du couvercle de 0,9 à 1,3 s (RG-02 : 1,5 s en tout)
+}
+float trembleCoffre() {
+    if (!g.ouvert || g.vue != Vue::Animation || g.t0 < 0) return 0;
+    const float t = (float)(g.temps - g.t0);
+    return t < 0.9f ? std::sin(t * 2 * PI * 9) * 0.035f * std::clamp(t / 0.9f, 0.f, 1.f) : 0.f;   // de plus en plus fort
 }
 
 bool toucher(int id, float x, float y, bool down) {

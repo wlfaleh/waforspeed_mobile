@@ -31,7 +31,8 @@
 #include "../ui/ecrans/terrain.h"     // WFS-125 : banc (« Rouler »)
 #include "../ui/garage.h"             // WFS-125 : banc (« Choisir »)
 #include "poursuite.h"                // WFS-125 : banc (poursuite)
-#include "../ui/verre.h"   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
+#include "../ui/verre.h"
+#include "commandes_tactiles.h"   // WFS-557 : pastille de la fin (dessin2d)   // WFS-548 (accroche E23) : fin de course au modèle R19 (verre, fond flouté)
 
 namespace wfs {
 
@@ -256,7 +257,7 @@ private:
         const bool rec = sauvegarde().actif();
         const float s = H / 720.f, plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
         // WFS-537 (accroche) : avec le bloc « Score », panneau plus étroit en 16:9 (place du bloc à droite) ; boutons inchangés (centrés)
-        const float pw = std::min({W * 0.86f, 120 * u, score_fin::affiche() ? W - 78 * u : W}), px = (W - pw) / 2, py = 10 * u, ph = 80 * u + plus;
+        const float pw = std::min({W * 0.86f, 120 * u, score_fin::affiche() ? W - 78 * u : W}), px = (W - pw) / 2, py = 10 * u, ph = 66 * u + plus;   // WFS-557 : boutons sortis du panneau
         verre::panneau(r, px, py, pw, ph, {2 * u, std::max(1.f, 1.5f * H / 720.f)});   // WFS-548 (RG-01) : verre dépoli (plus de liseré)
         score_fin::poser(px, py, pw, ph);   // WFS-537 (accroche) : bloc « Score » à côté du panneau
         const float cx = W / 2;
@@ -274,18 +275,39 @@ private:
             ui::textBoite(r, x, py + 38 * u + dStats, pw / 4 - 1 * u, 3.4f * u, 3.4f * u, labs[i](), ui::GRIS, ui::CENTRE, 0.16f, true);   // WFS-537 : réduit (20 % au plus) si le panneau est plus étroit
             ui::text(r, x, py + 43 * u + dStats, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
         }
-        // bouton « Rejouer » (biseau orange, texte sombre)
-        const float bw = 40 * u, bh = 10 * u;
-        // WFS-57 (ANO-14) : paire « Rejouer » + « Menu » (0,7 × la largeur, 2 u d'écart) centrée sur le panneau
-        const float mw = bw * 0.7f, gap = 2 * u, bx = cx - (bw + gap + mw) / 2, by = py + 60 * u + plus;
+        // WFS-557 (maquettes 10 et 11, RG-20 : éléments 2D seulement ; scènes 3D : WFS-560, 561) : « MENU » en plaque à bande orange en
+        // bas à gauche (200 × 44), « Rejouer » en bouton rond (110 px) en bas à droite ; unités de la maquette (k = H / 720)
+        const float k = std::min(H / 720.f, W / 1600.f), ox = (W - 1600 * k) / 2, oy = (H - 720 * k) / 2;   // 16:9 : réduite et centrée
+        const float by = py + 60 * u + plus;
         if (rec) dessinerRecord(r, cx, py + 31.5f * u, by - 12 * s, u, ui::nombre(sauvegarde().best), nouveauRecord_);   // WFS-24 ; WFS-125 : commun aux modes
-        rejouer_ = {bx, by, bw, bh};
-        menu_ = {bx + bw + gap, by, mw, bh}; manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
-        // WFS-506 (RG-03, RC-E20-04) : boutons de taille fixe ; texte anglais réduit de 20 % au plus s'il dépasse (ui::textBoite)
+        const float d = 110 * k;
+        rejouer_ = {ox + 1330 * k - d / 2, oy + 540 * k - d / 2, d, d};
+        menu_ = {ox + 190 * k, oy + 556 * k, 200 * k, 44 * k};
+        manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
         static textes::Capitales libRejouer{"fin.rejouer"}, libMenu{"fin.menu"};
-        ui::boutons::startStop(r, rejouer_.x, by, bw, bh, libRejouer(), 1, false, "", 4.6f * u);   // WFS-549 (RG-01) : même rectangle
-        biseau(r, menu_.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
-        ui::textBoite(r, menu_.x + mw / 2, by + 2.6f * u, mw - 28 * H / 720, 5 * u, 5 * u, libMenu(), TEXTE, ui::CENTRE, 0.12f, false);
+        ui::boutons::startStop(r, rejouer_.x, rejouer_.y, d, d, libRejouer(), 1, false, "", 17 * k);
+        ui::boutons::plaque(r, menu_.x, menu_.y, menu_.w, menu_.h, libMenu(), 1, false);
+        {   // pastille « ★ +7 étoiles ▲ nouveau record » en haut à gauche (maquette 10, RG-20)
+            const score_fin::Etat& e = score_fin::etat();
+            if (e.pret && e.etoiles >= 0) {
+                const float px0 = ox + 42 * k, py0 = oy + 30 * k, tp = 13 * k;
+                std::string t1 = "+" + ui::nombre(e.etoiles) + " " + ui::tr(e.etoiles > 1 ? "fin.pastille.etoiles" : "fin.pastille.etoile");
+                const std::string t2 = e.nouveauRecord ? ui::tr("fin.pastille.record") : std::string();
+                ui::AvecPolice inter(ui::Police::InterMedium);
+                const float w1 = ui::width(tp, t1, 0), w2 = t2.empty() ? 0 : ui::width(tp, t2, 0) + 16 * k + 10 * k;
+                const float pw = 18 * k + 12 * k + w1 + w2 + 18 * k, ph = 32 * k;
+                verre::Style st; st.rayon = 8 * k; st.lisere = 1 * k; st.ombre = false; st.force = 0.7f;
+                verre::panneau(r, px0, py0, pw, ph, st);
+                score_fin::dessinerEtoile(r, px0 + 18 * k + 5 * k, py0 + ph / 2, 5.5f * k, ui::ORANGE);
+                ui::text(r, px0 + 18 * k + 12 * k, py0 + (ph - tp) / 2, tp, t1, vec4{0.95f, 0.96f, 0.97f, 1}, ui::GAUCHE, 0, false, true);
+                if (!t2.empty()) {
+                    const float xt = px0 + 30 * k + w1 + 12 * k;
+                    const vec2 tri[3] = {{xt + 5 * k, py0 + ph / 2 - 5 * k}, {xt + 10 * k, py0 + ph / 2 + 4 * k}, {xt, py0 + ph / 2 + 4 * k}};
+                    dessin2d::polygone(r, tri, 3, dessin2d::uni(vec4{0.37f, 0.84f, 0.91f, 1}));
+                    ui::text(r, xt + 16 * k, py0 + (ph - tp) / 2, tp, t2, vec4{0.37f, 0.84f, 0.91f, 1}, ui::GAUCHE, 0, false, true);
+                }
+            }
+        }
     }
     bool nouveauRecord_ = false;
     bool restartReq_ = false;
@@ -334,6 +356,41 @@ void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, con
     ui::text(r, x0 + lw + gap, y, 5.5f * u, val, TEXTE, ui::GAUCHE, 0.f, true, true);
 }
 // WFS-141 : parallélogramme des boutons de l'écran de fin (avant : CourseSystem::biseau), commun aux 3 modes
+FinR19 panneauFinR19(Renderer& r, float W, float H) {
+    FinR19 f; f.k = std::min(H / 720.f, W / 1600.f); f.ox = (W - 1600 * f.k) / 2; f.oy = (H - 720 * f.k) / 2;   // 16:9 : maquette réduite et centrée
+    f.x = f.ox + 300 * f.k; f.y = f.oy + 60 * f.k; f.w = 640 * f.k; f.h = 556 * f.k;
+    verre::fondFloute(r); verre::assombrir(r, W, H, 0.40f);   // écran arrêté : course floutée et assombrie
+    verre::panneau(r, f.x, f.y, f.w, f.h, {22 * f.k, 1.5f * f.k});
+    score_fin::poser(f.x, f.y, f.w, f.h);   // WFS-537 : bloc « Score » à droite du panneau
+    return f;
+}
+void enTeteFinR19(Renderer& r, const FinR19& f, const std::string& surTitre, const std::string& titre, const vec4& couleurTitre, const std::string& sousTitre) {
+    const float k = f.k, cx = f.x + f.w / 2;
+    verre::surTitre(r, cx, f.y + 27 * k, 15 * k, surTitre, ui::CENTRE);
+    ui::textBoite(r, cx, f.y + 36 * k, f.w - 60 * k, 84 * k, 84 * k, titre, couleurTitre, ui::CENTRE, 0.01f, false, true);
+    if (!sousTitre.empty()) ui::textBoite(r, cx, f.y + 110 * k, f.w - 60 * k, 36 * k, 34 * k, sousTitre, ui::BLANC, ui::CENTRE, 0, false, true);
+}
+float basLignesFinR19(const FinR19& f, int n) { return f.y + (154 + 51 * n) * f.k; }
+void ligneFinR19(Renderer& r, const FinR19& f, int n, const std::string& gauche, const std::string& droite, bool moi, bool nomPropre) {
+    const float k = f.k, x = f.x + 32 * k, w = f.w - 64 * k, y = f.y + (154 + 51 * n) * k, h = 44 * k;
+    verre::Style st; st.rayon = 10 * k; st.lisere = moi ? 1.5f * k : 0.8f * k; st.ombre = false; st.force = moi ? 0.75f : 0.5f; st.bord = moi ? verre::TOI : 0;
+    verre::panneau(r, x, y, w, h, st);
+    const vec4 c = moi ? verre::hexa(verre::TOI) : vec4{0.90f, 0.91f, 0.93f, 1};
+    ui::AvecPolice police(ui::Police::InterMedium);
+    if (nomPropre) { const textes::NomPropre np; ui::textBoite(r, x + 17 * k, y, w * 0.62f, h, 15 * k, gauche, c, ui::GAUCHE, 0); }   // WFS-506 : noms
+    else ui::textBoite(r, x + 17 * k, y, w * 0.62f, h, 15 * k, gauche, c, ui::GAUCHE, 0);
+    ui::textBoite(r, x + w - 17 * k, y, w * 0.34f, h, 15 * k, droite, c, ui::DROITE, 0, false, true);
+}
+void boutonsFinR19(Renderer& r, const FinR19& f, const std::string& action, bool actionAppuyee, float retour[4], float bouton[4]) {
+    const float k = f.k;
+    retour[0] = f.ox + 976 * k; retour[1] = f.oy + 520 * k; retour[2] = 184 * k; retour[3] = 80 * k;
+    const float d = 112 * k;
+    bouton[0] = f.ox + 1248 * k - d / 2; bouton[1] = f.oy + 530 * k - d / 2; bouton[2] = d; bouton[3] = d;
+    static textes::Capitales libRetour{"fin.retour"};
+    ui::boutons::autocollant(r, retour[0], retour[1], retour[2], retour[3], libRetour(), 1, false, 30 * k, ui::tr("reglages.surtitre.menu"));
+    ui::boutons::startStop(r, bouton[0], bouton[1], d, d, action, 1, actionAppuyee, "", 17 * k);
+}
+
 void biseauFin(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
     const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
                            {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};

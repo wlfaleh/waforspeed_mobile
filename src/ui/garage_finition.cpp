@@ -19,7 +19,7 @@ namespace {
 // mesures de la rangée, unités de 720 px de haut (× k) ; mêmes hauteurs que la rangée des couleurs (RG-04)
 // WFS-551 (RG-03) : ICONE = côté du pistolet (déborde de 2 px en haut et en bas du bouton, dont la taille ne change pas)
 constexpr float BOUTON_H = 30, BOUTON_W = 104, LIGNE_PRIX = 14, ICONE = 34, ESPACE_RANGEES = 10, CHEVRON = 16;
-constexpr float GRAND = 60, PAS_GRAND = 68;   // WFS-551 (maquette 16) : pistolet de l'onglet « Finition », pas entre deux
+constexpr float GRAND = 64, PAS_GRAND = 82;   // WFS-557 : maquette 16 mesurée (8 pistolets dans 724)   // WFS-551 (maquette 16) : pistolet de l'onglet « Finition », pas entre deux
 constexpr const int (&ORDRE)[FinitionGarage::NB] = FinitionGarage::ORDRE;
 
 const char* car(int index) { return CARS[std::clamp(index, 0, CAR_COUNT - 1)].id; }
@@ -124,14 +124,14 @@ bool FinitionGarage::police(float k, float& px) {
 void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage& e) {
     // WFS-551 (maquette 16) : panneau de verre de l'onglet « Finition » : « FINITIONS · SUR TA COULEUR », puis un grand pistolet par
     // finition, le nom dessous ; aperçu = pistolet plus grand, halo et trait orange ; portée = point blanc ; cadenas si à acheter
-    const float k = mp.k, op = mp.op, es = GRAND * k, pas = PAS_GRAND * k, pad = 26 * k, ch = CHEVRON * k * 1.4f;
+    const float k = mp.k, op = mp.op, es = GRAND * k, pas = PAS_GRAND * k, pad = 23 * k, ch = CHEVRON * k * 1.4f;
     const Sauvegarde& sv = sauvegarde();
     const char* carId = car(e.index);
     const float wMax = mp.px1 - mp.px0, wPlein = NB * pas + 2 * pad;
     const bool defile = wPlein > wMax;
     const float xp = panneauOnglet(r, mp, defile ? wMax : wPlein);
-    ui::text(r, xp + pad, mp.py0 + 14 * k, 11 * k, ui::majuscules(ui::tr("garage.finition.sur_couleur")), hex(0xA3A8B5, op), ui::GAUCHE, 0.12f, false);
-    const float cx = xp + pad, yy = mp.py0 + 40 * k;   // yy : haut de l'icône
+    { ui::AvecPolice inter(ui::Police::InterMedium); ui::text(r, xp + 31 * k, mp.py0 + 11 * k, 11 * k, ui::majuscules(ui::tr("garage.finition.sur_couleur")), hex(0xA3A8B5, op), ui::GAUCHE, 0.18f, false); }   // WFS-557
+    const float cx = xp + pad, yy = mp.py0 + 44 * k;   // yy : haut de l'icône
     const float x0 = defile ? cx + ch : cx;
     visibles_ = defile ? std::clamp((int)((wMax - 2 * pad - 2 * ch) / pas), 1, NB) : NB;
     int sel = 0;
@@ -167,7 +167,7 @@ void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarag
         const float t = on ? es * 1.18f : es, ex = cxi - t / 2, ey = yy + es - t;
         if (on) {   // halo orange sous le pistolet et trait orange sous le nom
             dessin2d::couronne(r, cxi, yy + es * 0.6f, 0, es * 0.62f, hex(ACCENT, 0.30f * op), hex(ACCENT, 0));
-            r.uiRect(cxi - es * 0.22f, yy + es + 22 * k, es * 0.44f, 2.5f * k, hex(ACCENT, op));
+            r.uiRect(cxi - es * 0.22f, mp.py0 + 114 * k, es * 0.44f, 2.5f * k, hex(ACCENT, op));
         }
         if (pistolet::pret()) {   // WFS-551 (RG-03) : pistolet de l'utilisateur, godet et jet dans la finition et la couleur
             vec4 tt[4];
@@ -181,8 +181,8 @@ void FinitionGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarag
             dessin2d::biseau(r, ex + t * 0.2f, ey + t * 0.2f, t * 0.6f, t * 0.6f, t * 0.1f, echantillon(f, peinture, op, ey, ey + t));
         }
         if (prix > 0) cadenas(r, ex + t * 0.30f, ey + t * 0.80f, 13 * k, op);   // RG-01 : non possédée (sous la poignée)
-        ui::textBoite(r, cxi, yy + es + 4 * k, pas - 6 * k, 16 * k, 12 * k, nomFinition(f), hex(on ? ACCENT : TEXTE, op), ui::CENTRE, 0.02f, false);   // maquette 16 : aperçu en orange
-        if (o == portee) r.uiCircle(cxi, yy + es + 33 * k, 2.5f * k, hex(TEXTE, op));
+        { ui::AvecPolice inter(ui::Police::Inter); ui::textBoite(r, cxi, mp.py0 + 121 * k, pas - 4 * k, 17 * k, 13.5f * k, nomFinition(f), hex(on ? 0xFF8A3D : 0xE2E4EA, op), ui::CENTRE, 0, false); }   // WFS-557 : Inter de 13,5   // maquette 16 : aperçu en orange
+        if (o == portee) r.uiCircle(cxi, mp.py0 + 115 * k, 2.5f * k, hex(TEXTE, op));
         g_z.finitions[o] = {x, yy - 8 * k, pas, es + 40 * k};
         manette::focus(g_z.finitions[o]);   // WFS-80 : A = toucher
     }

@@ -115,19 +115,22 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
     const char* car = CARS[e.index].id;
     // WFS-551 (maquette 06) : « Carrosserie » / « Toit et rétros » sous le nom de la voiture, à gauche
     {
-        float cx = mp.gl + std::clamp(mp.W * 0.04f, 0.f, 64 * k);
-        const float sy = mp.gt + 150 * k;
+        // WFS-557 (maquette 06 mesurée) : sélecteur de verre de 256 × 36 à (44, 152), choix de 28 de haut, Inter Medium de 12
+        ui::AvecPolice inter(ui::Police::InterMedium);
+        float cx = mp.gl + std::clamp(mp.W * 0.04f, 0.f, 28 * k);
+        const float sy = mp.gt + 138 * k, hf = 36 * k, hc = 28 * k, in = 4 * k, tp = 12 * k;
         float wTot = 0;
-        for (int o = 0; o < 2; o++) wTot += ui::width(11 * k, ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale")), 0.14f) + 22 * k;
-        ui::boutons::selecteurFond(r, cx, sy, wTot + 6 * k, ONGLET_H * k, op);
+        for (int o = 0; o < 2; o++) wTot += ui::width(tp, ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale")), 0.12f) + 34 * k;
+        ui::boutons::selecteurFond(r, cx, sy, wTot + 2 * in, hf, op);
+        cx += in;
         for (int o = 0; o < 2; o++) {
             const std::string t = ui::majuscules(ui::tr(o ? "garage.couleur.toit" : "garage.couleur.principale"));
-            const float w = ui::width(11 * k, t, 0.14f) + 22 * k;
+            const float w = ui::width(tp, t, 0.12f) + 34 * k;
             const bool on = toit_ == (o == 1);
-            ui::boutons::selecteurChoix(r, cx, sy, w, ONGLET_H * k, t, on, op, false, 11 * k);
-            g_z.onglets[o] = {cx, sy - 4 * k, w, ONGLET_H * k + 8 * k};
+            ui::boutons::selecteurChoix(r, cx, sy + in, w, hc, t, on, op, false, tp);
+            g_z.onglets[o] = {cx, sy - 4 * k, w, hf + 8 * k};
             manette::focus(g_z.onglets[o]);
-            cx += w + 6 * k;
+            cx += w;
         }
     }
     // WFS-551 (maquette 06) : panneau de verre en bas, gouttes en grand, rangées par prix ; chevrons si tout ne tient pas
@@ -185,7 +188,7 @@ void CouleurGarage::dessiner(Renderer& r, const MiseEnPage& mp, const EtatGarage
             const std::string titre = gr == 0 && prixRangee == 0 ? ui::tr("garage.couleur.groupe.classiques")
                 : ui::tr(gr == 0 ? "garage.couleur.groupe.classiques_prix" : gr == 1 ? "garage.couleur.groupe.vives" : "garage.couleur.groupe.speciales",
                          ui::nombre(prixRangee));
-            texteEtoiles(r, x, yy - 32 * k, 11 * k, ui::majuscules(titre), hex(SUR_TITRE_GOUTTES, op), ui::GAUCHE, 0.12f);
+            { ui::AvecPolice inter(ui::Police::InterMedium); texteEtoiles(r, x, yy - 32 * k, 11 * k, ui::majuscules(titre), hex(SUR_TITRE_GOUTTES, op), ui::GAUCHE, 0.18f); }   // WFS-557 : Inter Medium (maquette 06)
             groupePrec = gr;
         }
         const float hg = (on ? 1.18f : 1.f) * s, cxg = x + s / 2;   // RG-01 : aperçu = goutte plus grande

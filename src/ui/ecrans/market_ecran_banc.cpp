@@ -2,8 +2,10 @@
 // Boutique simulée de WFS-510 (WFS_BOUTIQUE=simulee, prix de secours) ; sauvegarde du banc, effacée à la fin.
 // Captures market-<langue>-<nom>.png : menu, market, achat, attente, sans-pub, restauration, garage, garage-market, hors-ligne.
 #include "market_ecran.h"
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include "../../core/configgame.h"
 #include "../../core/log.h"
 #include "../../game/boutique.h"
 #include "../../game/cars.h"
@@ -56,7 +58,12 @@ int benchUneLangue(Game& gm, Renderer& r, const std::string& out, ui::langue::Ch
     };
     int doigt = 120;
     auto appui = [&](float x, float y) { t += 0.2; gm.onTouch({doigt, x, y, true}); image(); gm.onTouch({doigt, x, y, false}); image(); doigt++; };
-    auto appuyer = [&](const char* nom) { float x, y; if (!centre(nom, x, y)) return false; appui(x, y); return true; };
+    // WFS-557 : depuis WFS-550 (maquette 01), le Market s'ouvre au menu par le compteur d'étoiles (plus de bouton « Market »)
+    auto appuyer = [&](const char* nom) {
+        float x, y;
+        if (std::string(nom) == "bouton" ? !compteur_etoiles::centre(x, y) : !centre(nom, x, y)) return false;
+        appui(x, y); return true;
+    };
     auto retourTelephone = [&]() { retourSysteme(gm, true, 0); image(); retourSysteme(gm, false, 0); images(3); };
     auto solde = [] { return boutique::solde(sauvegarde()); };
     const int OR = 2;
@@ -64,11 +71,20 @@ int benchUneLangue(Game& gm, Renderer& r, const std::string& out, ui::langue::Ch
     gm.allerA(Ecran::Menu);
     images(60);
     capture("menu", "menu principal : bouton « Market » au-dessus de « Profil »");
-    verifier(appuyer("bouton"), "RG-01 : bouton « Market » dessiné au menu");
+    verifier(appuyer("bouton"), "RG-01 : compteur d'étoiles du menu → Market (WFS-550)");
     images(30);
     verifier(ouvert() && gm.ecran() == Ecran::Menu, "RG-01 : menu → Market");
     verifier(soldeAffiche() == 1250, "RG-02 : solde en haut (1 250 ★)");
     capture("market", "Market : solde, 4 packs (bonus, base, prix), « Sans pub », mentions, Restaurer, Retour");
+    {   // WFS-557 (revue de la PR #432, RG-18) : pack débutant à l'état « proposé » (bouton 1,99 €), le temps d'une capture
+        const int c0 = sauvegarde().profil.courses;
+        sauvegarde().profil.courses = std::max(c0, config().market.debutantApres);
+        images(2);
+        verifier(market::packDebutantPropose(sauvegarde()) == market::SKINS_EN_VENTE, "WFS-557 RG-18 : pack débutant proposé après la 3e course");
+        capture("debutant-propose", "Market : pack débutant proposé (prix en grand bouton orange)");
+        sauvegarde().profil.courses = c0;
+        images(2);
+    }
     // ---- achat réussi (RG-03) : solde qui monte, « +720 ★ »
     const long long avant = solde();
     verifier(appuyer("pack-2"), "RG-02 : bouton d'achat de la « Médaille d'or »");

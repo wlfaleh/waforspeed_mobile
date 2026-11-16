@@ -406,7 +406,7 @@ void Game::render(double time) {
     {
         fond_fige::Signature sig;
         sig.basse = r_->qualiteBasse; sig.ombres = r_->niveauOmbres; sig.echelle = r_->vk().renderScale; sig.msaa = (int)r_->vk().msaa; sig.nuit = fp.night;
-        r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee && !sd.interface, camMode == 2, fondAnime), sig));   // WFS-552 (accroche) : parking du menu figé aussi
+        r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee && (!sd.interface || sd.anime), camMode == 2, fondAnime), sig));   // WFS-557 (accroche) : sd.anime   // WFS-552 (accroche) : parking du menu figé aussi
     }
     if (ecran_ == Ecran::Course && commandesActives()) r_->flouFond = 0.f;   // WFS-548 (RG-02, accroche E23) : jamais de fond flouté en course (1re image après « Reprendre » comprise ; écran de fin : flouté)
     if (!r_->beginFrame(fp)) return;

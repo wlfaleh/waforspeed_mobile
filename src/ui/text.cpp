@@ -22,18 +22,27 @@ namespace {
 float g_decalageNeon = 0;   // WFS-551 : + 4 sur u (shaders/ui.frag : contour néon)
 
 constexpr float BASE_PX = 48.f;          // taille de référence de l'atlas
+constexpr float BASE_PX_INTER = 32.f;    // WFS-557 : Inter (texte courant, 10 à 20 px à l'écran) : moins de place dans l'atlas
 constexpr int PAD = 6, ATLAS = 1024;     // marge du champ de distance, côté de l'atlas
 constexpr unsigned char ONEDGE = 128;    // valeur du bord (0,5 dans le shader)
 
 struct Glyph { float u0, v0, u1, v1, w, h, xoff, yoff, adv; };
-struct Font {
-    bool ready = false;
+// WFS-557 (RG-10 à RG-12) : plusieurs faces dans le MÊME atlas : Rajdhani Bold (placée en premier : ses pixels et ses
+// coordonnées ne changent pas), puis Inter Regular et Inter Medium (texte courant des maquettes R19)
+struct Face {
     std::vector<uint8_t> ttf;
     stbtt_fontinfo info{};
-    float scale = 1, ascent = 0, capH = 0;   // capH : hauteur des capitales (pivot de l'italique, WFS-48)
+    float base = 48, scale = 1, ascent = 0, capH = 0;   // base : taille des glyphes dans l'atlas ; capH : hauteur des capitales (pivot de l'italique, WFS-48)
     std::unordered_map<int, Glyph> glyphs;
+};
+struct Font {
+    bool ready = false;
+    Face faces[NB_POLICES];
     Image atlas;
 } F;
+Police g_police = Police::Rajdhani;   // face utilisée par text / width / textBoite (AvecPolice), thread principal seulement
+Face& faceCourante() { return F.faces[(int)g_police]; }
+const char* const FICHIERS[NB_POLICES] = {"fonts/Rajdhani-Bold.ttf", "fonts/Inter-Regular.ttf", "fonts/Inter-Medium.ttf"};
 
 // décodage UTF-8 → points de code
 std::vector<int> codepoints(const std::string& s) {
@@ -50,11 +59,6 @@ std::vector<int> codepoints(const std::string& s) {
 
 bool load(Renderer& r) {
     if (F.ready) return true;
-    if (!readAsset("fonts/Rajdhani-Bold.ttf", F.ttf) || !stbtt_InitFont(&F.info, F.ttf.data(), 0)) { WFS_ERR("Police introuvable"); return false; }
-    F.scale = stbtt_ScaleForPixelHeight(&F.info, BASE_PX);
-    int asc, desc, gap; stbtt_GetFontVMetrics(&F.info, &asc, &desc, &gap);
-    F.ascent = asc * F.scale;
-    { int x0, y0, x1, y1; F.capH = stbtt_GetCodepointBox(&F.info, 'H', &x0, &y0, &x1, &y1) ? y1 * F.scale : F.ascent * 0.7f; }
     // jeu de caractères : ASCII, Latin-1 (accents, « », ×, ·), œ Œ ’ … € et espace fine insécable
     std::vector<int> cps;
     for (int c = 32; c < 127; c++) cps.push_back(c);
@@ -65,25 +69,47 @@ bool load(Renderer& r) {
     for (int c : {0x2014, 0x2013, 0x2018, 0x201C, 0x201D, 0x2022, 0x2192, 0x2190, 0x2248, 0x2713}) cps.push_back(c);
     std::vector<uint8_t> px((size_t)ATLAS * ATLAS, 0);
     int x = 1, y = 1, rowH = 0;
-    for (int cp : cps) {
-        int adv, lsb; stbtt_GetCodepointHMetrics(&F.info, cp, &adv, &lsb);
-        Glyph g{}; g.adv = adv * F.scale;
-        if (!stbtt_FindGlyphIndex(&F.info, cp) && cp != 32 && cp != 160 && cp != 0x202F) continue;
-        int w = 0, h = 0, xo = 0, yo = 0;
-        unsigned char* sdf = stbtt_GetCodepointSDF(&F.info, F.scale, cp, PAD, ONEDGE, (float)ONEDGE / PAD, &w, &h, &xo, &yo);
-        if (sdf) {
-            if (x + w + 1 > ATLAS) { x = 1; y += rowH + 1; rowH = 0; }
-            if (y + h + 1 > ATLAS) { stbtt_FreeSDF(sdf, nullptr); WFS_WARN("Atlas de police plein"); break; }
-            for (int j = 0; j < h; j++) std::memcpy(&px[(size_t)(y + j) * ATLAS + x], sdf + (size_t)j * w, (size_t)w);
-            g.u0 = (float)x / ATLAS; g.v0 = (float)y / ATLAS; g.u1 = (float)(x + w) / ATLAS; g.v1 = (float)(y + h) / ATLAS;
-            g.w = (float)w; g.h = (float)h; g.xoff = (float)xo; g.yoff = (float)yo;
-            x += w + 1; if (h > rowH) rowH = h;
-            stbtt_FreeSDF(sdf, nullptr);
+    bool plein = false;
+    for (int f = 0; f < NB_POLICES && !plein; f++) {
+        Face& fa = F.faces[f];
+        if (!readAsset(FICHIERS[f], fa.ttf) || !stbtt_InitFont(&fa.info, fa.ttf.data(), 0)) {
+            if (f == 0) { WFS_ERR("Police introuvable"); return false; }
+            WFS_WARN("Police %s introuvable : texte courant en Rajdhani", FICHIERS[f]);
+            continue;
         }
-        F.glyphs[cp] = g;
+        // Inter : atlas à BASE_PX_INTER (texte courant, petit à l'écran) pour tenir dans le même atlas que Rajdhani
+        fa.base = f == 0 ? BASE_PX : BASE_PX_INTER;
+        fa.scale = stbtt_ScaleForPixelHeight(&fa.info, fa.base);
+        int asc, desc, gap; stbtt_GetFontVMetrics(&fa.info, &asc, &desc, &gap);
+        fa.ascent = asc * fa.scale;
+        { int x0, y0, x1, y1; fa.capH = stbtt_GetCodepointBox(&fa.info, 'H', &x0, &y0, &x1, &y1) ? y1 * fa.scale : fa.ascent * 0.7f; }
+        for (int cp : cps) {
+            int adv, lsb; stbtt_GetCodepointHMetrics(&fa.info, cp, &adv, &lsb);
+            Glyph g{}; g.adv = adv * fa.scale;
+            if (!stbtt_FindGlyphIndex(&fa.info, cp) && cp != 32 && cp != 160 && cp != 0x202F) continue;
+            int w = 0, h = 0, xo = 0, yo = 0;
+            // WFS-557 : Inter (texte courant, 11 à 16 px à l'écran) : bord décalé d'un demi-pixel de l'atlas vers l'extérieur (léger
+            // épaississement), sinon le lissage du shader (ui.frag) efface à moitié les traits d'un pixel (« i », « l », « f »)
+            const unsigned char bordFace = f == 0 ? ONEDGE : (unsigned char)(ONEDGE + ONEDGE / (2 * PAD));
+            unsigned char* sdf = stbtt_GetCodepointSDF(&fa.info, fa.scale, cp, PAD, bordFace, (float)ONEDGE / PAD, &w, &h, &xo, &yo);
+            if (sdf) {
+                if (x + w + 1 > ATLAS) { x = 1; y += rowH + 1; rowH = 0; }
+                if (y + h + 1 > ATLAS) { stbtt_FreeSDF(sdf, nullptr); WFS_WARN("Atlas de police plein (police %d)", f); plein = true; break; }
+                for (int j = 0; j < h; j++) std::memcpy(&px[(size_t)(y + j) * ATLAS + x], sdf + (size_t)j * w, (size_t)w);
+                g.u0 = (float)x / ATLAS; g.v0 = (float)y / ATLAS; g.u1 = (float)(x + w) / ATLAS; g.v1 = (float)(y + h) / ATLAS;
+                g.w = (float)w; g.h = (float)h; g.xoff = (float)xo; g.yoff = (float)yo;
+                x += w + 1; if (h > rowH) rowH = h;
+                stbtt_FreeSDF(sdf, nullptr);
+            }
+            fa.glyphs[cp] = g;
+        }
+        // espaces insécables = espace
+        if (fa.glyphs.count(32)) { fa.glyphs[160] = fa.glyphs[32]; fa.glyphs[0x202F] = fa.glyphs[32]; fa.glyphs[0x202F].adv *= 0.6f; }
+        WFS_LOG("Police %s : %zu caractères dans l'atlas (bas de l'atlas : %d px sur %d)", FICHIERS[f], fa.glyphs.size(), y + rowH, ATLAS);
     }
-    // espaces insécables = espace
-    if (F.glyphs.count(32)) { F.glyphs[160] = F.glyphs[32]; F.glyphs[0x202F] = F.glyphs[32]; F.glyphs[0x202F].adv *= 0.6f; }
+    // police absente (paquet incomplet) : la face reprend Rajdhani, jamais de texte vide
+    for (int f = 1; f < NB_POLICES; f++)
+        if (F.faces[f].glyphs.empty()) { F.faces[f] = F.faces[0]; stbtt_InitFont(&F.faces[f].info, F.faces[f].ttf.data(), 0); }
     std::vector<uint8_t> rgba((size_t)ATLAS * ATLAS * 4);
     for (size_t i = 0; i < px.size(); i++) { uint8_t v = px[i]; rgba[i * 4] = rgba[i * 4 + 1] = rgba[i * 4 + 2] = rgba[i * 4 + 3] = v; }
     // WFS-551 (RG-03, accroche) : icône du pistolet de l'utilisateur dans les canaux G, B, A libres de l'atlas (le texte lit R)
@@ -91,7 +117,6 @@ bool load(Renderer& r) {
     F.atlas = r.vk().uploadTexture(rgba.data(), ATLAS, ATLAS, false);
     r.uiSetFontAtlas(F.atlas);
     F.ready = true;
-    WFS_LOG("Police : %zu caractères dans l'atlas", F.glyphs.size());
     langue::charger();   // WFS-504 (RG-05) : tables des textes lues au chargement, jamais en course
     return true;
 }
@@ -101,13 +126,15 @@ void unload(Renderer& r) {
     r.vk().waitIdle();
     r.vk().destroy(F.atlas);
     r.uiSetFontAtlas(Image{});   // WFS-100 (RG-W2) : l'interface lit la texture blanche, jamais l'atlas détruit
-    F.glyphs.clear(); F.ready = false;
+    for (Face& fa : F.faces) fa.glyphs.clear();
+    F.ready = false;
 }
 
 // pente : tan de l'angle d'italique (0 = droit) ; chaque quad est cisaillé autour du milieu des capitales (pivot)
 void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, const vec4& c, float spacing, float* outW,
          float pente = 0) {
-    const float s = px / BASE_PX, pivot = y + (F.ascent - F.capH * 0.5f) * s;
+    const Face& F = faceCourante();
+    const float s = px / F.base, pivot = y + (F.ascent - F.capH * 0.5f) * s;
     float pen = 0; int prev = 0;
     for (int cp : cps) {
         auto it = F.glyphs.find(cp);
@@ -132,6 +159,8 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
 } // namespace
 
 bool fontReady() { return F.ready; }
+AvecPolice::AvecPolice(Police p) : avant_(g_police) { g_police = p; }
+AvecPolice::~AvecPolice() { g_police = avant_; }
 bool chargerPolice(Renderer& r) { return load(r); }
 void libererPolice(Renderer& r) { unload(r); }   // WFS-308 (accroche)
 
@@ -190,7 +219,10 @@ std::string chrono(double t) {
     if (t < 0) t = 0;
     int m = (int)(t / 60); double sec = t - m * 60;
     char b[32]; std::snprintf(b, sizeof b, "%d:%04.1f", m, sec);
-    return b;
+    // WFS-557 (maquettes R19 10, 11, 17, 19, 21 : « 2:05,4 ») : virgule décimale en français, point en anglais
+    std::string s = b;
+    if (langue::active() != langue::Langue::Anglais) for (char& c : s) if (c == '.') c = ',';
+    return s;
 }
 
 std::string majuscules(const std::string& s) {

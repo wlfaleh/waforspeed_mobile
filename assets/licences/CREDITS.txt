@@ -53,6 +53,7 @@ Sons des moteurs (modifiés pour WaForSpeed : mis en boucle, niveau égalisé) :
 
 Police :
   Rajdhani : Copyright (c) 2014, Indian Type Foundry — licence SIL OFL 1.1 : https://openfontlicense.org
+  Inter : Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter) — licence SIL OFL 1.1 : https://openfontlicense.org
 
 Code :
   stb_image, stb_image_write, stb_truetype : Sean Barrett (domaine public ou licence MIT, au choix) — licence MIT : https://opensource.org/license/mit

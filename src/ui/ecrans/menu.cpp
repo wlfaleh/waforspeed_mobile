@@ -41,6 +41,7 @@
 #include "compteur_etoiles.h"   // WFS-537 (accroche) : compteur d'étoiles à côté de « Réglages »
 #include "../../platform/manette.h"   // WFS-22 : focus de la manette
 #include "../verre.h"   // WFS-548 : rien du menu sous une fenêtre de verre (verre::couvert)
+#include "../coffre_cadeau.h"   // WFS-557 : coffre en bois 3D du cadeau du jour (maquette 05)
 
 namespace wfs {
 namespace ecrans {
@@ -85,7 +86,7 @@ public:
         r_ = &r;
         if (!parking_.pret() && !std::getenv("WFS_MENU_SANS_PARKING")) parking_.init(r);
     }
-    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); libererVitrine(r); }
+    void shutdown(Renderer& r) override { r.vk().waitIdle(); parking_.shutdown(r); coffre::commun().shutdown(r); libererVitrine(r); }
     // WFS-550 (revue du lead dev, PR #424 : 98 Mo de mémoire graphique, 254 ms) : la vitrine n'existe qu'au menu : chargée en y
     // entrant (1re image du menu), libérée en le quittant ; la course et le chargement d'une partie ne paient rien
     void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
@@ -100,12 +101,18 @@ public:
         voiture_ = matriceVoiture(g);
         parking_.regler(fp, s, g, vitrine_.ok ? carById(VITRINE) : *g.car, voiture_);   // WFS-550 : cadrage sur la SF-X de vitrine
         if (vitrine_.ok) s.joueur = false;   // la voiture du joueur n'est pas dessinée au menu : la vitrine la remplace
+        // WFS-557 (maquette 05) : écran du cadeau : le coffre en bois prend la place de la voiture (construit à la 1re ouverture)
+        if (cadeau_jour::ouvert() && r_) {
+            if (!coffre::commun().pret() && !coffreEchec_) coffreEchec_ = !coffre::commun().init(*r_);
+            if (coffre::commun().pret()) { s.joueur = false; s.anime = true; coffre::commun().eclairer(fp, placeCoffre(), cadeau_jour::ouvertureCoffre()); }
+        }
         s.interface = true;
         return true;
     }
     void render(Renderer& r, const GameView& g) override {
         if (g.ecran == Ecran::Menu && g.sceneDediee && parking_.pret()) {
             parking_.dessiner(r, voiture_);
+            if (cadeau_jour::ouvert() && coffre::commun().pret()) { coffre::commun().dessiner(r, placeCoffre(), cadeau_jour::ouvertureCoffre()); return; }
             if (vitrine_.ok) {   // WFS-550 : SF-X orange caméléon, skin bleu ciel (maquette 01), roues droites, à l'arrêt
                 const int f0 = r.finitionJoueur();
                 r.finitionJoueur(vehicule_finitions::depuisId("cameleon"));
@@ -211,34 +218,38 @@ public:
         {
             const float x1 = gl + 570 * kb + dx, y0 = 152 * kb, y1 = 616 * kb, coin = 46 * kb;
             const vec2 p[5] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}, {x1, y1}, {0, y1}};
-            dessin2d::polygone(r, p, 5, dessin2d::Teinte{hex(0x1B1D22, 0.94f * a), hex(0x0C0D10, 0.96f * a), y0, y1});
+            dessin2d::polygone(r, p, 5, dessin2d::Teinte{hex(0x232427, 0.95f * a), hex(0x111214, 0.96f * a), y0, y1});   // WFS-557 : gris neutre (maquette 01)
             const vec2 bordHaut[3] = {{0, y0}, {x1 - coin, y0 + 14 * kb}, {x1, y0 + 14 * kb + coin}};
-            dessin2d::trait(r, bordHaut, 3, 2 * kb, vec4{1, 1, 1, 0.22f * a});
+            dessin2d::trait(r, bordHaut, 3, 2.5f * kb, vec4{1, 1, 1, 0.38f * a});
             const vec2 bordDroit[2] = {{x1, y0 + 14 * kb + coin}, {x1, y1}};
             dessin2d::trait(r, bordDroit, 2, 1.5f * kb, vec4{1, 1, 1, 0.10f * a});
+            // WFS-557 (maquette 01) : tranche droite du panneau, plus claire (le panneau est un boîtier vu de trois quarts)
+            const vec2 tranche[4] = {{x1 - 7 * kb, y0 + 14 * kb + coin - 3 * kb}, {x1, y0 + 14 * kb + coin}, {x1, y1}, {x1 - 7 * kb, y1 - 3 * kb}};
+            dessin2d::polygone(r, tranche, 4, dessin2d::Teinte{hex(0x3A3B3E, 0.95f * a), hex(0x26272A, 0.95f * a), y0, y1});
         }
         // deux boutons ronds (rayon 116, centres à 152 et 426, hauteur 316) et la pilule « GARAGE » (32 à 532, 440 à 596)
-        const float rb = 116 * kb;
+        const float rb = 117 * kb;   // WFS-557 : bague de 117 de rayon (maquette 01)
         for (int i = 0; i < 2; i++) {
             a = glisse(2 + i, dx);
-            const float cx = gl + (i == 0 ? 152 : 426) * kb + dx, cy = 316 * kb;
+            const float cx = gl + (i == 0 ? 152 : 426) * kb + dx, cy = 318 * kb;
             g_zones[i] = {cx - rb, cy - rb, 2 * rb, 2 * rb, 0, true};
             manette::focus(g_zones[i]);   // WFS-22
-            ui::boutons::startStop(r, cx - rb, cy - rb, 2 * rb, 2 * rb, ui::majuscules(ui::tr("menu.r19.course")), a, presse_ == i,
-                                   ui::majuscules(ui::tr(i == 0 ? "menu.r19.solo" : "menu.r19.en_ligne")), 31 * kb);
+            // WFS-557 (maquette 01 mesurée au pixel, ordre de l'utilisateur du 2026-11-16) : bague chrome brillante, centre gris
+            ui::boutons::rondMenu(r, cx, cy, kb, ui::majuscules(ui::tr("menu.r19.course")), ui::majuscules(ui::tr(i == 0 ? "menu.r19.solo" : "menu.r19.en_ligne")),
+                                  a, presse_ == i);
         }
         a = glisse(4, dx);
         {
-            const float x = gl + 32 * kb + dx, y = 440 * kb, w = 500 * kb, h = 156 * kb;
+            const float x = gl + 30 * kb + dx, y = 443 * kb, w = 503 * kb, h = 162 * kb;   // WFS-557 : place mesurée sur la maquette 01
             g_zones[SHOWROOM] = {x, y, w, h, 0, true};
             manette::focus(g_zones[SHOWROOM]);
-            ui::boutons::piluleChrome(r, x, y, w, h, ui::majuscules(ui::tr("menu.r19.garage")), a, presse_ == SHOWROOM, 60 * kb);
+            ui::boutons::piluleMenu(r, x, y, w, h, kb, ui::majuscules(ui::tr("menu.r19.garage")), a, presse_ == SHOWROOM);
         }
         // RECORD (bas gauche) : libellé gris espacé, valeur en grand ; le toucher ouvre le Profil (records, maquette 21)
         a = glisse(5, dx);
         {
             const float x = gl + 46 * kb + dx, y = H - gb - 82 * kb;
-            ui::text(r, x, y, 12 * kb, ui::majuscules(ui::tr("menu.record")), hex(MUTED, a), ui::GAUCHE, 0.22f, false);
+            { ui::AvecPolice inter(ui::Police::InterMedium); ui::text(r, x, y, 13 * kb, ui::majuscules(ui::tr("menu.record")), hex(0xB8BCC8, a), ui::GAUCHE, 0.22f, false); }   // WFS-557 : Inter Medium (maquette 01)
             const std::string v = g_best > 0 ? ui::nombre(g_best) : "—";
             ui::text(r, x, y + 16 * kb, 34 * kb, v, hex(presse_ == TA_VOITURE ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false, true);
             const float zw = std::max(110 * kb, ui::width(34 * kb, v) + 20 * kb);
@@ -250,6 +261,10 @@ public:
         compteur_etoiles::appuye(presse_ == COMPTEUR);   // WFS-537 (RG-07) : dessiné par son système (461), après « Réglages »
     }
 private:
+    // coffre avancé de 1,20 m vers l'allée (vers la caméra), centré dans l'image, tourné de 13° vers elle (maquette 05 : vu de
+    // trois quarts face, au centre de l'image) ; tremblement autour de la verticale pendant l'animation
+    mat4 placeCoffre() const { return voiture_ * translate({0.35f, 0, -1.20f}) * rotateY(0.22f + cadeau_jour::trembleCoffre()); }
+    bool coffreEchec_ = false;
     void libererVitrine(Renderer& r) { vehicule_skin::libererVitrine(r); if (vitrine_.ok) r.destroy(vitrine_); vitrine_ = Model{}; }
     void chargerVitrine(Renderer& r) {
         // WFS-550 (ordre de l'utilisateur du 2026-11-16 : « la voiture dans le menu doit être exactement la même, c'est l'image
@@ -299,7 +314,7 @@ private:
 
 // WFS-505 (banc « textes ») : centre d'un choix du menu à la dernière image : « solo », « duel », « showroom »
 bool menuBouton(const std::string& nom, float& x, float& y) {
-    const int i = nom == "solo" ? SOLO : nom == "duel" ? DUEL : nom == "showroom" ? SHOWROOM : -1;
+    const int i = nom == "solo" ? SOLO : nom == "duel" ? DUEL : nom == "showroom" ? SHOWROOM : nom == "record" ? TA_VOITURE : -1;   // WFS-557 : « record » (bloc RECORD → Profil, WFS-550)
     if (i < 0 || !g_zones[i].ok) return false;
     x = g_zones[i].x + g_zones[i].w * 0.4f; y = g_zones[i].y + g_zones[i].h * 0.5f; return true;   // hors du coin coupé
 }

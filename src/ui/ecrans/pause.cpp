@@ -6,6 +6,8 @@
 #include "../../core/system.h"
 #include "../../game/camera_vue.h"   // WFS-429 : nom de la vue (largeur du bouton Caméra, même rangée)
 #include "../../game/course_system.h"
+#include "../../game/course5.h"   // WFS-557 : mode en cours (sur-titre de la pause)
+#include "../../game/track.h"     // WFS-557 : nom de la carte (MapDef)
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../hud.h"    // WFS-429 : rangée des boutons à côté du score
@@ -24,7 +26,7 @@ namespace {
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 // jetons :root du jeu web (codes sRGB)
-const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, ACCENT = 0xFF6A00, SURFACE2 = 0x1E2130;
+const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, ACCENT = 0xFF6A00;
 // WFS-551 (RG-06) : bouton « Menu » en verre (verre::panneau) : plus de jetons GLASS / BORD ici
 
 struct Zone {
@@ -36,12 +38,6 @@ Zone g_menu, g_boutons[3];
 enum { REPRENDRE = 0, RECOMMENCER = 1, QUITTER = 2 };
 // index.html, #pause .actions ; WFS-505 (RG-01) : clés des tables de textes (« Reprendre », « Recommencer », « Quitter la course »)
 const char* TEXTES[3] = {"pause.reprendre", "pause.recommencer", "pause.quitter"};
-
-// parallélogramme (clip-path des .btn / .cam-btn) en bandes horizontales : haut décalé à droite de `biais`
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
-    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
-}
 
 // bouton « Menu » visible : course réelle en cours (décompte ou course), pas l'écran de fin, pas les scènes du banc sans règles
 bool boutonVisible(const GameView& g) {
@@ -83,7 +79,7 @@ public:
         const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
         if (boutonVisible(g)) dessinerBouton(r, g, k);
-        if (g.ecran == Ecran::Pause) dessinerPause(r, W, H, k);
+        if (g.ecran == Ecran::Pause) dessinerPause(r, g, W, H, k);
     }
 
 private:
@@ -105,45 +101,81 @@ private:
         ui::text(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), b.texte, t, o, ui::GAUCHE, 0.1f, false, true);
     }
 
-    // section #pause : voile, .eyebrow « Course en pause » (cyan), .big « Pause » (ANO-34), .actions : .btn + 2 × .btn--ghost
-    void dessinerPause(Renderer& r, float W, float H, float k) {
-        // WFS-548 (RG-01 à RG-03, maquette 19) : course floutée derrière (écran arrêté), voile léger, fenêtre de verre dépoli
-        // autour du titre et des boutons, sur-titre gris (plus de cyan) ; textes et place des boutons inchangés
+    // WFS-557 (maquette 19, arbitrage du PO du 2026-11-16 : maquette à 100 %, boutons compris) : course floutée derrière,
+    // fenêtre de verre 830 × 390 centrée ; sur-titre « Course en pause · <mode> · <carte> » ; « PAUSE » ; ligne de stats
+    // (temps, checkpoint, points) ; « Reprendre » rond (Start/Stop) au centre ; « Recommencer » ↺ et « Quitter la course »
+    // (bord rouge) en boutons de verre en dessous. Mesures relevées sur la maquette (1600 × 720, unité k = H / 720).
+    void dessinerPause(Renderer& r, const GameView& g, float W, float H, float k) {
         verre::fondFloute(r);
         verre::assombrir(r, W, H, 0.38f);
         if (reglagesOuverts()) return;   // les Réglages ouverts par-dessus : leur fenêtre de verre seule (la pause se voyait au travers)
         const float cx = W / 2;
-        // boutons de l'écran de fin (WFS-38 / WFS-57) : hauteur 10 % de H, biais 14 px, texte 5 % de H, espacement 0,12 em,
-        // largeur = texte + 2 × 28 px ; rangée centrée, 2 % de H d'écart
-        const float u = H / 100, bh = 10 * u, tp = 5 * u, gap = 2 * u;
-        // WFS-505 (RG-03, RC-E20-04) : largeur mesurée sur le texte français (boutons identiques dans les deux langues)
-        float wb[3], tw[3], total = 2 * gap;
-        for (int i = 0; i < 3; i++) {
-            tw[i] = ui::width(tp, ui::majuscules(ui::trLangue(TEXTES[i], ui::langue::Langue::Francais)), 0.12f);
-            wb[i] = tw[i] + 56 * k; total += wb[i];
+        const float pw = 830 * k, ph = 390 * k, py = 165 * k;
+        verre::panneau(r, cx - pw / 2, py, pw, ph, {18 * k, 1.5f * k});
+        // sur-titre : « Course en pause · Checkpoint · Ville néon »
+        std::string sur = ui::tr("pause.surtitre");
+        if (const char* mode = cleMode()) sur += " · " + ui::tr(mode);
+        if (g.map && g.map->name) sur += std::string(" · ") + g.map->name;
+        verre::surTitre(r, cx, 193 * k, 16 * k, sur, ui::CENTRE);
+        ui::text(r, cx, 206 * k, 82 * k, ui::majuscules(ui::tr("pause.titre")), hex(TEXTE), ui::CENTRE, 0.01f, false, true);
+        dessinerStats(r, g, cx, 314 * k, k);
+        // boutons : zones de toucher = boutons dessinés (≥ 44 px), aucun chevauchement
+        const float d = 128 * k;
+        g_boutons[REPRENDRE] = {cx - d / 2, 390 * k - d / 2, d, d};
+        const float bh = 51 * k, by = 470 * k, gap = 18 * k, w1 = 211 * k, w2 = 256 * k, x1 = cx - (w1 + gap + w2) / 2 + 2 * k;
+        g_boutons[RECOMMENCER] = {x1, by, w1, bh};
+        g_boutons[QUITTER] = {x1 + w1 + gap, by, w2, bh};
+        for (int i = 0; i < 3; i++) manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
+        const Zone& z = g_boutons[REPRENDRE];
+        ui::boutons::startStop(r, z.x, z.y, z.w, z.h, ui::majuscules(ui::tr(TEXTES[REPRENDRE])), 1, false, "", 22 * k);
+        const float tp = 22 * k;
+        ui::boutons::verreIcone(r, x1, by, w1, bh, ui::boutons::Icone::Recommencer, ui::majuscules(ui::tr(TEXTES[RECOMMENCER])), 1, false, tp,
+                                {12 * k, 0, nullptr, 0.05f});
+        const vec4 rouge = verre::hexa(verre::PERTE);
+        ui::boutons::verreIcone(r, x1 + w1 + gap, by, w2, bh, ui::boutons::Icone::Sortie, ui::majuscules(ui::tr(TEXTES[QUITTER])), 1, false, tp,
+                                {12 * k, verre::PERTE, &rouge, 0.05f});
+    }
+
+    // clé du mode en cours (sur-titre) : Checkpoint, Course à 5, Poursuite ; duel : rien
+    static const char* cleMode() {
+        switch (modeCourse()) {
+            case ModeCourse::Checkpoint: return "mode.checkpoint";
+            case ModeCourse::Course5: return "mode.course5";
+            case ModeCourse::Poursuite: return "mode.poursuite";
+            default: return nullptr;
+        }
+    }
+
+    // ligne de stats de la maquette 19 : « 0:57,9 temps   CP 2   1 045 pts » ; chiffres en Rajdhani italique, unités en Inter grise,
+    // posées sur la même ligne de base ; le mode Checkpoint est sans fin : le checkpoint s'écrit sans total (CP n)
+    void dessinerStats(Renderer& r, const GameView& g, float cx, float base, float k) {
+        const Course* c = activeCourse();
+        if (!c || !g.player) return;
+        const bool ligne = c->duelFinish > 0 || modeCourse() == ModeCourse::Poursuite;
+        const std::string temps = ui::chrono(ligne ? c->raceTime : std::max(0.0, c->timeLeft));   // « 0:57,9 » (maquette 19)
+        char cp[24]; std::snprintf(cp, sizeof cp, "CP %d", c->level + 1);
+        const std::string pts = ui::nombre(c->score(*g.player));
+        struct Bloc { std::string chiffre, unite; } blocs[3] = {{temps, ui::tr("pause.temps")}, {ligne ? "" : cp, ""}, {pts, ui::tr("pause.pts")}};
+        const float cpx = 32 * k, upx = 15 * k, ecartU = 4 * k, ecartB = 36 * k;
+        // hauteurs : haut du texte = ligne de base − capitales (Rajdhani ≈ 0,72 px du haut de ligne, Inter ≈ 0,76)
+        float total = 0, lw[3][2] = {};
+        int n = 0;
+        for (auto& b : blocs) {
+            if (b.chiffre.empty()) continue;
+            lw[n][0] = ui::width(cpx, b.chiffre, 0);
+            { ui::AvecPolice p(ui::Police::Inter); lw[n][1] = b.unite.empty() ? 0 : ui::width(upx, b.unite, 0) + ecartU; }
+            total += lw[n][0] + lw[n][1] + (n ? ecartB : 0);
+            n++;
         }
         float x = cx - total / 2;
-        const float y = H * 0.56f;
-        const float pw = std::max(total + 2 * 40 * k, W * 0.46f), py = H * 0.19f;
-        verre::panneau(r, cx - pw / 2, py, pw, y + bh + 4 * u - py, {14 * k, 1.5f * k});
-        verre::surTitre(r, cx, H * 0.24f, 14 * k, ui::tr("pause.surtitre"), ui::CENTRE);
-        ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules(ui::tr("pause.titre")), hex(TEXTE), ui::CENTRE, 0.02f, false, true);
-        for (int i = 0; i < 3; i++) {
-            g_boutons[i] = {x, y, wb[i], bh}; manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
-            if (i == REPRENDRE) {   // WFS-549 (RG-01, RG-07) : action principale en bouton Start/Stop, même rectangle qu'avant
-                ui::boutons::startStop(r, x, y, wb[i], bh, ui::majuscules(ui::tr(TEXTES[i])), 1, false, "", tp * 0.9f);
-                x += wb[i] + gap;
-                continue;
-            }
-            biseau(r, x, y, wb[i], bh, 14 * k, hex(SURFACE2));
-            if (i == QUITTER) {   // WFS-548 (RG-05) : « Quitter la course » bordé de rouge (perte), dessin du bouton inchangé
-                const float b = 14 * k;
-                const vec2 q[4] = {{x + b, y}, {x + wb[i], y}, {x + wb[i] - b, y + bh}, {x, y + bh}};
-                dessin2d::contour(r, q, 4, 1.5f * k, verre::hexa(verre::PERTE));
-            }
-            // texte à y + 2,6 % de H (centré dans 10 % : +0,1 % de H, comme avant) ; anglais plus long : police réduite de 20 % au plus
-            ui::textBoite(r, x + wb[i] / 2, y + 0.1f * u, tw[i], bh, tp, ui::majuscules(ui::tr(TEXTES[i])), i == QUITTER ? verre::hexa(verre::PERTE) : hex(TEXTE), ui::CENTRE, 0.12f, false);
-            x += wb[i] + gap;
+        int i = 0;
+        for (auto& b : blocs) {
+            if (b.chiffre.empty()) continue;
+            ui::text(r, x, base - 0.72f * cpx, cpx, b.chiffre, hex(0xE6E8EE), ui::GAUCHE, 0, false, true);
+            x += lw[i][0];
+            if (!b.unite.empty()) { ui::AvecPolice p(ui::Police::Inter); ui::text(r, x + ecartU, base - 0.76f * upx, upx, b.unite, hex(0xC3C7D1), ui::GAUCHE, 0, false); }
+            x += lw[i][1] + ecartB;
+            i++;
         }
     }
 

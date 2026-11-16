@@ -64,6 +64,7 @@ Fichier généré par `python3 tools/qa/verifier_licences.py --generer` (WFS-406
 ## Police
 
 - Rajdhani : Copyright (c) 2014, Indian Type Foundry — licence [SIL OFL 1.1](https://openfontlicense.org)
+- Inter : Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter) — licence [SIL OFL 1.1](https://openfontlicense.org)
 
 ## Code
 

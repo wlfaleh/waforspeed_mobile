@@ -395,9 +395,8 @@ void boutons(Renderer& r, float W, float H, float margeGauche, float margeDroite
     menu[0] = std::max(margeGauche + 16 * k, ox + 70 * k); menu[1] = 596 * k; menu[2] = 200 * k; menu[3] = 44 * k;
     bouton[0] = std::min(W - margeDroite - 16 * k - d, ox + 1440 * k - d / 2); bouton[1] = 580 * k - d / 2; bouton[2] = d; bouton[3] = d;
     static textes::Capitales libMenu{"fin.menu"};
-    // « MENU » : autocollant de main (WFS-549) ; la plaque des maquettes 10 et 11 arrive avec WFS-557 (ui::boutons::plaque) : à
-    // poser ici à sa fusion (même rectangle, même action)
-    ui::boutons::autocollant(r, menu[0], menu[1], menu[2], menu[3], libMenu(), 1, false, 20 * k);
+    // « MENU » : plaque des maquettes 10 et 11 (WFS-557, ui::boutons::plaque), même rectangle et même action que l'autocollant d'avant
+    ui::boutons::plaque(r, menu[0], menu[1], menu[2], menu[3], libMenu());   // WFS-557 : plaque à bande orange des maquettes 10 et 11
     ui::boutons::startStop(r, bouton[0], bouton[1], d, d, action, 1, actionAppuyee, "", 17 * k);
 }
 

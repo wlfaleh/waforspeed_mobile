@@ -65,6 +65,7 @@ AUTRES = [
     ]),
     ("Police", [
         ("Rajdhani", "Copyright (c) 2014, Indian Type Foundry", "SIL OFL 1.1"),
+        ("Inter", "Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)", "SIL OFL 1.1"),   # WFS-557
     ]),
     ("Code", [
         ("stb_image, stb_image_write, stb_truetype", "Sean Barrett (domaine public ou licence MIT, au choix)", "MIT"),
@@ -98,7 +99,7 @@ COUVERTURE = [
     (r"world/animaux/.*\.py", None, None),        # scripts de conversion du projet
     (r"world/feuillage\.png", None, None),        # atlas dessiné par le code du jeu (tools/atlas_feuillage.cjs)
     (r"textures/route/.*", "Poly Haven", "routes-revetements.txt"), (r"textures/essai/.*", None, None),
-    (r"fonts/Rajdhani-.*\.ttf", "Rajdhani", "police-rajdhani-OFL.txt"), (r"textes/.*", None, None),
+    (r"fonts/Rajdhani-.*\.ttf", "Rajdhani", "police-rajdhani-OFL.txt"), (r"fonts/Inter-.*\.ttf", "Inter", "police-inter-OFL.txt"), (r"textes/.*", None, None),
     (r"cars/skins/[\w-]+\.etc2\.ktx2", None, None),   # WFS-492 : skins dessinées par le projet (tools/skins/generer.py, police Rajdhani déjà créditée)
     (r"profil/mots_interdits\.txt", None, None),   # WFS-533 : liste écrite pour le jeu (WFS-480, aucune liste extérieure recopiée)
     # WFS-564 : icône fournie par l'utilisateur (references/maquettes-R19/icone-pistolet-utilisateur.png, SHA-256 167444ee…),
