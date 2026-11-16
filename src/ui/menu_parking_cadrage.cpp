@@ -7,9 +7,9 @@ namespace wfs::ecrans::parking {
 namespace {
 // maquette 01 (2400 × 1080) : la voiture occupe 49 % de la hauteur de l'image (du capot au bas des roues) et 44 % de sa largeur,
 // son centre à 58 % de la largeur et à 57 % de la hauteur (depuis le haut) ; la console du menu tient le tiers gauche
-constexpr float DEMI_HAUTEUR = 0.66f;   // demi-hauteur visée (NDC) ; WFS-557 : maquette 01 comparée côte à côte au banc (voiture ≈ 21 % plus grande qu avant)
-constexpr float DEMI_LARGEUR_MAX = 0.58f;   // demi-largeur au plus (NDC) : la voiture ne passe pas sous la console
-constexpr float CENTRE_X = 0.31f, CENTRE_Y = -0.19f;   // bord gauche de la voiture à x ≥ −0,26 : à droite de la console (revue du lead dev)   // centre visé (NDC, y vers le haut)
+constexpr float DEMI_HAUTEUR = 0.66f;   // demi-hauteur visée (NDC) ; WFS-557 : maquette 01 comparée côte à côte au banc (voiture ≈ 21 % plus grande qu'avant)
+constexpr float DEMI_LARGEUR_MAX = 0.46f;   // demi-largeur au plus (NDC) : 44 % de la largeur sur la maquette 01 (WFS-557, avis de l'agent 3D sur la PR #432)
+constexpr float CENTRE_X = 0.20f, CENTRE_Y = -0.19f;   // centre visé (NDC, y vers le haut) : 60 % de la largeur (58 % sur la maquette 01), boîte englobante à x > −0,28 (console, test_menu_parking)
 constexpr float OEIL_Y = 1.0f;          // caméra à 1 m du sol, horizontale : verticales droites (piliers), objectif décentré
 
 Emprise mesurer(const Cadrage& c, float L, float W, float H, float aspect) {
