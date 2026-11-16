@@ -4,6 +4,7 @@
 #include <cmath>
 #include "../render/renderer.h"
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX, margesCommandes (lecture seule)
+#include "../ui/boutons.h"   // WFS-551 : contour arrondi des pédales
 #include "../ui/text.h"
 #include "textes_course.h"   // WFS-506 : libellés des commandes en français ou en anglais
 
@@ -120,7 +121,7 @@ void iconeFrein(Renderer& r, float cx, float cy, float s, const vec4& c) {
 
 // RG-01 / RG-02 : pédale .pedal (coins coupés 10 px, fond dégradé, bordure 1 px, icône 26 px et libellé 13 px en bas)
 void pedale(Renderer& r, const Cadre& c, float k, bool gaz, bool appui) {
-    const float cx = c.x + c.w / 2, bas = c.y + c.h, w2 = c.w / 2, h = c.h, b = 10 * k;
+    const float cx = c.x + c.w / 2, bas = c.y + c.h, w2 = c.w / 2, h = c.h;
     // .pedal.down : perspective(420px) rotateX(16deg) scale(.97), origine au milieu du bas ; u depuis le centre, v vers le haut
     const float sn = std::sin(16 * PI / 180), cs = std::cos(16 * PI / 180), P = 420 * k;
     auto echelle = [&](float v) { return appui ? 0.97f * P / (P + 0.97f * v * sn) : 1.f; };
@@ -133,29 +134,26 @@ void pedale(Renderer& r, const Cadre& c, float k, bool gaz, bool appui) {
         if (appui) { v.x = std::min(1.f, v.x * 1.15f); v.y = std::min(1.f, v.y * 1.15f); v.z = std::min(1.f, v.z * 1.15f); }
         return v;
     };
-    const vec2 poly[6] = {place(-w2 + b, h), place(w2 - b, h), place(w2, h - b), place(w2, 0), place(-w2, 0), place(-w2, h - b)};
-    const float haut = poly[0].y;
+    // WFS-551 (RG-06, maquettes 17 et 17b) : pédale de verre aux coins arrondis (taille inchangée), SANS texte : grande icône au
+    // centre ; gaz : liseré et icône orange ; frein : liseré clair, icône rouge. L'enfoncement (perspective) est gardé.
+    vec2 rect[ui::boutons::MAX_SOMMETS], poly[ui::boutons::MAX_SOMMETS];
+    const int np = ui::boutons::contourArrondi(rect, -w2, 0, c.w, h, 14 * k);   // y local vers le bas : 0 = haut de la pédale
+    for (int i = 0; i < np; i++) poly[i] = place(rect[i].x, h - rect[i].y);
+    const float haut = place(0, h).y;
     if (appui && gaz) {   // .pedal--gas.down : --glow-accent (0 0 12px rgba(255,106,0,.55), 0 0 32px rgba(255,106,0,.25))
-        dessin2d::halo(r, poly, 6, 30 * k, alpha(ACCENT, 0.14f));
-        dessin2d::halo(r, poly, 6, 12 * k, alpha(ACCENT, 0.3f));
+        dessin2d::halo(r, poly, np, 30 * k, alpha(ACCENT, 0.14f));
+        dessin2d::halo(r, poly, np, 12 * k, alpha(ACCENT, 0.3f));
     }
-    dessin2d::polygone(r, poly, 6, {eclat({44 / 255.f, 48 / 255.f, 66 / 255.f, 0.78f}), eclat({16 / 255.f, 18 / 255.f, 26 / 255.f, 0.86f}), haut, bas});
+    dessin2d::polygone(r, poly, np, {eclat({62 / 255.f, 64 / 255.f, 72 / 255.f, 0.70f}), eclat({22 / 255.f, 23 / 255.f, 28 / 255.f, 0.82f}), haut, bas});
     if (appui) {   // .pedal-fill : remplissage de bas en haut (linear-gradient(0deg, …))
         const vec4 f = gaz ? ACCENT : DANGER;
-        dessin2d::polygone(r, poly, 6, {eclat(alpha(f, gaz ? 0.25f : 0.2f)), eclat(alpha(f, gaz ? 0.9f : 0.85f)), haut, bas});
+        dessin2d::polygone(r, poly, np, {eclat(alpha(f, gaz ? 0.25f : 0.2f)), eclat(alpha(f, gaz ? 0.9f : 0.85f)), haut, bas});
     }
-    dessin2d::contour(r, poly, 6, k, appui ? (gaz ? ACCENT : DANGER) : (gaz ? alpha(ACCENT, 0.55f) : vec4{1, 1, 1, 0.12f}));
-    // padding-bottom 10 px + bordure 1 px ; libellé (line-height 1) puis icône, 6 px d'écart (flex, justify-content: flex-end)
-    const vec4 ci = appui ? SUR_ACCENT : (gaz ? ACCENT : ICONE_FREIN), ct = appui ? SUR_ACCENT : TEXTE;
-    const vec2 io = place(0, 43 * k);
-    const float s = 26 * k / 24 * echelle(43 * k);
+    dessin2d::contour(r, poly, np, 1.5f * k, appui ? (gaz ? ACCENT : DANGER) : (gaz ? alpha(ACCENT, 0.85f) : vec4{1, 1, 1, 0.20f}));
+    const vec4 ci = appui ? SUR_ACCENT : (gaz ? ACCENT : ICONE_FREIN);
+    const vec2 io = place(0, h * 0.5f);
+    const float s = 40 * k / 24 * echelle(h * 0.5f);
     if (gaz) iconeGaz(r, io.x, io.y, s, ci); else iconeFrein(r, io.x, io.y, s, ci);
-    const vec2 lo = place(0, 17.9f * k);   // milieu des capitales du libellé
-    const float px = std::round(std::max(13.f, 13 * k)) * echelle(17.9f * k);
-    float ly = lo.y - 0.4768f * px;
-    if (!appui) ly = std::round(ly);
-    static textes::Capitales libGaz{"hud.gaz"}, libFrein{"hud.frein"};   // WFS-506 (RG-01) : « GAZ » / « GAS », « FREIN » / « BRAKE »
-    ui::text(r, lo.x, ly, px, gaz ? libGaz() : libFrein(), ct, ui::CENTRE, 0.14f, false);
 }
 
 // RG-03 : bouton .nitro-touch (disque 68 px, anneau de charge vert acide .nt-ring, flamme .nt-icon, libellé .nt-label)
@@ -176,8 +174,9 @@ void boutonNitro(Renderer& r, float cx, float cy, float k, const EtatCommandes& 
         dessin2d::couronne(r, cx, cy + 4 * u, 30 * u, 48 * u, {0, 0, 0, 0.3f}, {0, 0, 0, 0});
     }
     // radial-gradient(circle at 50% 38%, rgba(44,50,40,.9), rgba(14,16,22,.9) 68%)
-    dessin2d::disqueRadial(r, cx, cy, R, cx, cy - 8.16f * u, 36.8f * u, filtre({44 / 255.f, 50 / 255.f, 40 / 255.f, 0.9f}),
-                           filtre({14 / 255.f, 16 / 255.f, 22 / 255.f, 0.9f}));
+    // WFS-551 (RG-06, maquette 17b) : seule la couleur de fond change : verre gris anthracite (avant : vert sombre)
+    dessin2d::disqueRadial(r, cx, cy, R, cx, cy - 8.16f * u, 36.8f * u, filtre({64 / 255.f, 66 / 255.f, 74 / 255.f, 0.9f}),
+                           filtre({18 / 255.f, 19 / 255.f, 24 / 255.f, 0.9f}));
     // conic-gradient(var(--success) n × 360deg, rgba(255,255,255,.1) 0), masqué sous 27,5 px
     const float a = 2 * PI * nq / 40.f;
     if (nq > 0) dessin2d::anneau(r, cx, cy, 27.5f * u, R, vert, 0, a);

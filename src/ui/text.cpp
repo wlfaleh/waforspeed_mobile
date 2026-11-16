@@ -10,6 +10,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../render/renderer.h"
+#include "garage_finition_pistolet.h"   // WFS-551 (accroche)
 #include "langue.h"   // WFS-504 : journal des textes affichés (banc « textes »), tables lues avec la police
 
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -18,6 +19,7 @@
 namespace wfs {
 namespace ui {
 namespace {
+float g_decalageNeon = 0;   // WFS-551 : + 4 sur u (shaders/ui.frag : contour néon)
 
 constexpr float BASE_PX = 48.f;          // taille de référence de l'atlas
 constexpr float BASE_PX_INTER = 32.f;    // WFS-557 : Inter (texte courant, 10 à 20 px à l'écran) : moins de place dans l'atlas
@@ -110,6 +112,8 @@ bool load(Renderer& r) {
         if (F.faces[f].glyphs.empty()) { F.faces[f] = F.faces[0]; stbtt_InitFont(&F.faces[f].info, F.faces[f].ttf.data(), 0); }
     std::vector<uint8_t> rgba((size_t)ATLAS * ATLAS * 4);
     for (size_t i = 0; i < px.size(); i++) { uint8_t v = px[i]; rgba[i * 4] = rgba[i * 4 + 1] = rgba[i * 4 + 2] = rgba[i * 4 + 3] = v; }
+    // WFS-551 (RG-03, accroche) : icône du pistolet de l'utilisateur dans les canaux G, B, A libres de l'atlas (le texte lit R)
+    ecrans::garage::pistolet::ajouterAtlas(rgba.data(), ATLAS, y + rowH + 1);
     F.atlas = r.vk().uploadTexture(rgba.data(), ATLAS, ATLAS, false);
     r.uiSetFontAtlas(F.atlas);
     F.ready = true;
@@ -144,7 +148,7 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
         if (prev) pen += stbtt_GetCodepointKernAdvance(&F.info, prev, cp) * F.scale * s;
         if (r && g.w > 0) {
             const float gy = y + (F.ascent + g.yoff) * s, gh = g.h * s;   // bas du quad décalé de (pivot − bas) × pente
-            r->uiGlyph(x + pen + g.xoff * s + (pivot - gy - gh) * pente, gy, g.w * s, gh, g.u0, g.v0, g.u1, g.v1, c, gh * pente);
+            r->uiGlyph(x + pen + g.xoff * s + (pivot - gy - gh) * pente, gy, g.w * s, gh, g.u0 + g_decalageNeon, g.v0, g.u1 + g_decalageNeon, g.v1, c, gh * pente);   // WFS-551 : + 4 = contour néon
         }
         pen += g.adv * s + spacing * px;
         prev = cp;
@@ -159,6 +163,8 @@ AvecPolice::AvecPolice(Police p) : avant_(g_police) { g_police = p; }
 AvecPolice::~AvecPolice() { g_police = avant_; }
 bool chargerPolice(Renderer& r) { return load(r); }
 void libererPolice(Renderer& r) { unload(r); }   // WFS-308 (accroche)
+
+void contourNeon(bool actif) { g_decalageNeon = actif ? 4.f : 0.f; }   // WFS-551
 
 float width(float px, const std::string& s, float spacing) {
     if (!F.ready) return 0;

@@ -1317,3 +1317,110 @@ Commit relu `bdabd2b9`. Les corrections du code sont acceptées : les segments d
 - Fusion par le lead dev à la 2e revue (squash cb7932d2) ; `TACHES.md` 🟣, `qa/Check.md` à jour (lead dev). Ligne de `track-agent.md` en « ⏹️ session terminée » ; réponse à l'utilisateur sous la demande du cadeau du jour (`tache utilisateur.md`).
 - Suite : WFS-556 (badge « NOUVEAU », appel de `cadeau::vu()`) attend WFS-551. Un seul sujet par session : aucun autre ticket demandé.
 
+
+### 2026-11-16 01:42:49 — Arbitrage WFS-551 : éléments absents des maquettes, WFS-563 créé (po-scrum-master)
+Question de Claude, agent dev3d (01UY1Vv2KF), PR #426. Décisions écrites dans `regles-de-gestion/WFS-551.md` (RG-12 à RG-15) : (1) bouton MARKET retiré de l'écran du garage, l'accès reste en touchant le cadre du solde (comme le menu, arbitrage 01:05) ; (2) crédit du modèle 3D gardé (obligation CC BY), petit, gris, en bas à droite ; (3) les 28 couleurs restent (WFS-489), rangées de la maquette 06 qui défilent au doigt avec chevron ; (4) scène 3D du garage hors WFS-551 : nouveau **WFS-563** (P1, ⏳ Prêt, `@dev` + avis `@3d`, `garage_decor.*`, même fichier que WFS-554 : le 2e fusionné se synchronise) ; le 100 % de WFS-551 porte sur l'interface 2D.
+
+### 2026-11-16 01:44:49 — WFS-550 : SF-X de vitrine au menu, ordre de l'utilisateur (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « la voiture dans le menu doit être exactement la même, c'est l'image de marque ». Il remplace WFS-552 RG-03 (« en jeu, le menu montre la voiture réelle du joueur »).
+- Fait (src/ui/ecrans/menu.cpp) : modèle de vitrine sf90 chargé une fois, skin « ciel », finition caméléon, peinture orange ; la voiture du joueur n'est plus dessinée au menu (SceneDediee::joueur = false) ; course, garage et sauvegarde inchangés.
+
+### 2026-11-16 01:50:38 — WFS-496 : PR #428 corrigée après la revue du lead dev (Claude, agent dev3d (01Us6uCwHf))
+- Corrigé : texte de la confirmation centré (FR / EN) ; sortie du garage : texture de l'aperçu rendue et habillage de la course reposé (accroche `garage.cpp` : 9 lignes au total) ; parcours RC-E18-09 de jour, contrôlé au banc ; autocollants du dessus ancrés sur le toit ; 500 et GT86 : étoile et lettre en miroir, bande double sur le toit (lisible en course) ; message caché sous la confirmation ; texte de la liste vide raccourci.
+- Vérifié sur 694c59bb (synchronisé avec main, WFS-503 compris) : tests CPU 149 réussis ; banc `atelier` 0 écart. Captures refaites (🔁) dans `qa/pr/WFS-496/`.
+
+### 2026-11-16 02:32:22 — WFS-496 fusionné par le lead dev (lead-dev)
+- PR #428, 2e revue sur `47dfd4a0` : les 4 points de la 1re revue sont corrigés (confirmation centrée FR / EN ; `atelier::rendre` à la sortie du garage, habillage de la course reposé ; parcours de jour ; captures de la 500 et bande du toit lisible en course). Remarques non bloquantes faites aussi.
+- Refait par le relecteur : construction, `tests_cpu.sh` 149 réussis, banc `WFS_BANC=atelier` 0 écart. `main` n'avait reçu que des documents depuis la synchronisation (694c59bb).
+- « ✅ Approuvé » posté en COMMENT (même compte GitHub), puis fusion en squash `5e656ac7`. Statut 🟣, ligne de `suivi-pr.md` enlevée, `qa/Check.md` complété.
+
+### 2026-11-16 02:33:17 — WFS-496 : fin, session terminée (Claude, agent dev3d (01Us6uCwHf))
+- PR #428 fusionnée en squash par le lead dev à la 2e revue (5e656ac7) ; ticket 🟣 Fusionné, ligne dans `qa/Check.md`. Session arrêtée (un seul sujet par session) : aucun autre ticket demandé.
+- Pour la QA : banc `WFS_BANC=atelier` (parcours, 3 voitures jour et nuit, FR / EN). Remarques du lead dev (non bloquantes) : la vérification du jour du banc repose aussi sur la capture ; libellé « capot » de la capture `vue-dessus` du banc à corriger (la bande est sur le toit).
+
+### 2026-11-16 05:50:25 — WFS-551 : PR #426 corrigée, garage aux maquettes R19 (Claude, agent dev3d (01UY1Vv2KF))
+- Fait : garage refait sur la mise en page des maquettes 06, 07, 13, 15, 16 (onglets VOITURE / PEINTURE / FINITION / SKINS, un panneau de verre au centre en bas, grand bouton rond à droite avec nom au-dessus et solde dessous, solde en haut à droite, flèches seulement sur l'onglet Voiture) ; 18b (« rouler sur une autre carte »), 18d (scène floue derrière la fenêtre) ; nettoyage demandé par le lead dev. Arbitrages du PO RG-10 à RG-15 appliqués.
+- Accroches hors zone (≤ 10 lignes chacune) : `text.cpp` (`contourNeon`, décalage u + 4 pour le mode néon de `shaders/ui.frag`), `garage_fiche.cpp` (sous-titre et points selon l'onglet, couleurs de WFS-550 gardées), `garage_cadre.cpp` (crédit 11 px, RG-13), `garage_commun.h` (onglet, zones), `garage.cpp` (onglets, panneaux).
+- RG-12, chemin du Market : `garage.cpp` `onTouch` → `onglets::dansSolde(x, y)` (cadre du solde posé par `onglets::solde`) → `market_ecran::ouvrir(Ecran::Garage)` ; le bouton de WFS-513 est dessiné transparent (`dessinerBoutonGarage(..., 0.f)`), sa zone reste pour le banc du Market. Code du Market non touché.
+- Synchronisation avec `main` (WFS-496) : conflit `garage.cpp` résolu en gardant les deux (solde → Market, bouton « Atelier »).
+- Vérifié : construction ; `bash tools/qa/tests_cpu.sh build` → 150 tests OK ; bancs garage-couleurs, garage-voitures, garage-finitions, garage-skins (branche synchronisée), paquets, hud:1280x720 → 0 écart ; 22 captures maquette / avant / après dans `qa/pr/WFS-551/`.
+- Limites : scène 3D du garage → WFS-563 (RG-15) ; cadrans → WFS-550. Lead dev rappelé.
+
+
+### 2026-11-16 05:59:42 — WFS-551 : PR #426 refusée en 2e revue (lead-dev)
+Commit relu a7512b77. Construction et 150 tests CPU verts (refaits), 22 captures et maquettes 06, 07, 13, 15, 16, 17, 18a–18d comparées au code : les 9 points de la 1re revue sont corrigés. Il reste un défaut : en mode « Toit et rétros », les titres des rangées (« Classiques · gratuites », « Vives · 50 ★ ») contredisent les prix écrits sous les gouttes (50 ★, 100 ★) (`garage_couleur.cpp:176-184`). Seule la capture toit-noir est à refaire. Questions transmises au PO : boutons « Atelier » (WFS-496) et « Essai gratuit » (WFS-499) absents des maquettes.
+
+### 2026-11-16 06:20:35 — WFS-551 : 2e revue corrigée, PR #426 (Claude, agent dev3d (01UY1Vv2KF))
+- Fait : « Toit et rétros » : le titre de chaque rangée compte le droit de la couleur secondaire tant qu'il n'est pas acheté (même total que `prixPastille` sous les gouttes) ; texte `garage.couleur.groupe.classiques_prix` FR / EN (7337a96d).
+- Vérifié : banc garage-couleurs 0 écart ; tests CPU 150 OK ; capture `garage-couleurs-p208-toit-noir-apercu` refaite (574d6782). Lead dev rappelé.
+
+### 2026-11-16 06:30:20 — WFS-551 fusionné par le lead dev (lead-dev)
+
+PR #426, 3e revue sur 574d6782 : le défaut de la 2e revue (titres « Toit et rétros ») est corrigé dans 7337a96d (droit du toit compté dans le titre, comme `prixPastille`). Capture `toit-noir-apercu` ouverte, maquette 06 conforme, construction et 150 tests CPU refaits par le lead dev. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash **e1c86795**. Statut 🟡 À valider (utilisateur). Remarques au PO : Atelier, Essai gratuit, « Plus tard » de 18d absents ou placés hors maquette.
+
+### 2026-11-16 06:30:44 — WFS-551 fusionné, session terminée (Claude, agent dev3d (01UY1Vv2KF))
+- PR #426 fusionnée en squash par le lead dev (e1c86795), 3e revue. Statut 🟡 À valider (utilisateur) sur l'APK de `main` ; ligne `qa/Check.md` posée par le lead dev.
+- Suites hors ticket : scène 3D du garage → WFS-563 ; remarques au PO : boutons Atelier (WFS-496) et Essai gratuit (WFS-499) absents des maquettes, « Plus tard » de 18d, goutte « Comme la carrosserie » sous « Classiques · 50 ★ » en mode toit.
+- Un seul ticket par session : je m'arrête, aucun autre ticket demandé.
+
+### 2026-11-16 07:10:25 — Statuts automatiques, CI main #1147 (robot statuts)
+- Run rouge (push, commit e1c8679), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-496, WFS-503.
+
+### 2026-11-16 08:59:27 — WFS-550 : photo de la maquette 01 en fond du menu, ordre de l'utilisateur (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « pour l'instant mets la photo en background » (la 3D du menu ne reproduisait pas la SF-X de la maquette à 100 %). Exception à la règle « 100 % 3D » pour le fond du menu, sur son ordre.
+- Fichier `assets/ui/menu_fond.jpg` (2400 × 1080, SHA-256 9b101aadd1acdf0285a7c47292eddbf93c7b412ba1b4aa8e90ecbf27310964d8) : maquette `references/maquettes-R19/01-menu.jpg` de l'utilisateur, logo, compteur, RECORD et carte du cadeau effacés (le jeu les redessine) ; déclaré « créé par le projet » dans `tools/qa/verifier_licences.py` (modèle de la SF-X déjà crédité).
+- **Accroche E0 (≈ 25 lignes)** : `Renderer::uiSetImageFond` / `uiImageFond` (binding 1 de fontSet_, jusque-là blanc) et branche « uv ≤ −1,5 » dans `shaders/ui.frag`. Le parking 3D et la SF-X de vitrine restent dans le code (repli si la photo manque) mais ne sont plus chargés quand la photo est là.
+
+### 2026-11-16 09:09:06 — WFS-550 : retour du menu en 3D, ordre de l'utilisateur (Claude, agent dev3d (01UY1Vv1yg))
+- Ordre de l'utilisateur dans la session : « remets la version 3D ». Commit de la photo (c1fa577f) annulé par 780b3393 : plus d'image `assets/ui/menu_fond.jpg`, plus d'accroche E0 (renderer, ui.frag) ; le menu affiche de nouveau le parking 3D et la SF-X de vitrine (sans plaques, détails bleu ciel, reflets du parking).
+
+### 2026-11-16 09:44:40 — WFS-558 attribué à Claude, agent dev3d (01Us6uCtQN) (po-scrum-master)
+- Début : **WFS-558** (P1, E23) « Interface R19 : scène 3D du duel en ligne (maquette 04) », nouvelle session `@dev` (session_01Us6uCtQNFWC6KwvYiHKmMk), à sa demande, aucun ticket avant. Choix : 1er P1 ⏳ Prêt de E23 (plus récente demande de l'utilisateur), sans dépendance ouverte.
+- Zone : `src/ui/ecrans/salon.*` (E8), menu 3D de WFS-552 (`menu*`, `garage_decor.*`, modèles du parking) ; règles `regles-de-gestion/WFS-558.md` (RG-01 à 04, RG-C1 à C7). Branche `feature/waforspeed-558`, captures ciblées, avis « VALIDÉ » de l'agent 3D, revue maquette ↔ code par le lead dev ; après fusion 🟡 À valider (utilisateur). WFS-557 (en cours) touche les boutons 2D : synchroniser avec `main`.
+- `track-agent.md` : lignes des sessions fusionnées (496, 503, 551, 555) enlevées.
+
+### 2026-11-16 09:45:38 — CI de `main` #1147 rouge : WFS-564 créé et attribué (po-scrum-master)
+- **CI** : run 43817146076 (#1147, e1c86795 = WFS-551, PR #426) rouge, job banc-essai (texte) : tests CPU 150 OK, contrôle des licences « MANQUE ui/icone-pistolet.png : actif livré sans crédit connu ». Icône fournie par l'utilisateur (journal 2026-11-15 23:28:32), ajoutée par WFS-551 sans ligne dans `COUVERTURE`.
+- **US technique WFS-564** (P1, E0, `[TECHNIQUE]`) : une ligne de `COUVERTURE` pour ce fichier seul, sans affaiblir le contrôle ; règles `regles-de-gestion/WFS-564.md`.
+- **Début** : attribué à Claude, agent dev3d (01Us6uCxFh) (session_01Us6uCxFhiJ8TJGKy9QTPw7), nouvelle session `@dev`, à sa demande (aucun ticket avant). Pourquoi lui : règle de l'utilisateur « CI de `main` rouge → US technique P1 tout de suite à un développeur libre » (précédent WFS-543) ; la session de WFS-551 est terminée. Zone : `tools/qa/verifier_licences.py` seulement. Branche `feature/waforspeed-564`. Plan : ligne de crédit, contrôle à 0 manque, tests CPU, PR, appel du lead dev, CI de `main` verte.
+- **track-agent** : lignes des sessions terminées enlevées (WFS-551 01UY1Vv2KF, WFS-496 01Us6uCwHf, WFS-503 01Us6uCwe9, lead dev de WFS-555).
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-559, 561, 563 (E23, P1), WFS-512 (E21, P1), puis WFS-554, 538, 553 (P2).
+
+### 2026-11-16 09:46:38 — Début WFS-559 : portique de départ à 5 feux (maquette 09) ; attribué à Claude, agent dev3d (01Us6uCwnA) (po-scrum-master)
+- **Ticket** : WFS-559 (E23, P1 Urgent), `regles-de-gestion/WFS-559.md`. Attribué à Claude, agent dev3d (01Us6uCwnA) (session_01Us6uCwnA1Zmqb3WtWavzSG), nouvelle session `@dev` sans ticket avant, à sa demande ; 1er P1 prêt de E23 restant (WFS-558 et WFS-564 attribués à 09:44 / 09:45 UTC à d'autres sessions). Branche `feature/waforspeed-559`.
+- **Zone de code** : objets de course (nouveau modèle du portique et des feux, placé par le code à la ligne de départ) ; `course_system.*` / `course.cpp` seulement pour lire le décompte existant (aucune nouvelle logique de départ) ; consigne 2D en `ui::tr` FR / EN. Pas de paquet `.wfcarte` (RG-03). HUD de course = WFS-550 / 551 : synchroniser avec `main`.
+- **Critères** : treillis aux vraies mesures (RG-02), 5 feux pilotés par le décompte, toutes cartes jouables et modes, jour et nuit, aucune forme nue, ≤ 33 ms S21 FE ; avis « VALIDÉ » de l'agent 3D sur le dernier commit ; revue maquette 09 ↔ fichier:fonction ; après fusion 🟡 À valider (utilisateur). Modèle réutilisable par WFS-560.
+- **Plan court** : lire la maquette 09 et le décompte, modéliser portique + feux, accrocher au décompte, captures 0 / 3 / 5 feux + départ, jour / nuit, Ville et Corniche, PR, avis `@3d`, lead dev.
+
+### 2026-11-16 09:47:31 — Arbitrage WFS-558 : digicode à vraie taille avec vue rapprochée, pavé 6 × 6, listes dans le panneau de verre (po-scrum-master)
+- Questions de Claude, agent dev3d (01Us6uCtQN). Décisions écrites dans `regles-de-gestion/WFS-558.md` (RG-05 à RG-08) : (1) option A, digicode à vraie taille + glissement de caméra (≈ 0,4 s) vers le digicode au toucher, « Retour » ramène d'abord au cadrage large ; option B (×4) refusée (RG-02, DA-realisme 99 %) ; (2) pavé 6 × 6 de 15 mm au pas de 19 mm : 2-9, A-Z sans I L O, ⌫ (×2) et OK (×3), une lettre par appui + 150 ms ; (3) pseudo sur la plaque 3D seulement ; « Salons qui t'attendent » et « Derniers adversaires » dans le panneau de verre, seulement s'ils ne sont pas vides ; salon = maquette 23 sur le parking flouté. Écarts à la maquette acceptés par le PO : taille du digicode dans le cadrage large, pavé alphanumérique. Recommandations du développeur acceptées.
+
+### 2026-11-16 09:50:14 — Arbitrage WFS-559 : feux à la place des chiffres, « GO » gardé, vert 0,7 s au départ (po-scrum-master)
+- Questions de Claude, agent dev3d (01Us6uCwnA). Décisions écrites dans `regles-de-gestion/WFS-559.md` (RG-05 à RG-09), recommandation du développeur acceptée : (1) chiffres 3 / 2 / 1 retirés, « GO » gardé 0,7 s sous les feux, bips inchangés ; (2) 5 feux rouges, un toutes les 0,6 s sur le décompte de 3 s, puis vert 0,7 s au départ, puis éteints ; (3) pas de mécanique « départ parfait » à coder (n'existe pas) ; (4) consigne FR / EN pendant le décompte seulement ; (5) portique à la ligne de départ dans tous les modes, Checkpoint compris (capture en plus).
+
+### 2026-11-16 09:54:35 — Statuts automatiques, bancs du matin #42 (robot statuts)
+- Run rouge (schedule, commit 9a8fbd5), aucun statut changé. Job(s) en échec : tests CPU et licences.
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-496, WFS-503.
+
+### 2026-11-16 09:58:35 — WFS-564 : correction faite, CI de branche lancée (Claude, agent dev3d (01Us6uCxFh))
+- **Session** : session_01Us6uCxFhiJ8TJGKy9QTPw7, ouverte par l'utilisateur avec « @dev go » ; ticket attribué par le PO (US technique P1, CI de `main` #1147 rouge).
+- **Cause vérifiée** (journal du run 43817146076, job « banc-essai (texte) ») : seule erreur = contrôle des licences, `MANQUE ui/icone-pistolet.png` (150 tests CPU verts). Origine vérifiée (RG-03) : icône fournie par l'utilisateur (journal du 2026-11-15 00:52:28 et 23:28:32), SHA-256 relus : `references/maquettes-R19/icone-pistolet-utilisateur.png` = 167444ee…, `assets/ui/icone-pistolet.png` = 5f69fa16… ; aucun téléchargement.
+- **Fait** : une ligne `(r"ui/icone-pistolet\.png", None, None)` dans `COUVERTURE` de `tools/qa/verifier_licences.py` + commentaire (WFS-551, image d'origine). Aucun motif large, aucun seuil changé (RG-02).
+- **Vérifié en local** : contrôle des licences 1 manque → 0 manque ; tests CPU 150/150 (394 s).
+- **CI de branche** (US technique) : run **#1148** (43842900414) de `build.yml` sur `feature/waforspeed-564` (commit 12819871, synchronisé avec `main`) : vérifie le job « banc-essai (texte) » en entier (licences, puis l'étape « Captures du rendu (texte) » sautée sur `main` à cause du rouge).
+
+### 2026-11-16 10:00:41 — WFS-559 : 2e arbitrage, boutons MENU / ARRIÈRE cachés pendant le décompte (po-scrum-master)
+- **Question** de Claude, agent dev3d (01Us6uCwnA) : en vue « Arrière » (caméra 6,3 m / 35°, WFS-105), le caisson des feux tombe derrière les boutons du HUD MENU et ARRIÈRE ; la maquette 09 ne les a pas.
+- **Décision** : option (a), recommandation du développeur acceptée. RG-10 : pendant le décompte seulement (≈ 3 s, voiture immobile), MENU et ARRIÈRE ni dessinés ni touchables, retour au départ (taille et place inchangées, WFS-429). RG-11 : accroche ≤ 10 lignes annoncée au journal dans le fichier du HUD ; WFS-550 en PR #424 touche le HUD : synchroniser avec `main`. RG-12 : caméra inchangée, option (b) refusée. RG-13 : caisson à 5 colonnes de 0,9 m (≈ 4,6 m), lanternes Ø 200 mm à visière, 2 par colonne, accepté. Captures en plus : Checkpoint et Course à 5, décompte puis départ.
+
+### 2026-11-16 10:48:33 — WFS-561 attribué à Claude, agent dev3d (01Us6uCxBL) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01Us6uCxBLnhYyVos7wEtk5U), sans ticket auparavant : **WFS-561** (P1, E23), 1er P1 ⏳ Prêt de E23 restant (558, 559, 564 déjà pris).
+- Zone : écran des résultats (E8, `src/ui/ecrans/`) et scène 3D du menu de WFS-552 (parking, éclairage, sol mouillé) réutilisée ; panneaux 2D de WFS-548 / 549 / 557 non retouchés.
+- Règles : `regles-de-gestion/WFS-561.md` (RG-01 à 03, RG-C1 à C7). Avis « VALIDÉ » de l'agent 3D sur le dernier commit et revue maquette ↔ fichier:fonction avant fusion ; après fusion : 🟡 À valider (utilisateur).
+- Restent ⏳ Prêt pour de nouvelles sessions `@dev` : WFS-563, 512 (P1), puis 554, 538, 553.
+
+### 2026-11-16 10:51:31 — Arbitrage WFS-561 : scène 11 = résultats de la course à 5, du duel et de la Poursuite (po-scrum-master)
+- Question de Claude, agent dev3d (01Us6uCxBL) : maquette 11 (tableau LED) et maquettes 31 à 33 (fenêtres 2D de WFS-557) montrent le même classement.
+- Choix A : la scène 11 sert de résultats aux 3 modes classés ; le Checkpoint garde l'écran de WFS-557 (scène 10 plus tard, WFS-560). Les fenêtres 2D de 31 à 33 restent dans le code comme repli (rien n'est supprimé). Accroches dans les `resultat()` après la fusion de WFS-557. RG-04 à RG-09 dans `regles-de-gestion/WFS-561.md`. L'utilisateur peut changer ce choix.
+

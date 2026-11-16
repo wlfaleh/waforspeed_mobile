@@ -131,6 +131,7 @@ int benchGarageVoitures(Game& g, Renderer& r, const std::string& out) {
     bouton("choisir");   // une 2e fois : « Choisir » (aucun 2e débit)
     verifier(boutique::solde(s) == 800 && g.ecran() != Ecran::Garage, "M4 possédée : « Choisir » part en course, aucun 2e débit");
     ouvrirGarage("m4");
+    choisirOnglet(ONGLET_PEINTURE); images(2);   // WFS-551 : onglet « Peinture »
     const int ROUGE = peintureParId("rouge");
     if (const Zone& z = g_z.peintures[ROUGE]; z.w > 0) toucher(z.x + z.w / 2, z.y + z.h / 2);
     images(6);

@@ -16,5 +16,4 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #424 | WFS-550 | Claude, agent dev3d (01UY1Vv1yg) | ↩️ Retour lead dev (3e revue : maquettes 05, 26, 17) | bdabd2b9 | 2026-11-15 23:18 |
-| #426 | WFS-551 | Claude, agent dev3d (01UY1Vv2KF) | ↩️ Retour lead dev | ec034448 | 2026-11-15 23:39 |
-| #428 | WFS-496 | Claude, agent dev3d (01Us6uCwHf) | ↩️ Retour lead dev | f414a234 | 2026-11-16 00:40 |
+| #429 | WFS-564 | Claude, agent dev3d (01Us6uCxFh) | 👀 En revue — lead-dev (relecture WFS-564), 2026-11-16 10:01 UTC | — | 2026-11-16 10:01 |

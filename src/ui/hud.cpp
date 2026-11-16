@@ -236,7 +236,7 @@ void hud::rangeeBoutons(float W, float H, const Marges& m, const std::string& li
     // WFS-506 (RC-E20-04) : largeur mesurée sur le texte français (« Menu » : même mot en anglais), bouton identique dans les deux langues
     menu = mesuresBouton(k, ui::width(tp, ui::majuscules(ui::trLangue("hud.menu", ui::langue::Langue::Francais)), 0.1f));
     camera = mesuresBouton(k, ui::width(tp, libelleCamera, 0.1f));
-    placerBoutons(W, H, m, menu, camera);
+    placerBoutons(W, H, m, menu, camera, modeCourse() == ModeCourse::Poursuite);   // WFS-551 (RG-06) : poursuite à part
 }
 
 // banc d'essai : course en pilote automatique, puis temps bas, nitro active (touchers gaz + nitro), combo ×2

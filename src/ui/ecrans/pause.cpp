@@ -27,7 +27,7 @@ namespace {
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 // jetons :root du jeu web (codes sRGB)
 const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, ACCENT = 0xFF6A00;
-const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.10f};
+// WFS-551 (RG-06) : bouton « Menu » en verre (verre::panneau) : plus de jetons GLASS / BORD ici
 
 struct Zone {
     float x = 0, y = 0, w = 0, h = 0;
@@ -97,13 +97,13 @@ private:
         const std::string t = ui::majuscules(ui::tr("pause.menu"));   // WFS-505
         const float x = b.x, y = b.y, w = b.w, h = b.h, ic = b.icone;
         g_menu = {x, y, w, h};
-        biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, b.biais, BORD);   // border 1px var(--border)
-        biseau(r, x, y, w, h, b.biais, GLASS);
-        const vec4 o = hex(ACCENT);
+        // WFS-551 (RG-06, maquettes 17 et 17b) : verre comme le GPS (coins arrondis, liseré clair), icône et texte blancs, en haut au centre
+        verre::panneau(r, x, y, w, h, {h * 0.22f, 1.5f * k, 1, false});
+        const vec4 o = hex(TEXTE);
         const float ix = x + b.marge, iy = y + (h - ic) / 2;   // icône pause : deux barres (path M6 4h4v16H6zM14 4h4v16h-4z)
         r.uiRect(ix + ic * 6 / 24, iy + ic * 4 / 24, ic * 4 / 24, ic * 16 / 24, o);
         r.uiRect(ix + ic * 14 / 24, iy + ic * 4 / 24, ic * 4 / 24, ic * 16 / 24, o);
-        ui::text(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), b.texte, t, o, ui::GAUCHE, 0.1f, false);
+        ui::text(r, std::round(ix + ic + b.ecartIcone), std::round(y + (h - b.texte) / 2), b.texte, t, o, ui::GAUCHE, 0.1f, false, true);
     }
 
     // WFS-557 (maquette 19, arbitrage du PO du 2026-11-16 : maquette à 100 %, boutons compris) : course floutée derrière,
