@@ -69,6 +69,7 @@ int benchScoreFin(Game& g, Renderer& r, const std::string& out) {
     auto jusquaFin = [&](int maxImages) { for (int i = 0; i < maxImages && !finie(); i++) { g.update(1.0 / 60); t += 1.0 / 60; } images(120); };
     auto demarrer = [&](ModeCourse m) {
         modeCourse() = m;
+        s.voituresPossedees.insert("golf");   // WFS-557 : la Golf du banc est achetée (sinon, essai gratuit fait à la course solo : retour au garage, WFS-499)
         s.mode = poursuite::cleMode(m); s.km5 = kmCourse5();   // le mode est relu de la sauvegarde active à chaque partie (modes_ecran.cpp)
         if (!g.init(r, "golf", "ville")) { verifier(false, std::string("chargement ") + nomMode(m)); return false; }
         g.setAutopilot(true); g.camMode = 0;
