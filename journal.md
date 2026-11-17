@@ -449,3 +449,8 @@ Détail dans la revue de la PR.
 - 25 anomalies de design (ANO-278 à 286, 290, 292 à 297, 299 à 303, 307 à 309, 313) passent en « ⏸ À confirmer sur téléphone » dans `anno.md` : hors verdict, pas d’US sans preuve du téléphone ou de l’émulateur.
 - Restent ouvertes : ANO-276, 277 (bloquantes, CI et émulateur), 287, 288, 289, 291, 304, 305, 306, 310, 311, 312. Verdict maintenu NON APTE (ANO-276, 277).
 - Skill `qa-lead` : règle « design : le téléphone fait foi » ajoutée. Point pour le PO et l’expert CI / CD : écart de rendu banc PC / téléphone.
+
+### 2026-11-17 21:05:45 — VABF 2026-11-17 : défauts d’interface responsive (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Piste de l’utilisateur (« c’est pas responsive ») vérifiée : ANO-302 (CHOISIR sur les stats) et ANO-303 (« Étape ' sur 3 ») n’existent qu’en 1280x720 (16:9) et sont propres en 2400x1080 (20:9, format du téléphone de l’utilisateur). Elles reviennent en 🆕 Nouvelle avec la mention responsive (preuves en vis-à-vis dans `qa/rapports/VABF-2026-11-17/preuves/`). ANO-290, 304, 307 : responsive probable, à vérifier en 20:9.
+- Proposition au PO : US « interface responsive » (16:9, 20:9, 4:3). Skill `qa-lead` : comparer les deux tailles de capture avant de conclure sur l’interface.
