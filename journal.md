@@ -427,3 +427,10 @@ Détail dans la revue de la PR.
 ### 2026-11-17 11:41:34 — Archives automatiques (robot archives)
 - Journal : 96 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-15).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-17 19:35:26 — Campagne VABF de la dernière version de main : NON APTE (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Demande de l’utilisateur (« @qa lance une campagne de test recette la dernière version ») ; version : bancs du matin #46, commit `33885704` (avec WFS-557), Release `captures-matin` du jour et `simulateur-matin`.
+- ~1 300 images contrôlées, ~520 ouvertes (5 agents QA en parallèle, lots A à D). Rapport `qa/rapports/VABF-2026-11-17.md` (+ lots détaillés `qa/rapports/VABF-2026-11-17/`).
+- 38 anomalies ajoutées à `anno.md` : **ANO-276 à ANO-313** (11 bloquantes, 15 majeures, 12 mineures).
+- Points urgents pour le PO : ANO-276 (scénario de l’émulateur bloqué aux nouvelles CGU de WFS-557 : aucun essai sur vrai APK possible) et ANO-277 (bancs `complements-c` et chauffe rouges : « Menu » de l’écran de fin déplacé, banc pas mis à jour ; `realisme-2` rouge) → US technique P1 « correction pipeline CI ». Puis ANO-288 (commandes absentes en vue arrière), ANO-289 (gaucher non miroir), ANO-287 (score de fin incohérent), formes nues ANO-278 à 286.
