@@ -847,3 +847,7 @@ Détail dans la revue de la PR.
 - Fusion en squash par le lead dev à la 2e revue (code seul, ordre de l'utilisateur ; écrans validés par l'utilisateur sur `qa/pr/WFS-557/cote-a-cote-42/`). Statut : 🟡 À valider (utilisateur).
 - À transmettre au PO (remarques non bloquantes du lead dev, US de ménage) : code mort de l'ancien bandeau dans `minicarte.cpp` (`abords`, `rues`, `bandeau`, `nomRue`) et `test_bandeau_gps` qui le teste encore ; commentaire de `renderer.cpp:87` (≈ 12,6 Mo en tout, pas 6) et allègement de `rondMenu` / `piluleMenu` non fait ; `placerBoutons` centré sur l'ancien panneau du score ; coffre gardé en mémoire graphique jusqu'à la sortie du menu.
 - La session s'arrête : un seul ticket par session.
+
+### 2026-11-17 11:06:13 — Statuts automatiques, bancs du matin #46 (robot statuts)
+- Run rouge (schedule, commit 3388570), aucun statut changé. Job(s) en échec : endurance et chauffe, banc (realisme-2), banc (complements-c).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503.
