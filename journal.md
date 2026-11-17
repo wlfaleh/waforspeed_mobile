@@ -442,3 +442,10 @@ Détail dans la revue de la PR.
 ### 2026-11-17 20:58:14 — ANO-298 abandonnée (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - Décision de l’utilisateur : la pluie de jour invisible (ANO-298, VABF 2026-11-17) « c’est pas grave » → 🚫 Abandonnée dans `anno.md`, pas d’US de correction.
+
+### 2026-11-17 21:04:15 — VABF 2026-11-17 : anomalies de design à confirmer sur téléphone (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Retour de l’utilisateur : toutes les anomalies de design ne se reproduisent pas sur son téléphone (le banc PC ne rend pas comme le téléphone).
+- 25 anomalies de design (ANO-278 à 286, 290, 292 à 297, 299 à 303, 307 à 309, 313) passent en « ⏸ À confirmer sur téléphone » dans `anno.md` : hors verdict, pas d’US sans preuve du téléphone ou de l’émulateur.
+- Restent ouvertes : ANO-276, 277 (bloquantes, CI et émulateur), 287, 288, 289, 291, 304, 305, 306, 310, 311, 312. Verdict maintenu NON APTE (ANO-276, 277).
+- Skill `qa-lead` : règle « design : le téléphone fait foi » ajoutée. Point pour le PO et l’expert CI / CD : écart de rendu banc PC / téléphone.
