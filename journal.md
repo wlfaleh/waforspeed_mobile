@@ -434,3 +434,7 @@ Détail dans la revue de la PR.
 - ~1 300 images contrôlées, ~520 ouvertes (5 agents QA en parallèle, lots A à D). Rapport `qa/rapports/VABF-2026-11-17.md` (+ lots détaillés `qa/rapports/VABF-2026-11-17/`).
 - 38 anomalies ajoutées à `anno.md` : **ANO-276 à ANO-313** (11 bloquantes, 15 majeures, 12 mineures).
 - Points urgents pour le PO : ANO-276 (scénario de l’émulateur bloqué aux nouvelles CGU de WFS-557 : aucun essai sur vrai APK possible) et ANO-277 (bancs `complements-c` et chauffe rouges : « Menu » de l’écran de fin déplacé, banc pas mis à jour ; `realisme-2` rouge) → US technique P1 « correction pipeline CI ». Puis ANO-288 (commandes absentes en vue arrière), ANO-289 (gaucher non miroir), ANO-287 (score de fin incohérent), formes nues ANO-278 à 286.
+
+### 2026-11-17 20:55:42 — VABF 2026-11-17 : preuves ajoutées (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Sur demande de l’utilisateur (« ta des preuves de tes anno ? ») : 28 images de preuve dans `qa/rapports/VABF-2026-11-17/preuves/` (ANO-276 à 301), toutes ouvertes et confirmées ; ANO-294 corrigée (pose « assis » = vitrine du banc, retirée du constat).
