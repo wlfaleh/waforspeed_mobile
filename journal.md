@@ -454,3 +454,7 @@ Détail dans la revue de la PR.
 
 - Piste de l’utilisateur (« c’est pas responsive ») vérifiée : ANO-302 (CHOISIR sur les stats) et ANO-303 (« Étape ' sur 3 ») n’existent qu’en 1280x720 (16:9) et sont propres en 2400x1080 (20:9, format du téléphone de l’utilisateur). Elles reviennent en 🆕 Nouvelle avec la mention responsive (preuves en vis-à-vis dans `qa/rapports/VABF-2026-11-17/preuves/`). ANO-290, 304, 307 : responsive probable, à vérifier en 20:9.
 - Proposition au PO : US « interface responsive » (16:9, 20:9, 4:3). Skill `qa-lead` : comparer les deux tailles de capture avant de conclure sur l’interface.
+
+### 2026-11-17 21:07:16 — VABF 2026-11-17 : anomalies du monde 3D confirmées (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- L’utilisateur confirme les anomalies du monde 3D : ANO-278 à 286, 292 à 297, 299 à 301, 308, 309, 313 reviennent en 🆕 Nouvelle. Verdict final NON APTE (11 bloquantes : ANO-276, 277, 278 à 286). Skill `qa-lead` : monde 3D au banc = valable ; interface = comparer 16:9 et 20:9 (responsive).
