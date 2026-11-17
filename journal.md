@@ -438,3 +438,7 @@ Détail dans la revue de la PR.
 ### 2026-11-17 20:55:42 — VABF 2026-11-17 : preuves ajoutées (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - Sur demande de l’utilisateur (« ta des preuves de tes anno ? ») : 28 images de preuve dans `qa/rapports/VABF-2026-11-17/preuves/` (ANO-276 à 301), toutes ouvertes et confirmées ; ANO-294 corrigée (pose « assis » = vitrine du banc, retirée du constat).
+
+### 2026-11-17 20:58:14 — ANO-298 abandonnée (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Décision de l’utilisateur : la pluie de jour invisible (ANO-298, VABF 2026-11-17) « c’est pas grave » → 🚫 Abandonnée dans `anno.md`, pas d’US de correction.
