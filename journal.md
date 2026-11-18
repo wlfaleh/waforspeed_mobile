@@ -128,3 +128,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - **WFS-567** (P1, E21, ⏳ Prêt, nouvelle session `@dev`) : renonciation expresse au droit de rétractation avant chaque achat sur l'écran Market (L221-28 13°), case active + lien CGU, FR / EN ; préalable à la vente (WFS-516) ; ajouté au bandeau 💶 avec WFS-512.
 - WFS-319 : `VERSION_CGU` 1 → 2 et « Version 2 » des CGU le jour de la publication. WFS-514 : « Confidentialité des pubs » / « Ad privacy ». WFS-409 : vérifier le chiffrement du duel (relais en TLS vu dans `reseau_android.cpp` ; PeerJS à confirmer).
 
+### 2026-11-18 20:36:37 — Doublon WFS-567 corrigé : la renonciation expresse devient WFS-570 (po-scrum-master)
+
+- Erreur du PO : à 20:35:38 UTC, la renonciation expresse avant achat a reçu le numéro **WFS-567**, déjà pris à 19:43:03 UTC par la correction ANO-315 (messages de course), et `regles-de-gestion/WFS-567.md` a été écrasé.
+- Correction : `WFS-567.md` restauré depuis 539399fc (ANO-315, cité dans `anno.md`) ; la renonciation expresse devient **WFS-570** (`regles-de-gestion/WFS-570.md`, `feature/waforspeed-570`) dans `TACHES.md`, le bandeau 💶, la dépendance de WFS-516 et `track-agent.md`. L'entrée du journal de 20:35:38 parle de WFS-570 sous l'ancien numéro.
+

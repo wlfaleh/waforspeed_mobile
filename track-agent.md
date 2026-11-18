@@ -19,7 +19,7 @@
 
 **Dernière mise à jour** : 2026-11-18 20:35:38 UTC (po-scrum-master)
 
-> 🧾 **20:35 UTC (2026-11-18)** : **WFS-567** (P1, renonciation avant achat) ⏳ Prêt pour une nouvelle session `@dev` ; WFS-408 en PR #434 (session juriste).
+> 🧾 **20:35 UTC (2026-11-18)** : **WFS-570** (P1, renonciation avant achat) ⏳ Prêt pour une nouvelle session `@dev` ; WFS-408 en PR #434 (session juriste).
 
 > 💶 **19:37 UTC (2026-11-18)** : 1re version = achats + pub ; E21 en priorité (512 → 514 → 515 → 516, 516 passé P1) ; WFS-408 élargi en cours (session juriste).
 
