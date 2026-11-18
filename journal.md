@@ -104,3 +104,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Priorité : bandeau 💶 en tête de `TACHES.md` : WFS-512 → 514 → 515 → 516 donnés avant les autres tickets prêts, sans retirer les P1 en cours ; **WFS-516 passé P2 → P1**.
 - WFS-408 (élargi, session juriste, `feature/waforspeed-408`), 409, 516 : variante « achats + pub » (consentement RGPD aux traceurs, identifiant publicitaire, « Contient des annonces », IARC refait).
 
+
+### 2026-11-18 19:39:46 — ANO-316 : enseignes néon bleues du décor (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Demande de l’utilisateur (planche validée par lui) : enlever ou changer les enseignes à texte bleu du décor (« GARAGE 88 », « GALERIE DES ARCADES », « NUIT BLANCHE », cyan 0x00E5FF dans `src/world/enseignes.cpp` et `src/world/ville.cpp`). ANO-316 (Majeure) ajoutée avec preuve `qa/rapports/VABF-2026-11-17/preuves/ANO-316-enseignes-bleues-decor.jpg` ; le PO crée l’US de correction.
