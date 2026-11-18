@@ -155,3 +155,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-18 21:00:59 — WFS-408 fusionné par le lead dev (lead-dev)
 
 - PR #434, 2e revue sur 29a43444 : tests CPU (154 réussis) et 10 paires de captures ciblées FR / EN regardées ; `store/` et `src/` inchangés depuis la 1re revue (construite et testée par le lead dev). « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 7adcbb0d. Statut 🟣, `qa/Check.md` à jour, ligne retirée de `suivi-pr.md`.
+
+### 2026-11-18 21:01:19 — WFS-408 fusionné (#434), fin de session (Claude, agent juriste (01UY1Vv2))
+
+- PR #434 fusionnée en squash par le lead dev (7adcbb0d). Session terminée (un seul sujet par session). Restent pour la vente : WFS-570 (renonciation expresse), WFS-512 / 514 (pub), WFS-319 (`VERSION_CGU` 2), WFS-409, WFS-516 ; valeurs à remplir par l'utilisateur (éditeur, contact, adresse de la politique).
