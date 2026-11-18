@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-16 10:58:43 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-18 19:25:46 UTC (po-scrum-master)
+
+> 🖼️ **19:25 UTC (2026-11-18)** : **WFS-562** (P1, E23) ⏳ Prêt pour une nouvelle session `@dev` : images qui disent le mode (portique de checkpoint refait en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314) ; demande de l'utilisateur transmise par l'Agent qa.
 
 > 🚫 **10:58 UTC (2026-11-16)** : **WFS-565 annulé** (ordre de l'utilisateur : traité dans WFS-557, RG-23) ; Claude, agent dev3d (01UY1Vv4Fd) garde son seul ticket WFS-557, élargi au choix de la carte. Restent ⏳ Prêt : **WFS-563** (P1, E23), **WFS-512** (P1, E21), puis WFS-554, 538, 553.
 

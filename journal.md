@@ -58,6 +58,11 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 - Retour de l’utilisateur (téléphone) : arrière-plan noir, aucun visuel. Comparé à la maquette 02 : les cartes doivent montrer une image de course chacune. Cause : solution provisoire de WFS-557 (fond flouté assombri à 62 %). ANO-314 (Majeure) ajoutée, correction = **WFS-562** (P1, débloquée par la fusion de WFS-557) : le PO peut l’attribuer à une nouvelle session `@dev` et ajouter le critère « fond pas noir sur le téléphone ».
 
+### 2026-11-18 19:25:46 — WFS-562 réécrit : des images qui disent le mode (po-scrum-master)
+
+- Demande de l'utilisateur (transmise par l'Agent qa) : « Même la maquette ça va pas il faut mettre des photo parlant genre checkpoint voiture avec Check point poursuite voiture avec police ». Les images de la maquette 02 sont refusées ; la mise en page des cartes est gardée.
+- `regles-de-gestion/WFS-562.md` : RG-01 Checkpoint = voiture sous un portique de checkpoint ; Poursuite = police aux gyrophares derrière, soir ; Course à 5 = voiture au milieu des concurrents (choix du PO). RG-05 bis (arbitrage) : on ne photographie pas le portique actuel en formes nues (ANO-279) ; le ticket le refait d'abord en vrai modèle (exception de zone pour ce ticket). RG-07 : fond pas noir sur le téléphone (ANO-314). Captures et critères réécrits.
+- `TACHES.md` : WFS-562 ⏳ Prêt (WFS-557 fusionné), P1, pour une nouvelle session `@dev` + avis `@3d`. ANO-279 📋 Planifiée (partie checkpoint) dans WFS-562. Réponse dans `tache utilisateur.md`.
 ### 2026-11-18 19:25:57 — Avis juridique : peut-on publier sur le Play Store ? (juriste)
 
 - Rapport `juridique/rapport-2026-11-18.md` (mise à jour de J-01 à J-17, nouveaux J-18 à J-20). Test interne : oui. Sortie publique gratuite : pas encore, 4 points 🔴 (J-02 fiche, J-04 confidentialité et contact, J-05 Sécurité des données, J-18 boutique payante déjà dans l'APK alors que les CGU disent « sans achat »). Réglés : J-01, J-03, J-06, J-07, J-13 (WFS-404, 406).
