@@ -54,9 +54,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Journal : 74 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-16).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
 
-### 2026-11-18 19:09:49 — ANO-314 : écran « Choisis ton mode » noir et sans images (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
-
-- Retour de l’utilisateur (téléphone) : arrière-plan noir, aucun visuel. Comparé à la maquette 02 : les cartes doivent montrer une image de course chacune. Cause : solution provisoire de WFS-557 (fond flouté assombri à 62 
 ### 2026-11-18 19:09:56 — ANO-314 : écran « Choisis ton mode » noir et sans images (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - Retour de l’utilisateur (téléphone) : arrière-plan noir, aucun visuel. Comparé à la maquette 02 : les cartes doivent montrer une image de course chacune. Cause : solution provisoire de WFS-557 (fond flouté assombri à 62 %). ANO-314 (Majeure) ajoutée, correction = **WFS-562** (P1, débloquée par la fusion de WFS-557) : le PO peut l’attribuer à une nouvelle session `@dev` et ajouter le critère « fond pas noir sur le téléphone ».
