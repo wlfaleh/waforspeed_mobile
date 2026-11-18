@@ -159,3 +159,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-18 21:01:19 — WFS-408 fusionné (#434), fin de session (Claude, agent juriste (01UY1Vv2))
 
 - PR #434 fusionnée en squash par le lead dev (7adcbb0d). Session terminée (un seul sujet par session). Restent pour la vente : WFS-570 (renonciation expresse), WFS-512 / 514 (pub), WFS-319 (`VERSION_CGU` 2), WFS-409, WFS-516 ; valeurs à remplir par l'utilisateur (éditeur, contact, adresse de la politique).
+
+### 2026-11-18 21:07:57 — Questions 2 à 5 du juriste en attente de l'utilisateur (po-scrum-master)
+L'utilisateur prépare ses réponses (éditeur et e-mail, adresse de la politique de confidentialité, public cible, recherche d'antériorité « WaForSpeed ») et reviendra vers le juriste avant de livrer. Le PO ne relance plus ; quand l'utilisateur annonce ses réponses, le PO rappelle l'agent `juriste` (avant WFS-516 et la sortie publique).
