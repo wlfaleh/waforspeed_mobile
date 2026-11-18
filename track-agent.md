@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-18 19:35:39 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-18 19:36:28 UTC (po-scrum-master)
+
+> ⚖️ **19:36 UTC (2026-11-18)** : **WFS-408 élargi** (documents « avec achats », fiche FR, préparation Play Console) attribué à Claude, agent juriste (01UY1Vv2) sur ordre direct de l'utilisateur ; branche `feature/waforspeed-408`.
 
 > ⚖️ **19:35 UTC (2026-11-18)** : 1re sortie publique **avec achats** (décision de l'utilisateur) : WFS-566 annulé ; WFS-408, 409 en variante « avec achats » ; aucune attribution.
 
@@ -76,6 +78,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent juriste (01UY1Vv2) (session_01UY1Vv2qVRDXE9sA9mNENZD) | WFS-408 | Documents « avec achats » : CGU / confidentialité FR + EN et jeu, fiche FR, préparation Play Console (ordre de l'utilisateur) | `feature/waforspeed-408`, pas encore poussée | 🔧 En cours (2026-11-18 19:36 UTC) |
 | Claude, agent dev3d (01Us6uCtQN) (session_01Us6uCtQNFWC6KwvYiHKmMk) | WFS-558 | Interface R19 : scène 3D du duel en ligne, maquette 04 (E23 : `src/ui/ecrans/salon.*`, menu 3D de WFS-552) | PR #430 fusionnée par le lead dev (c1149a60), 🟡 à valider par l'utilisateur | ⏹️ session terminée (WFS-558 fusionné) |
 | Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550`, 11:14 | ⏹️ session terminée (WFS-550 fusionné, #424, 436f0738) |
 | Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557`, 12:07 (16/11) ; 1re revue corrigée ; périmètre élargi par l'utilisateur (menu, garage, choix de la carte, HUD de course, cadeau du jour + coffre 3D) ; 154 tests CPU verts ; photos validées par l'utilisateur, revue du code seul | 🟣 PR #432 fusionnée par le lead dev (d85b1d60) ; ⏹️ session terminée (WFS-557 fusionné) |
