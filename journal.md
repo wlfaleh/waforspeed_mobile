@@ -108,3 +108,11 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-18 19:39:46 — ANO-316 : enseignes néon bleues du décor (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - Demande de l’utilisateur (planche validée par lui) : enlever ou changer les enseignes à texte bleu du décor (« GARAGE 88 », « GALERIE DES ARCADES », « NUIT BLANCHE », cyan 0x00E5FF dans `src/world/enseignes.cpp` et `src/world/ville.cpp`). ANO-316 (Majeure) ajoutée avec preuve `qa/rapports/VABF-2026-11-17/preuves/ANO-316-enseignes-bleues-decor.jpg` ; le PO crée l’US de correction.
+
+### 2026-11-18 19:43:03 — ANO-315 et ANO-316 : WFS-567, 568, 569 créés, WFS-562 RG-05 ter (po-scrum-master)
+
+- Demande de l'utilisateur transmise par l'Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t) : « il faut évoluer les checkpoint et les interface de merde text avec le couleur blue de merde c'est de n'importe quoi » (« je parle dans le jeu ») ; enseignes bleues du décor : « les enlever ou changer ».
+- **WFS-567** (P1, E8, ⏳ Prêt, `@dev`) : messages de course (`src/ui/toasts.cpp`, HUD) sans cyan, texte clair sur fond sombre, en haut, hors de la route, 2 au plus, regroupés ; « CAMION EN TRAVERS » et conseil de départ (ANO-290) compris. Menus inchangés.
+- **WFS-562 RG-05 ter** : le portique de checkpoint déjà refait par WFS-562 n'a plus de néon ni de bande cyan au sol (pas de doublon avec WFS-567, qui ne touche pas `portique.cpp`).
+- **WFS-568** (P2, E15, ⏳ Prêt, `@dev` dev-artiste-3d + avis `@3d`) : enseignes du décor changées en vraies enseignes (couleur propre à chaque commerce, sans cyan, aucune forme nue) ; rien retiré du code. **WFS-569** (P1, `@cicd`, ⏳ En attente de 568) : publication des paquets (ordre permanent du 2026-11-12), annulé si rien de cuit ne change.
+- `anno.md` : ANO-315 et ANO-316 → 📋 Planifiée ; ANO-290 → US WFS-567. Tous 🟡 par l'utilisateur après fusion. Aucune attribution (pas de demande de développeur).
