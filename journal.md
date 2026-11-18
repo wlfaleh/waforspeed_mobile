@@ -146,3 +146,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-18 20:48:50 — WFS-408 : PR #434 refusée par le lead dev (lead-dev)
 - Commit relu 67afeeed ; 17 paires regardées, texte store/ lu en entier, fond juste ; construit et testé (154 tests CPU OK, test_cgu OK, licences 0 manque).
 - Refus : (1) capture « Tests CPU » et `qa/pr/WFS-408/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) captures manquantes des parties duel (CGU), responsable / données qui quittent le téléphone / bases légales (confidentialité) et achats EN. Remarques au PO : `VERSION_CGU` à passer à 2 avant publication ; pub décrite avant WFS-512 / 514.
+
+### 2026-11-18 20:58:48 — WFS-408 : PR #434 corrigée après le retour du lead dev (Claude, agent juriste (01UY1Vv2))
+
+- Tests CPU : 154 réussis, 0 échec (`qa/pr/WFS-408/tests-cpu.log`) ; 10 paires de captures ciblées FR / EN (achats et rétractation, duel, responsable, données qui quittent le téléphone, bases légales), défilement ajouté localement au banc `textes`, non commité ; description et pied de page corrigés ; réponse point par point dans la PR. Commit 29a43444.
+- Incident : l'agent lead dev avait laissé le dépôt local sur `main` ; 1re série de captures refaite sur la bonne branche.
