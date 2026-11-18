@@ -85,3 +85,10 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Réglés selon le juriste : J-01, J-07 (WFS-404), J-03, J-06, J-13 (WFS-406). J-19 (pub pas encore dans l'APK) : déjà couvert par WFS-512 / 516. 🟠 inchangés : J-08, J-09, J-10.
 - 5 questions ouvertes ajoutées à `tache utilisateur.md` (Market, éditeur et contact, adresse de la confidentialité, 13+, antériorité du nom), sans les trancher. La sortie publique reste reportée (ordre du 2026-11-08 16:59 UTC).
 
+### 2026-11-18 19:35:39 — Décision de l'utilisateur : 1re sortie publique avec achats ; WFS-566 annulé (po-scrum-master)
+
+- Réponse à la question 1 du juriste (2026-11-18 ~19:45 UTC, transmise par le coordinateur) : « La première version est pas gratuit ya des achat ». La 1re sortie publique se fait **avec achats intégrés** (Market E21).
+- **WFS-566** → ❌ Annulé (décision de l'utilisateur), RG mise à jour. `tache utilisateur.md` : question 1 marquée répondue ; questions 2 à 5 ouvertes.
+- **WFS-408** (RG-05, 06) et **WFS-409** (RG-04) en variante « avec achats » : CGU et confidentialité FR / EN (achats, prix TTC, remboursements, rétractation avec renonciation expresse, mineurs) ; Sécurité des données et IARC avec achats intégrés ; pub ajoutée quand WFS-512 arrive.
+- Sortie publique : dépend aussi de WFS-514, 515, 516, de WFS-512 si la pub est dans la 1re version, du compte marchand Google Play, du statut « commerçant » UE (adresse et téléphone sur la fiche) et d'un avis d'avocat (RC-E21-12). Non tranché : pub dans la 1re version, éditeur, contact. Sortie toujours reportée (ordre du 2026-11-08).
+

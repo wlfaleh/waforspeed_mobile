@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-18 19:31:09 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-18 19:35:39 UTC (po-scrum-master)
+
+> ⚖️ **19:35 UTC (2026-11-18)** : 1re sortie publique **avec achats** (décision de l'utilisateur) : WFS-566 annulé ; WFS-408, 409 en variante « avec achats » ; aucune attribution.
 
 > ⚖️ **19:31 UTC (2026-11-18)** : avis du juriste traité ; **WFS-566** (P1, Market caché dans la version publique) créé, ⏸ en attente de la décision de l'utilisateur et du jour de publication ; aucune attribution.
 
