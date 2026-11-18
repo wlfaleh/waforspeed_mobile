@@ -71,3 +71,17 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-18 19:31:21 — ANO-315 étendue à tous les messages de course (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - Précision de l’utilisateur : il parle des textes **dans le jeu**. Planche des messages de course (`qa/rapports/VABF-2026-11-17/preuves/ANO-315-messages-en-course.jpg`) : bandeaux cyan / orange / rouge empilés sur la route, « CAMION EN TRAVERS » rouge à gauche, conseil de départ caché. ANO-315 mise à jour, PO prévenu.
+
+### 2026-11-18 19:25:57 — Avis juridique : peut-on publier sur le Play Store ? (juriste)
+
+- Rapport `juridique/rapport-2026-11-18.md` (mise à jour de J-01 à J-17, nouveaux J-18 à J-20). Test interne : oui. Sortie publique gratuite : pas encore, 4 points 🔴 (J-02 fiche, J-04 confidentialité et contact, J-05 Sécurité des données, J-18 boutique payante déjà dans l'APK alors que les CGU disent « sans achat »). Réglés : J-01, J-03, J-06, J-07, J-13 (WFS-404, 406).
+- Au PO : proposer une US « Market caché dans la version publique tant que WFS-516 n'est pas fini » (J-18) ; WFS-407 à 409 restent à faire le jour de publication.
+- (Report sur `main` par le PO : la session du juriste n'avait pas pu pousser, HTTP 403 ; rapport et entrée copiés de la branche `claude/nice-faraday-3j03xj`, commit 47e1e54.)
+
+### 2026-11-18 19:31:09 — Avis du juriste du 2026-11-18 traité : WFS-566 créé, WFS-407 à 409 et 516 complétés (po-scrum-master)
+
+- **WFS-566** (P1, Publication app, ⏸ En attente de la décision de l'utilisateur, question 1, et du jour de publication) : Market caché dans la version publique tant que WFS-516 n'est pas fini (J-18), même réglage de construction que WFS-405 ; APK d'aperçu inchangé ; rien de supprimé. Règles : `regles-de-gestion/WFS-566.md`. Annulé si l'utilisateur choisit « avec achats ».
+- RG complétées : WFS-407 (J-02 : 17 voitures ; J-20 : fiche anglaise avec WFS-509), WFS-408 (J-20 : CGU et confidentialité EN ; achats / remboursements / rétractation si sortie avec achats), WFS-409 (J-05 variante selon la question 1 ; J-15 test fermé à vérifier), WFS-516 (renvoi à WFS-566).
+- Réglés selon le juriste : J-01, J-07 (WFS-404), J-03, J-06, J-13 (WFS-406). J-19 (pub pas encore dans l'APK) : déjà couvert par WFS-512 / 516. 🟠 inchangés : J-08, J-09, J-10.
+- 5 questions ouvertes ajoutées à `tache utilisateur.md` (Market, éditeur et contact, adresse de la confidentialité, 13+, antériorité du nom), sans les trancher. La sortie publique reste reportée (ordre du 2026-11-08 16:59 UTC).
+

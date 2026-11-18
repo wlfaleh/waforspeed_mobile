@@ -13,6 +13,14 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Questions du juriste pour la sortie publique sur le Play Store (rapport `juridique/rapport-2026-11-18.md`, transmis par le PO le 2026-11-18 19:31 UTC). Réponds après chaque numéro :
+  1. 1re sortie publique gratuite **sans Market** (boutique cachée, recommandé par le juriste) ou **avec achats** ?
+  2. Nom de l'éditeur et adresse e-mail de contact des joueurs ?
+  3. Adresse (site) où publier la politique de confidentialité ?
+  4. Public cible : 13 ans et plus ?
+  5. D'accord pour une recherche d'antériorité sur le nom « WaForSpeed » ?
+( PO, 2026-11-18 19:31:09 UTC : rien n'est tranché à ta place. Créé **WFS-566** (P1, ⏸) : Market caché dans la version publique tant que WFS-516 n'est pas fini ; il ne part que si tu réponds « sans Market » à la question 1, et le jour de publication. WFS-407, 408, 409 complétés (17 voitures, fiche et textes anglais, test fermé à vérifier dans ta Play Console : ≈ 12 testeurs, 14 jours). Test interne : publiable dès maintenant ; sortie publique toujours reportée comme tu l'as décidé. )
+
 - Ticket urgent : le compteur de prochains cadeaux est figé, il ne bouge pas (2026-11-14 20:23 UTC).
 ( PO, 2026-11-14 20:23:40 UTC : c'est créé — **WFS-547** (P1 Urgent), en tête des tickets prêts. Cause vue dans le code : le compteur est bien recalculé, mais il n'affiche que les heures et les minutes (hh:mm), donc il ne change qu'une fois par minute et paraît figé. Le ticket le passe en **hh:mm:ss**, les secondes défilent dans le menu et sur l'écran du cadeau ; à minuit, la pastille « cadeau disponible » arrive tout de suite sans relancer le jeu. Le développeur vérifie aussi sur l'APK qu'il n'y a pas une 2e cause (écran pas redessiné). Pour lancer : ouvre une session `@dev`, elle recevra WFS-547 en premier. Après la fusion, tu le valides sur ton téléphone. )
 ( PO, 2026-11-14 20:26:45 UTC : compris, **WFS-547 annulé** : tu pensais que c'était des minutes:secondes, le compteur en heures:minutes est bon. Rien ne change dans le jeu. )
