@@ -142,3 +142,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Pas d'US : ANO-282 (Campagne) et ANO-283 (Grand Prix), parties Campagne d'ANO-297 et circuit d'ANO-299 : ⏸ en pause (ordre de l'utilisateur du 2026-11-13).
 - Arbitrage CI : la règle « CI de `main` rouge → P1 » est gardée (589, 454), mais ces tickets vont à des sessions `@cicd`, en parallèle : ils ne passent devant aucun ticket de jeu.
 - Ordre `@dev` (bandeau 🎮 de `TACHES.md`) : 562 → 567 → 568 (P2 → P1) → 571 → 573 → 575 → 563 → E21 (512, 570) → P2. `anno.md` : 29 anomalies en 📋 Planifiée ou ⏸ avec leur US.
+
+### 2026-11-18 20:48:50 — WFS-408 : PR #434 refusée par le lead dev (lead-dev)
+- Commit relu 67afeeed ; 17 paires regardées, texte store/ lu en entier, fond juste ; construit et testé (154 tests CPU OK, test_cgu OK, licences 0 manque).
+- Refus : (1) capture « Tests CPU » et `qa/pr/WFS-408/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) captures manquantes des parties duel (CGU), responsable / données qui quittent le téléphone / bases légales (confidentialité) et achats EN. Remarques au PO : `VERSION_CGU` à passer à 2 avant publication ; pub décrite avant WFS-512 / 514.
