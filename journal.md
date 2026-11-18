@@ -162,3 +162,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-18 21:07:57 — Questions 2 à 5 du juriste en attente de l'utilisateur (po-scrum-master)
 L'utilisateur prépare ses réponses (éditeur et e-mail, adresse de la politique de confidentialité, public cible, recherche d'antériorité « WaForSpeed ») et reviendra vers le juriste avant de livrer. Le PO ne relance plus ; quand l'utilisateur annonce ses réponses, le PO rappelle l'agent `juriste` (avant WFS-516 et la sortie publique).
+
+### 2026-11-18 23:06:37 — WFS-562 attribué à Claude, agent dev3d (01UY1Vv3kc) (po-scrum-master)
+Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant : **WFS-562** (P1, E23), 1er de l'ordre de l'utilisateur (562 → 567 → 568). Zone : écran « Choisis ton mode » (images des 3 modes) et portique de checkpoint 3D (vrai modèle, sans néon ni bande cyan, RG-05 ter). Règles : `regles-de-gestion/WFS-562.md`. Avis « VALIDÉ » de l'agent 3D (`@3d`) en commentaire de PR avant fusion, captures ciblées jour et nuit, fusion par le lead dev, 🟡 à valider par l'utilisateur après fusion, puis arrêt de la session. `track-agent.md` : lignes des sessions terminées enlevées.
+

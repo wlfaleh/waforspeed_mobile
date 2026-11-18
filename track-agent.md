@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-18 20:45:53 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-18 23:06:37 UTC (po-scrum-master)
+
+> 🖼️ **23:06 UTC (2026-11-18)** : **WFS-562** (P1, E23, images des modes, portique de checkpoint, fond pas noir) attribué à Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ), nouvelle session `@dev`, à sa demande. Sessions terminées (408, 550, 557, 558, 559, 561, 564) : lignes enlevées. Prochains pour de nouvelles sessions `@dev` : WFS-567 → 568 → 571 → 573 → 575 → 563.
 
 > 🎮 **20:45 UTC (2026-11-18)** : priorité aux anomalies du gameplay ; ordre `@dev` : **WFS-562 → 567 → 568** (urgents, ordre de l'utilisateur), puis 571, 573, 575, 563 ; `@conduite` : WFS-584 ; `@cicd` : WFS-589, 454 en parallèle. Aucune session libre : ouvrir de nouvelles sessions.
 
@@ -84,13 +86,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent juriste (01UY1Vv2) (session_01UY1Vv2qVRDXE9sA9mNENZD) | WFS-408 | Documents « avec achats » : CGU / confidentialité FR + EN et jeu, fiche FR, préparation Play Console (ordre de l'utilisateur) | `feature/waforspeed-408` poussée, PR #434 | ⏹️ session terminée (WFS-408 fusionné, #434, 7adcbb0d) |
-| Claude, agent dev3d (01Us6uCtQN) (session_01Us6uCtQNFWC6KwvYiHKmMk) | WFS-558 | Interface R19 : scène 3D du duel en ligne, maquette 04 (E23 : `src/ui/ecrans/salon.*`, menu 3D de WFS-552) | PR #430 fusionnée par le lead dev (c1149a60), 🟡 à valider par l'utilisateur | ⏹️ session terminée (WFS-558 fusionné) |
-| Claude, agent dev3d (01UY1Vv1yg) (session_01UY1Vv1ygW1sN5qWWTdaUJc) | WFS-550 | Interface R19 (3/5) : cadrans fins, jauges, anneaux, 17 segments, compteur d'étoiles animé, bandeaux en course (E23 : fichiers de RG-07 de `regles-de-gestion/WFS-550.md`, `src/ui/jauges.*`, `shaders/ui*`, `tests/**`) | `feature/waforspeed-550`, 11:14 | ⏹️ session terminée (WFS-550 fusionné, #424, 436f0738) |
-| Claude, agent dev3d (01UY1Vv4Fd) (session_01UY1Vv4Fd1hq8E2LRsGZhgL) | WFS-557 | Vérifier WFS-548, 549, 552 contre les maquettes R19 (`references/maquettes-R19/`) et corriger les écarts (E23 : fichiers fusionnés de 548, 549, 552 ; pas ceux de 550 et 551) | `feature/waforspeed-557`, 12:07 (16/11) ; 1re revue corrigée ; périmètre élargi par l'utilisateur (menu, garage, choix de la carte, HUD de course, cadeau du jour + coffre 3D) ; 154 tests CPU verts ; photos validées par l'utilisateur, revue du code seul | 🟣 PR #432 fusionnée par le lead dev (d85b1d60) ; ⏹️ session terminée (WFS-557 fusionné) |
-| Claude, agent dev3d (01Us6uCxFh) (session_01Us6uCxFhiJ8TJGKy9QTPw7) | WFS-564 | [TECHNIQUE] Correction CI main #1147 : crédit de `ui/icone-pistolet.png` au contrôle des licences (zone : `tools/qa/verifier_licences.py` seulement) | `feature/waforspeed-564`, fusionnée 10:55 (16/11) | ⏹️ session terminée (WFS-564 fusionné, #429, squash 5f38a6bd) |
-| Claude, agent dev3d (01Us6uCwnA) (session_01Us6uCwnA1Zmqb3WtWavzSG) | | Interface R19 : portique de départ en treillis à 5 feux rouges, consigne du départ (maquette 09) (E23, objets de course ; décompte de `course_system.*` relu, pas réécrit) | `feature/waforspeed-559` ; PR #431 fusionnée (83f5bb50) | ⏹️ session terminée (WFS-559 fusionné) |
-| Claude, agent dev3d (01Us6uCxBL) (session_01Us6uCxBLnhYyVos7wEtk5U) | WFS-561 | Interface R19 : scène 3D des résultats, tableau LED ambre des 5 pilotes, voiture du joueur (maquette 11) (E23 : écran des résultats + menu 3D de WFS-552) | `feature/waforspeed-561`, 17:30 (16/11) | ⏹️ session terminée (WFS-561 fusionné, #433, 186c986e) |
+| Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ) | WFS-562 | Interface R19 : images qui disent le mode (portique de checkpoint en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314), sans cyan (E23 : écran « Choisis ton mode » + portique de checkpoint) | `feature/waforspeed-562` à créer | 🔧 En cours (attribué 23:06) |
 
 ## Agents de pilotage
 
