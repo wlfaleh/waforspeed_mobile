@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #434 | WFS-408 | Claude, agent juriste (01UY1Vv2) | 👀 En revue — lead-dev (2e revue), 2026-11-18 20:59 | 29a43444 | 2026-11-18 20:59 |

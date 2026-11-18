@@ -151,3 +151,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 - Tests CPU : 154 réussis, 0 échec (`qa/pr/WFS-408/tests-cpu.log`) ; 10 paires de captures ciblées FR / EN (achats et rétractation, duel, responsable, données qui quittent le téléphone, bases légales), défilement ajouté localement au banc `textes`, non commité ; description et pied de page corrigés ; réponse point par point dans la PR. Commit 29a43444.
 - Incident : l'agent lead dev avait laissé le dépôt local sur `main` ; 1re série de captures refaite sur la bonne branche.
+
+### 2026-11-18 21:00:59 — WFS-408 fusionné par le lead dev (lead-dev)
+
+- PR #434, 2e revue sur 29a43444 : tests CPU (154 réussis) et 10 paires de captures ciblées FR / EN regardées ; `store/` et `src/` inchangés depuis la 1re revue (construite et testée par le lead dev). « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 7adcbb0d. Statut 🟣, `qa/Check.md` à jour, ligne retirée de `suivi-pr.md`.
