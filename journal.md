@@ -63,3 +63,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Demande de l'utilisateur (transmise par l'Agent qa) : « Même la maquette ça va pas il faut mettre des photo parlant genre checkpoint voiture avec Check point poursuite voiture avec police ». Les images de la maquette 02 sont refusées ; la mise en page des cartes est gardée.
 - `regles-de-gestion/WFS-562.md` : RG-01 Checkpoint = voiture sous un portique de checkpoint ; Poursuite = police aux gyrophares derrière, soir ; Course à 5 = voiture au milieu des concurrents (choix du PO). RG-05 bis (arbitrage) : on ne photographie pas le portique actuel en formes nues (ANO-279) ; le ticket le refait d'abord en vrai modèle (exception de zone pour ce ticket). RG-07 : fond pas noir sur le téléphone (ANO-314). Captures et critères réécrits.
 - `TACHES.md` : WFS-562 ⏳ Prêt (WFS-557 fusionné), P1, pour une nouvelle session `@dev` + avis `@3d`. ANO-279 📋 Planifiée (partie checkpoint) dans WFS-562. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-18 19:27:36 — ANO-315 : checkpoints et bandeaux cyan refusés par l’utilisateur (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Demande de l’utilisateur : « il faut évoluer les checkpoints et les interfaces, texte avec la couleur bleue, c’est n’importe quoi ». Vérifié sur les captures du run #46 : portique néon cyan, ligne cyan sur la route, bandeaux « CHECKPOINT N +30 s » en aplat cyan (0x00E5FF). ANO-315 (Majeure) ajoutée avec preuve ; demande transmise au PO pour le ticket.
