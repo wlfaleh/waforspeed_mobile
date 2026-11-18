@@ -13,6 +13,9 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Dans le jeu : « il faut évoluer les checkpoint et les interface de merde text avec le couleur blue de merde c'est de n'importe quoi » (« je parle dans le jeu ») ; enseignes bleues du décor : « il faut créer une anno pour les enlever ou changer » (2026-11-18, transmis par l'Agent qa : ANO-315 et ANO-316).
+( PO, 2026-11-18 19:43:03 UTC : c'est créé. **WFS-567** (P1) : tous les messages de course refaits (checkpoint, quasi-contact, combo, accident, police, camion en travers, conseil de départ) : plus de cyan, texte clair sur fond sombre, en haut de l'écran, jamais sur la route, 2 au plus à la fois. **Portique de checkpoint** : ajouté à **WFS-562** (déjà prévu pour le refaire en vrai portique) : plus de barres néon ni de bande cyan au sol. **WFS-568** (P2, décor) : les enseignes deviennent de vraies enseignes, chaque commerce sa couleur, plus de cyan ; puis **WFS-569** republie les paquets des cartes. Les menus ne changent pas. Tu valideras chacun sur ton téléphone. )
+
 - Questions du juriste pour la sortie publique sur le Play Store (rapport `juridique/rapport-2026-11-18.md`, transmis par le PO le 2026-11-18 19:31 UTC). Réponds après chaque numéro :
   1. 1re sortie publique gratuite **sans Market** (boutique cachée, recommandé par le juriste) ou **avec achats** ? → **Répondu (2026-11-18 ~19:45 UTC) : avec achats** (« La première version est pas gratuit ya des achat »).
   1 bis. Pub (vidéo récompensée volontaire) dans la 1re version ? → **Répondu (2026-11-18 ~19:55 UTC) : oui, tout E21** (« Dans la première version je veux gagner l'argent je veux tout en place pour gagner l'argent »).

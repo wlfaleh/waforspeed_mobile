@@ -17,7 +17,7 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-18 19:37:28 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-18 19:43:03 UTC (po-scrum-master)
 
 > 💶 **19:37 UTC (2026-11-18)** : 1re version = achats + pub ; E21 en priorité (512 → 514 → 515 → 516, 516 passé P1) ; WFS-408 élargi en cours (session juriste).
 
