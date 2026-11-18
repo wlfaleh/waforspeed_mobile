@@ -67,3 +67,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-18 19:27:36 — ANO-315 : checkpoints et bandeaux cyan refusés par l’utilisateur (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - Demande de l’utilisateur : « il faut évoluer les checkpoints et les interfaces, texte avec la couleur bleue, c’est n’importe quoi ». Vérifié sur les captures du run #46 : portique néon cyan, ligne cyan sur la route, bandeaux « CHECKPOINT N +30 s » en aplat cyan (0x00E5FF). ANO-315 (Majeure) ajoutée avec preuve ; demande transmise au PO pour le ticket.
+
+### 2026-11-18 19:31:21 — ANO-315 étendue à tous les messages de course (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
+
+- Précision de l’utilisateur : il parle des textes **dans le jeu**. Planche des messages de course () : bandeaux cyan / orange / rouge empilés sur la route, « CAMION EN TRAVERS » rouge à gauche, conseil de départ caché. ANO-315 mise à jour, PO prévenu.
