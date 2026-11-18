@@ -70,4 +70,4 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-18 19:31:21 — ANO-315 étendue à tous les messages de course (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
-- Précision de l’utilisateur : il parle des textes **dans le jeu**. Planche des messages de course () : bandeaux cyan / orange / rouge empilés sur la route, « CAMION EN TRAVERS » rouge à gauche, conseil de départ caché. ANO-315 mise à jour, PO prévenu.
+- Précision de l’utilisateur : il parle des textes **dans le jeu**. Planche des messages de course (`qa/rapports/VABF-2026-11-17/preuves/ANO-315-messages-en-course.jpg`) : bandeaux cyan / orange / rouge empilés sur la route, « CAMION EN TRAVERS » rouge à gauche, conseil de départ caché. ANO-315 mise à jour, PO prévenu.
