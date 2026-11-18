@@ -122,3 +122,9 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Fait : CGU et confidentialité FR / EN en version « achats + pub » (achats Google Play, prix TTC, renonciation à la rétractation, remboursements, mineurs, AdMob et consentement, duel, droit applicable, bases légales, destinataires, transferts, droits, CNIL) ; `store/fiche-fr.md` (17 voitures, Corniche seule, achats et annonces) ; nouveau `store/play-console-declarations.md` ; `store/checklist.md`. Aucun code (l'écran des CGU lit `store/`).
 - Vérifié : `test_cgu` OK, `verifier_licences.py` 0 manque, captures bancs `cgu` et `textes` (FR / EN) avant / après (`qa/pr/WFS-408/`).
 - Limites, signalées au PO : renonciation expresse à faire confirmer dans l'écran Market (code hors zone) ; `VERSION_CGU` à passer à 2 le jour de la publication (`cgu.h` hors zone) ; la pub est décrite avant WFS-512 / 514 ; `wss://` du relais à vérifier. Repères « À REMPLIR PAR L'UTILISATEUR » (éditeur, contact, adresse) visibles dans le jeu jusqu'aux réponses de l'utilisateur.
+
+### 2026-11-18 20:35:38 — Points du juriste (PR #434) rangés : WFS-567 créé, RG de 319, 409, 514, 516 (po-scrum-master)
+
+- **WFS-567** (P1, E21, ⏳ Prêt, nouvelle session `@dev`) : renonciation expresse au droit de rétractation avant chaque achat sur l'écran Market (L221-28 13°), case active + lien CGU, FR / EN ; préalable à la vente (WFS-516) ; ajouté au bandeau 💶 avec WFS-512.
+- WFS-319 : `VERSION_CGU` 1 → 2 et « Version 2 » des CGU le jour de la publication. WFS-514 : « Confidentialité des pubs » / « Ad privacy ». WFS-409 : vérifier le chiffrement du duel (relais en TLS vu dans `reseau_android.cpp` ; PeerJS à confirmer).
+
