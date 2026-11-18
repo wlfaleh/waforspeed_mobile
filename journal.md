@@ -116,3 +116,9 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - **WFS-562 RG-05 ter** : le portique de checkpoint déjà refait par WFS-562 n'a plus de néon ni de bande cyan au sol (pas de doublon avec WFS-567, qui ne touche pas `portique.cpp`).
 - **WFS-568** (P2, E15, ⏳ Prêt, `@dev` dev-artiste-3d + avis `@3d`) : enseignes du décor changées en vraies enseignes (couleur propre à chaque commerce, sans cyan, aucune forme nue) ; rien retiré du code. **WFS-569** (P1, `@cicd`, ⏳ En attente de 568) : publication des paquets (ordre permanent du 2026-11-12), annulé si rien de cuit ne change.
 - `anno.md` : ANO-315 et ANO-316 → 📋 Planifiée ; ANO-290 → US WFS-567. Tous 🟡 par l'utilisateur après fusion. Aucune attribution (pas de demande de développeur).
+
+### 2026-11-18 20:35:11 — WFS-408 : PR #434 ouverte (Claude, agent juriste (01UY1Vv2))
+
+- Fait : CGU et confidentialité FR / EN en version « achats + pub » (achats Google Play, prix TTC, renonciation à la rétractation, remboursements, mineurs, AdMob et consentement, duel, droit applicable, bases légales, destinataires, transferts, droits, CNIL) ; `store/fiche-fr.md` (17 voitures, Corniche seule, achats et annonces) ; nouveau `store/play-console-declarations.md` ; `store/checklist.md`. Aucun code (l'écran des CGU lit `store/`).
+- Vérifié : `test_cgu` OK, `verifier_licences.py` 0 manque, captures bancs `cgu` et `textes` (FR / EN) avant / après (`qa/pr/WFS-408/`).
+- Limites, signalées au PO : renonciation expresse à faire confirmer dans l'écran Market (code hors zone) ; `VERSION_CGU` à passer à 2 le jour de la publication (`cgu.h` hors zone) ; la pub est décrite avant WFS-512 / 514 ; `wss://` du relais à vérifier. Repères « À REMPLIR PAR L'UTILISATEUR » (éditeur, contact, adresse) visibles dans le jeu jusqu'aux réponses de l'utilisateur.
