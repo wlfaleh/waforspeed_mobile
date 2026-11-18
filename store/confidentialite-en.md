@@ -2,33 +2,56 @@
 
 *This is the English translation of the French Privacy Policy (store/confidentialite.md). If the two versions differ, the French version prevails.*
 
-*(text to be published at a public address and entered in both stores; WFS-25, RG-05)*
+*Text published at: [TO BE FILLED IN BY THE PUBLISHER: public address of the policy].*
 
-WaForSpeed collects **no personal data**.
+## Who is responsible
 
-- No account, no ads, no audience measurement, no tracker, no advertising ID.
-- Settings and records stay **on the device** (the app's private folder); they are deleted with the app.
-- **Online duel** (if you use it): the **nickname** you choose and your **presence in the race** (position, speed,
-  score, about ten times per second) are sent to the other player in the lobby, for the length of the match. Nothing is kept
-  after the duel ends.
+- Data controller: [TO BE FILLED IN BY THE PUBLISHER: publisher name].
+- Contact: [TO BE FILLED IN BY THE PUBLISHER: contact email].
+
+## What the game does not do
+
+- No account, no audience measurement, no location, no access to contacts, microphone or camera.
+- The game sells no data.
+
+## Data kept on the phone
+
+- Settings, records, stars, proof of purchases and your ad choices stay **on the device** (the app's private folder); they are deleted with the app.
 - Gamepad: gamepad inputs are only used to drive; they do not leave the device.
-- **Crash report**: if the game closes by itself, a technical report (game version, phone model,
-  Android version, program addresses and the last lines of the game's log, with no personal data) is kept
-  in the app's private folder. It is **never sent automatically**: at the next launch, the game
-  offers "Share the report", and you choose the app and the recipient (or "Ignore").
-- No data is sold or shared with third parties.
+- **Crash report**: if the game closes by itself, a technical report (game version, phone model, Android version, program addresses and the last lines of the game's log, with no personal data) is kept in the app's private folder. It is **never sent automatically**: at the next launch, the game offers "Share the report", and you choose the app and the recipient (or "Ignore").
 
-Contact: to be completed by the publisher before publication (contact address required by both stores).
+## Data that leaves the phone
+
+- **Online duel** (if you use it): your **nickname** and your **presence in the race** (position, speed, score, about ten times per second) go through our relay server, hosted by Cloudflare, then to the other players in the lobby, for the length of the match. The relay sees your **IP address** for the connection, but keeps neither the IP address nor the nickname: nothing is kept after the duel. The duel on the same Wi-Fi stays on your local network.
+- **Map downloads**: GitHub, which hosts the map packs, receives the phone's **IP address** with each download, as with any web page.
+- **Purchases**: payment is made by **Google Play**. Google processes your account, your payment method and your purchase history under its own privacy policy. The game only receives the purchase confirmation, which it keeps on the phone so that it never delivers twice.
+- **Ads**: the optional videos are provided by **Google (AdMob)**. To show an ad, Google receives the IP address, information about the phone and the Android **advertising ID**. If you accept personalised ads, Google can use it to choose the ads; if you decline, the ads are not personalised. The "no ads" option stops the videos.
+
+## Why, and on what basis
+
+- Duel, map downloads and purchases: to provide the service you ask for (performance of the contract, GDPR article 6, 1, b).
+- Personalised ads and ad trackers: only with your **consent**, asked at first launch in Europe (GDPR article 6, 1, a; French Data Protection Act, article 82). You can withdraw your consent at any time in the Settings, line "Ad privacy".
+
+## Recipients and transfers outside the European Union
+
+- Recipients: Cloudflare (duel relay), GitHub (map packs), Google (payments and ads). No data is sold.
+- These companies may process data in the United States. These transfers use the safeguards provided by the GDPR (for example the EU–US Data Privacy Framework or standard contractual clauses).
+
+## How long data is kept
+
+- Duel relay: nothing is kept after the match.
+- Data on the phone: until the game is uninstalled.
+- Data processed by Google, GitHub and Cloudflare: under their own policies.
+
+## Minors
+
+- If you are under 15, ask a parent before accepting personalised ads. Parents can block purchases with Google Play parental controls.
+
+## Your rights
+
+- You have the right to access your data, to have it corrected or erased, to object to its processing, to restrict its use and to withdraw your consent. Write to the contact above.
+- If you are not satisfied with the answer, you can complain to the **CNIL** (cnil.fr) or to the data protection authority of your country.
 
 ## Answers to the store questionnaires
-- **Google Play — Data safety**: "No data collected"; "No data shared". Duel: nickname and
-  presence sent live between players, not stored (to be declared as "data transferred ephemerally"
-  if the native duel is published).
-- **App Store — App Privacy**: "Data Not Collected".
-
-## Age rating
-- **Google Play (IARC)**: racing game, no violence against people (crashes only involve
-  cars), no sexual content, no gambling, no purchases, communication between players limited to the duel
-  nickname → expected rating **PEGI 3 / Everyone** (PEGI 7 if the questionnaire counts the car crashes).
-- **App Store**: **4+** (no box checked except "Cartoon or Fantasy Violence: Infrequent/Mild" for the crashes,
-  which gives 9+ at most).
+- Answers prepared for the Google Play Console (Data safety, age rating, target audience): `store/play-console-declarations.md` (WFS-408, RG-E4).
+- **App Store** (iOS freeze): to be redone with purchases and ads when iOS resumes.

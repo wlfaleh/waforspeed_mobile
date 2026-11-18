@@ -7,13 +7,15 @@ Coché = prêt dans le dépôt ou produit par la CI. Non coché = à faire par l
 - [x] Icônes au style du jeu, sans logo tiers : `store/icones/icone-play-512.png` (512 × 512), `store/icones/icone-ios-1024.png`
       (1024 × 1024, opaque), dessinées par `tools/qa/icones_store.py` depuis l'icône adaptative Android
 - [x] Textes français : `store/fiche-fr.md` (description courte et longue, mots-clés, catégorie)
-- [x] Captures paysage du banc PC : `store/captures/` (à compléter par le simulateur de fin d'épic E7)
-- [x] Crédits des 20 voitures, personnages, sons, police : `store/credits.md` ; dans l'application : `assets/licences/`
+- [ ] Captures paysage neuves (17 voitures sans marque, Corniche) : `store/captures/` à créer (WFS-407)
+- [x] Crédits des 17 voitures livrées (3 retirées, licence NC : WFS-404), personnages, sons, police : `store/credits.md` ; dans l'application : `assets/licences/`
       (`CREDITS.txt` + une licence par modèle) et crédit de chaque voiture affiché au garage
 - [x] Vérification croisée automatique : `python3 tools/qa/verifier_licences.py` (CI, job « texte ») : chaque modèle,
       son, personnage et police livré a sa licence ; crédits complets
-- [x] Jeu gratuit, sans achat intégré ni publicité (licences NC) ; versions modifiées SA partagées sous la même licence
-- [x] Politique de confidentialité et classification d'âge : `store/confidentialite.md`
+- [x] Aucune licence non commerciale dans l'APK (WFS-404) : achats intégrés et publicité permis ; versions modifiées SA partagées sous la même licence
+- [x] CGU et politique de confidentialité FR / EN « achats + pub » (WFS-408) ; réponses Play Console préparées : `store/play-console-declarations.md`
+- [ ] Remplacer les repères `[À REMPLIR PAR L'UTILISATEUR : …]` / `[TO BE FILLED IN BY THE PUBLISHER: …]` (éditeur, contact, adresse de la politique) ; relecture par un avocat (WFS-516)
+- [x] Politique de confidentialité : `store/confidentialite.md` ; classification d'âge : `store/play-console-declarations.md`
 - [ ] Publier la politique de confidentialité à une adresse publique (ex. GitHub Pages) et renseigner un contact
 - [x] Version : `versionCode` = numéro de construction de la CI (croissant), `versionName` 0.1.N ; iOS : même numéro
       de build (`CFBundleVersion`). Passer `versionName` / `CFBundleShortVersionString` à 1.0 à la première soumission
@@ -30,7 +32,8 @@ Coché = prêt dans le dépôt ou produit par la CI. Non coché = à faire par l
       touche Retour comme WFS-116, sans retour prédictif (`enableOnBackInvokedCallback` à `false`)
 - [x] Paysage, plein écran, encoche, manettes (`android.hardware.gamepad` non exigé : le tactile suffit)
 - [ ] Fournir la clé de publication en secrets du dépôt (`WFS_CLE_ANDROID`, `WFS_CLE_MDP`, `WFS_CLE_ALIAS`, `WFS_CLE_ALIAS_MDP`)
-- [ ] Compte Google Play Console, fiche, questionnaire IARC, sécurité des données, test interne puis production
+- [ ] Compte Google Play Console, fiche, questionnaire IARC, sécurité des données, test interne puis production (WFS-409)
+- [ ] Compte marchand Google Play (achats), compte AdMob (pub), statut « commerçant » UE (adresse et téléphone publiés)
 
 ## App Store
 - [x] Application iOS construite par la CI (`ios.yml`, macOS, non bloquant) : `WaForSpeed-ios-simulateur.zip`,
