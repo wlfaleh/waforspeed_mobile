@@ -458,3 +458,7 @@ Détail dans la revue de la PR.
 ### 2026-11-17 21:07:16 — VABF 2026-11-17 : anomalies du monde 3D confirmées (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - L’utilisateur confirme les anomalies du monde 3D : ANO-278 à 286, 292 à 297, 299 à 301, 308, 309, 313 reviennent en 🆕 Nouvelle. Verdict final NON APTE (11 bloquantes : ANO-276, 277, 278 à 286). Skill `qa-lead` : monde 3D au banc = valable ; interface = comparer 16:9 et 20:9 (responsive).
+
+### 2026-11-18 10:37:34 — Statuts automatiques, bancs du matin #50 (robot statuts)
+- Run rouge (schedule, commit 0d13d2e), aucun statut changé. Job(s) en échec : endurance et chauffe, banc (realisme-2), banc (complements-c).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503.
