@@ -98,3 +98,9 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Contenu (RG-E1 à E5) : CGU et confidentialité FR + EN et texte du jeu (`cgu_texte.cpp`) « avec achats » (prix TTC, remboursements, rétractation avec renonciation expresse, mineurs, duel, droit applicable, données réelles) ; repères uniques pour éditeur / contact / adresse / pub, rien d'inventé ; `store/fiche-fr.md` (17 voitures inspirées de la route, achats intégrés) ; préparation écrite Sécurité des données + IARC + public cible.
 - Zone : `store/**`, `src/ui/ecrans/cgu_texte.cpp`. Branche `feature/waforspeed-408`. WFS-407 garde les captures neuves, WFS-409 la saisie dans la Console. Rappel : renommer la session « WFS-408 — juriste (documents avec achats) », captures, PR, `lead-dev`, arrêt après la fusion.
 
+### 2026-11-18 19:37:28 — 1re version publique = achats + pub ; E21 monté en priorité (po-scrum-master)
+
+- Ordre de l'utilisateur (~19:55 UTC), mot pour mot : « Dans la première version je veux gagner l'argent je veux tout en place pour gagner l'argent ». Question « pub oui / non » répondue (oui) dans `tache utilisateur.md`.
+- Priorité : bandeau 💶 en tête de `TACHES.md` : WFS-512 → 514 → 515 → 516 donnés avant les autres tickets prêts, sans retirer les P1 en cours ; **WFS-516 passé P2 → P1**.
+- WFS-408 (élargi, session juriste, `feature/waforspeed-408`), 409, 516 : variante « achats + pub » (consentement RGPD aux traceurs, identifiant publicitaire, « Contient des annonces », IARC refait).
+
