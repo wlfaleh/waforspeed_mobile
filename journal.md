@@ -133,3 +133,12 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Erreur du PO : à 20:35:38 UTC, la renonciation expresse avant achat a reçu le numéro **WFS-567**, déjà pris à 19:43:03 UTC par la correction ANO-315 (messages de course), et `regles-de-gestion/WFS-567.md` a été écrasé.
 - Correction : `WFS-567.md` restauré depuis 539399fc (ANO-315, cité dans `anno.md`) ; la renonciation expresse devient **WFS-570** (`regles-de-gestion/WFS-570.md`, `feature/waforspeed-570`) dans `TACHES.md`, le bandeau 💶, la dépendance de WFS-516 et `track-agent.md`. L'entrée du journal de 20:35:38 parle de WFS-570 sous l'ancien numéro.
 
+
+### 2026-11-18 20:45:53 — US des anomalies de la VABF du 2026-11-17 et ordre « 562, 567, 568 urgents » (po-scrum-master)
+
+- Ordres de l'utilisateur transmis par l'Agent qa : « La priorité c'est les anno dans le gameplay : décor, conduite, interface » (des US, pas seulement des anomalies) ; « 562, 567, 568 sont urgents » (566 corrigé en 562 par l'utilisateur).
+- Nouvelles US (règles dans `regles-de-gestion/WFS-571.md` à `WFS-589.md`) : décor P1 **571** (ANO-280), **573** (ANO-281 + 297 plage), **575** (ANO-284, 285, 286) ; décor P2 **576** (294), **577** (295), **579** (299 Ville), **581** (300), **582** (296), **583** (301) ; conduite P1 **584** (288, 289, `@conduite`) ; interface **585** (287), **586** (291), **587** responsive (302, 303, 304, 307), **588** P3 (305, 306) ; technique P1 **589** (277). Paquets `@cicd` : **572, 574, 578, 580** (après 571, 573, 577, 579 ; ordre permanent du 2026-11-12).
+- Tickets complétés au lieu d'un doublon : WFS-563 RG-08 (ANO-278), WFS-554 RG-10 (ANO-292), WFS-444 RG-07 (ANO-293), WFS-454 RG-05 (ANO-276).
+- Pas d'US : ANO-282 (Campagne) et ANO-283 (Grand Prix), parties Campagne d'ANO-297 et circuit d'ANO-299 : ⏸ en pause (ordre de l'utilisateur du 2026-11-13).
+- Arbitrage CI : la règle « CI de `main` rouge → P1 » est gardée (589, 454), mais ces tickets vont à des sessions `@cicd`, en parallèle : ils ne passent devant aucun ticket de jeu.
+- Ordre `@dev` (bandeau 🎮 de `TACHES.md`) : 562 → 567 → 568 (P2 → P1) → 571 → 573 → 575 → 563 → E21 (512, 570) → P2. `anno.md` : 29 anomalies en 📋 Planifiée ou ⏸ avec leur US.

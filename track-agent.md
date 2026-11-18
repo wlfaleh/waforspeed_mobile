@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-18 20:35:38 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-18 20:45:53 UTC (po-scrum-master)
+
+> 🎮 **20:45 UTC (2026-11-18)** : priorité aux anomalies du gameplay ; ordre `@dev` : **WFS-562 → 567 → 568** (urgents, ordre de l'utilisateur), puis 571, 573, 575, 563 ; `@conduite` : WFS-584 ; `@cicd` : WFS-589, 454 en parallèle. Aucune session libre : ouvrir de nouvelles sessions.
 
 > 🧾 **20:35 UTC (2026-11-18)** : **WFS-570** (P1, renonciation avant achat) ⏳ Prêt pour une nouvelle session `@dev` ; WFS-408 en PR #434 (session juriste).
 
