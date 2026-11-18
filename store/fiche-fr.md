@@ -7,11 +7,12 @@ Textes à copier dans la Google Play Console et App Store Connect (WFS-22 / WFS-
 - **Nom** : WaForSpeed
 - **Identifiant** : `com.waforspeed.game` (Android et iOS)
 - **Catégorie** : Jeux › Course (Google Play : *Course* ; App Store : *Jeux › Course*, secondaire *Action*)
-- **Prix** : gratuit, sans achat intégré ni publicité (obligatoire : licences non commerciales des modèles, voir `credits.md`)
+- **Prix** : gratuit à télécharger, **achats intégrés** (packs d'étoiles, option « sans pub ») et **vidéos publicitaires facultatives**
+  (Google Play : cocher « Contient des annonces » et « Achats intégrés » ; WFS-408, `play-console-declarations.md`)
 - **Langue** : français
 
 ## Sous-titre / description courte (80 caractères au plus)
-> Course de rue arcade en 3D : trafic, nitro et 20 vraies voitures, de jour ou de nuit.
+> Course de rue arcade en 3D : trafic, nitro et 17 voitures, de jour ou de nuit.
 
 (App Store, sous-titre, 30 caractères au plus : « Course de rue arcade en 3D »)
 
@@ -21,8 +22,8 @@ WaForSpeed est une course de rue arcade en 3D, pensée pour le téléphone.
 Fonce sur l'avenue, frôle le trafic, enchaîne les checkpoints avant la fin du chrono : chaque quasi-contact fait monter
 ton combo, chaque checkpoint te redonne du temps. Garde ta nitro pour la ligne droite et ne rate pas le virage.
 
-- **20 vraies voitures** : de la citadine à la supercar, chacune avec sa fiche, ses performances et sa peinture au choix.
-- **4 terrains** : Ville néon, Corniche au bord de la mer, Campagne et circuit Grand Prix, de jour comme de nuit.
+- **17 voitures inspirées de la route** : de la citadine à la supercar, chacune avec sa fiche, ses performances et sa peinture au choix.
+- **La Corniche** au bord de la mer, de jour comme de nuit (version publique : une seule carte, WFS-405).
 - **Trafic vivant** : voitures qui changent de file, freinent, et piétons sur les trottoirs.
 - **3 vues** : poursuite, capot et cockpit avec tableau de bord.
 - **Commandes tactiles** simples (volant à gauche, pédales et nitro à droite) **ou manette Bluetooth** (gâchettes,
@@ -30,7 +31,8 @@ ton combo, chaque checkpoint te redonne du temps. Garde ta nitro pour la ligne d
 - **Bientôt** : le duel en ligne contre un ami, sur la même route et avec le même trafic.
 - Moteur 3D maison : rendu fluide, ombres, reflets et effets de vitesse.
 
-Gratuit, sans publicité, sans achat intégré, sans compte.
+Gratuit à télécharger, sans compte. Achats intégrés facultatifs (étoiles, option « sans pub ») ; vidéos publicitaires
+seulement si tu les choisis, jamais pendant la course. Tout ce qui s'achète avec des étoiles se gagne aussi en jouant.
 
 ## Mots-clés (App Store, 100 caractères au plus)
 > course,voiture,arcade,rue,nitro,trafic,drift,néon,vitesse,manette,3D,chrono
@@ -42,6 +44,6 @@ Tailles exigées par l'App Store (6,7 pouces : 2796 × 1290 en paysage) : à rep
 sera affiché (voir `checklist.md`).
 
 ## Crédits (à coller en fin de description longue)
-Modèles 3D : voir `credits.md` (auteurs Sketchfab, licences CC BY, CC BY-SA, CC BY-NC, CC BY-NC-SA) ; personnages
-Quaternius (CC0) ; sons de moteur (CC BY, CC BY-SA, CC0) ; police Rajdhani (OFL). Les marques citées appartiennent à leurs
-propriétaires ; WaForSpeed n'est affilié à aucun constructeur.
+Modèles 3D : voir `credits.md` (auteurs Sketchfab, licences CC0, CC BY, CC BY-SA ; aucune licence non commerciale) ; personnages
+Quaternius (CC0) ; sons de moteur (CC BY, CC BY-SA, CC0) ; police Rajdhani (OFL). Les voitures du jeu portent des noms
+inventés ; WaForSpeed n'est affilié à aucun constructeur.
