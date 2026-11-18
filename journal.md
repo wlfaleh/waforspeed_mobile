@@ -57,3 +57,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-18 19:09:56 — ANO-314 : écran « Choisis ton mode » noir et sans images (Agent qa (session_01UY1Vv3tQoXdU3HwAjakb9t))
 
 - Retour de l’utilisateur (téléphone) : arrière-plan noir, aucun visuel. Comparé à la maquette 02 : les cartes doivent montrer une image de course chacune. Cause : solution provisoire de WFS-557 (fond flouté assombri à 62 %). ANO-314 (Majeure) ajoutée, correction = **WFS-562** (P1, débloquée par la fusion de WFS-557) : le PO peut l’attribuer à une nouvelle session `@dev` et ajouter le critère « fond pas noir sur le téléphone ».
+
+### 2026-11-18 19:25:57 — Avis juridique : peut-on publier sur le Play Store ? (juriste)
+
+- Rapport `juridique/rapport-2026-11-18.md` (mise à jour de J-01 à J-17, nouveaux J-18 à J-20). Test interne : oui. Sortie publique gratuite : pas encore, 4 points 🔴 (J-02 fiche, J-04 confidentialité et contact, J-05 Sécurité des données, J-18 boutique payante déjà dans l'APK alors que les CGU disent « sans achat »). Réglés : J-01, J-03, J-06, J-07, J-13 (WFS-404, 406).
+- Au PO : proposer une US « Market caché dans la version publique tant que WFS-516 n'est pas fini » (J-18) ; WFS-407 à 409 restent à faire le jour de publication.
