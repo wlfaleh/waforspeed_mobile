@@ -23,3 +23,18 @@ Captures « avant » : `origin/main` = `539399fc1f198447b431d0f06ee202d2f5adf18f
 | `textes-en-cgu-milieu` | ![avant](avant-textes-en-cgu-milieu.jpg?raw=true) | ![après](apres-textes-en-cgu-milieu.jpg?raw=true) |
 | `textes-en-cgu-bas` | ![avant](avant-textes-en-cgu-bas.jpg?raw=true) | ![après](apres-textes-en-cgu-bas.jpg?raw=true) |
 | `textes-en-cgu-lecture` | ![avant](avant-textes-en-cgu-lecture.jpg?raw=true) | ![après](apres-textes-en-cgu-lecture.jpg?raw=true) |
+
+## Captures ciblées (2e revue du lead dev, 2026-11-18)
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `cible-fr-cgu-p30` (CGU : achats, rétractation) | ![avant](avant-cible-fr-cgu-p30.jpg?raw=true) | ![après](apres-cible-fr-cgu-p30.jpg?raw=true) |
+| `cible-fr-cgu-p60` (CGU : duel en ligne) | ![avant](avant-cible-fr-cgu-p60.jpg?raw=true) | ![après](apres-cible-fr-cgu-p60.jpg?raw=true) |
+| `cible-fr-conf-p00` (confidentialité : responsable, adresse) | ![avant](avant-cible-fr-conf-p00.jpg?raw=true) | ![après](apres-cible-fr-conf-p00.jpg?raw=true) |
+| `cible-fr-conf-p40` (données qui quittent le téléphone) | ![avant](avant-cible-fr-conf-p40.jpg?raw=true) | ![après](apres-cible-fr-conf-p40.jpg?raw=true) |
+| `cible-fr-conf-p60` (pourquoi, sur quelle base) | ![avant](avant-cible-fr-conf-p60.jpg?raw=true) | ![après](apres-cible-fr-conf-p60.jpg?raw=true) |
+| `cible-en-cgu-p30` (CGU : achats, rétractation) | ![avant](avant-cible-en-cgu-p30.jpg?raw=true) | ![après](apres-cible-en-cgu-p30.jpg?raw=true) |
+| `cible-en-cgu-p60` (CGU : duel en ligne) | ![avant](avant-cible-en-cgu-p60.jpg?raw=true) | ![après](apres-cible-en-cgu-p60.jpg?raw=true) |
+| `cible-en-conf-p00` (confidentialité : responsable, adresse) | ![avant](avant-cible-en-conf-p00.jpg?raw=true) | ![après](apres-cible-en-conf-p00.jpg?raw=true) |
+| `cible-en-conf-p40` (données qui quittent le téléphone) | ![avant](avant-cible-en-conf-p40.jpg?raw=true) | ![après](apres-cible-en-conf-p40.jpg?raw=true) |
+| `cible-en-conf-p60` (pourquoi, sur quelle base) | ![avant](avant-cible-en-conf-p60.jpg?raw=true) | ![après](apres-cible-en-conf-p60.jpg?raw=true) |

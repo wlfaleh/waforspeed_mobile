@@ -19,6 +19,10 @@
   - Chiffrement du relais du duel (`wss://`) non vérifié : noté dans `play-console-declarations.md`.
   - Relecture d'un avocat avant la vente (WFS-516).
 
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` : **154 test(s) réussi(s) en 384 s**, 0 échec (dont `test_cgu`, `test_voitures_retirees`). Journal complet : [`qa/pr/WFS-408/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/tests-cpu.log).
+
 ## Captures pour le lead dev (9 + 8 après)
 
 Dossier : [`qa/pr/WFS-408`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408) — produit par `tools/qa/captures_pr.sh`.
@@ -44,3 +48,18 @@ Captures « avant » : `origin/main` = `539399fc1f198447b431d0f06ee202d2f5adf18f
 | `textes-en-cgu-milieu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-textes-en-cgu-milieu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-textes-en-cgu-milieu.jpg?raw=true) |
 | `textes-en-cgu-bas` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-textes-en-cgu-bas.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-textes-en-cgu-bas.jpg?raw=true) |
 | `textes-en-cgu-lecture` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-textes-en-cgu-lecture.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-textes-en-cgu-lecture.jpg?raw=true) |
+
+### Captures ciblées (2e revue)
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `cible-fr-cgu-p30` (CGU : achats, rétractation) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-fr-cgu-p30.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-fr-cgu-p30.jpg?raw=true) |
+| `cible-fr-cgu-p60` (CGU : duel en ligne) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-fr-cgu-p60.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-fr-cgu-p60.jpg?raw=true) |
+| `cible-fr-conf-p00` (confidentialité : responsable, adresse) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-fr-conf-p00.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-fr-conf-p00.jpg?raw=true) |
+| `cible-fr-conf-p40` (données qui quittent le téléphone) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-fr-conf-p40.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-fr-conf-p40.jpg?raw=true) |
+| `cible-fr-conf-p60` (pourquoi, sur quelle base) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-fr-conf-p60.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-fr-conf-p60.jpg?raw=true) |
+| `cible-en-cgu-p30` (CGU : achats, rétractation) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-en-cgu-p30.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-en-cgu-p30.jpg?raw=true) |
+| `cible-en-cgu-p60` (CGU : duel en ligne) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-en-cgu-p60.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-en-cgu-p60.jpg?raw=true) |
+| `cible-en-conf-p00` (confidentialité : responsable, adresse) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-en-conf-p00.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-en-conf-p00.jpg?raw=true) |
+| `cible-en-conf-p40` (données qui quittent le téléphone) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-en-conf-p40.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-en-conf-p40.jpg?raw=true) |
+| `cible-en-conf-p60` (pourquoi, sur quelle base) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/avant-cible-en-conf-p60.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-408/qa/pr/WFS-408/apres-cible-en-conf-p60.jpg?raw=true) |
