@@ -48,6 +48,8 @@ public:
     bool montrerMarges = false;
     // WFS-22 : manette (src/platform/manette_jeu.cpp) : commandes de conduite données par la manette ; vrai = commandes tactiles masquées
     DriveInput manette; bool modeManette = false;
+    vec3 orbitVise{};   // WFS-562 (accroche, banc « modes-photos ») : décalage du point visé par la caméra de vitrine (monde, m)
+    bool bancSansInterface = false;   // WFS-562 (accroche) : banc « modes-photos » seulement : image sans interface 2D (photos des modes)
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
     float orbitHauteur = 1.7f, orbitRecul = 6.5f;   // WFS-193 (accroche, banc) : caméra de vitrine réglable (vue basse)

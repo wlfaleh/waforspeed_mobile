@@ -1709,15 +1709,33 @@ void Renderer::uiSetFontAtlas(const Image& atlas) {
         VK_OK(vkAllocateDescriptorSets(vk_->device, &dai, &fontSet_));
     }
     // WFS-100 (RG-W2, VUID-vkCmdDraw-None-08114) : jamais de vue nulle liée. Au redémarrage du moteur (changement de carte),
-    // l'atlas n'existe pas encore : texture blanche 1 × 1 en attendant. Binding 1 (bloom de postLayout_) : blanc aussi.
-    VkDescriptorImageInfo ii[2] = {{sampler_, atlas.view ? atlas.view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-                                   {clampSampler_, white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
+    // l'atlas n'existe pas encore : texture blanche 1 × 1 en attendant. Binding 1 : planche de photos de l'interface (WFS-562,
+    // ex-bloom inutilisé par ui.frag), blanche sans photos.
+    atlasVue_ = atlas.view;
+    VkDescriptorImageInfo ii[2] = {{sampler_, atlasVue_ ? atlasVue_ : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+                                   {clampSampler_, photosVue_ ? photosVue_ : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
     VkWriteDescriptorSet wr[2]{};
     for (int k = 0; k < 2; k++) {
         wr[k].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; wr[k].dstSet = fontSet_; wr[k].dstBinding = (uint32_t)k;
         wr[k].descriptorCount = 1; wr[k].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[k].pImageInfo = &ii[k];
     }
     vkUpdateDescriptorSets(vk_->device, 2, wr, 0, nullptr);
+}
+
+// WFS-562 (accroche, RG-03) : planche de photos de l'interface : le jeu est réécrit, donc aucune image en vol ne doit le lire
+void Renderer::uiSetPhotos(const Image& planche) {
+    vk_->waitIdle();
+    photosVue_ = planche.view;
+    Image a{}; a.view = atlasVue_;
+    uiSetFontAtlas(a);
+}
+
+void Renderer::uiPhoto(const vec2 p[4], const vec2 uv[4], const vec4 c[4]) {
+    // uv décalés de +8 : le shader d'interface lit la planche de photos (binding 1)
+    UiVertex q[4];
+    for (int k = 0; k < 4; k++) q[k] = {p[k].x, p[k].y, uv[k].x + 8, uv[k].y, c[k].x, c[k].y, c[k].z, c[k].w};
+    if (uiPlein(ui_vtx_.size())) return;
+    ui_vtx_.insert(ui_vtx_.end(), {q[0], q[1], q[2], q[0], q[2], q[3]});
 }
 
 void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais) {

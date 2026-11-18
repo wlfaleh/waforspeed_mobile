@@ -54,5 +54,8 @@ Modele construire(float ouverture, float hauteurLibre, bool avecFeux = true);
 // tronçons de longueur `troncon` (le dernier plus court), manchons coniques entre deux tronçons
 void treillis(Maille& m, vec3 a, vec3 b, vec3 e1, float troncon, int couleur);
 
+// WFS-562 : platine de pied chanfreinée (acier galvanisé, pièce ACIER) et ses 4 boulons, centre au sol en (x, z)
+void platine(Maille& m, float x, float z);
+
 } // namespace portique_depart
 } // namespace wfs
