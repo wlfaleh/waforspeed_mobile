@@ -34,6 +34,9 @@ bool poursuiteNouveauRecord();
 void poursuiteBancFin(int mode);
 void poursuiteBancMessages();   // WFS-506 (banc « textes ») : annonce de renfort et perte de points (choc avec le trafic) tout de suite
 void poursuiteBancFixe(bool oui);   // programme et graine fixes (captures stables)
+// WFS-567 (RG-04) : vrai pendant une poursuite en course (pas sur l'écran de fin) ; texte : message de la poursuite à montrer
+// avec les autres messages (compte de l'arrestation, sinon bandeau d'annonce ou de surprise), dans la langue active, vide sinon
+bool poursuiteMessage(std::string& texte);
 
 namespace poursuite {
 

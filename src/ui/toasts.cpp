@@ -7,6 +7,7 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/course_system.h"
+#include "../game/commandes_tactiles.h"   // WFS-567 : dessin2d (biseau, polygone)
 #include "../game/game.h"
 #include "../game/poursuite.h"   // WFS-550 : police de la Poursuite (lecture seule)
 #include "../game/track.h"       // M (mètres par unité)
@@ -18,22 +19,17 @@ namespace wfs {
 namespace {
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
-const unsigned TEXTE = 0xF2F4F8, DANGER = 0xFF1F4B, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SOMBRE = 0x10131C;   // titre sombre des bandeaux (maquette 30)
 
-// genre du bandeau : WFS-550 (RG-06, maquette 30) : checkpoint en cyan, points (quasi-contact, combo, feu grillé) en orange,
-// police et mauvais coups (accident, combo perdu) en rouge
-enum Genre { NORMAL, CP, BAD };
-unsigned couleur(Genre g) { return g == CP ? ACCENT2 : g == BAD ? DANGER : ACCENT; }
-// titre sombre sur le cyan et l'orange (maquette 30), clair sur le rouge ; la valeur est toujours blanche
-unsigned couleurTexte(Genre g) { return g == BAD ? TEXTE : SOMBRE; }
+// WFS-567 (RG-01) : genre du message → repère de couleur (filet) : checkpoint et points (quasi-contact, combo, feu grillé) en
+// orange, police et mauvais coups (accident, combo perdu) en rouge, information (nouveaux tracés) en blanc. Plus de cyan.
+enum Genre { NORMAL, CP, BAD, INFO };
+messages::Repere repere(Genre g) { return g == BAD ? messages::Repere::Danger : g == INFO ? messages::Repere::Info : messages::Repere::Gain; }
 
-struct Toast { std::string titre, valeur; Genre genre; double naissance = -1; };   // naissance : temps de la 1re image
+// serie : message des quasi-contacts, regroupés (RG-03) ; frais : remis à neuf par un regroupement (vie reprise, sans
+// nouvelle entrée)
+struct Toast { std::string titre, valeur; Genre genre; double naissance = -1; bool serie = false, frais = false; };
 
-// durées du jeu web : toast-in 240 ms, toast-out 260 ms à 1,5 s, retiré à 1,9 s (setTimeout)
-constexpr double ENTREE = 0.24, SORTIE_DEBUT = 1.5, SORTIE = 0.26, VIE = 1.9;
-constexpr size_t PILE_MAX = 4;   // WFS-550 (maquette 30) : 4 bandeaux visibles
-
-std::deque<Toast> g_pile;   // WFS-550 : le plus récent à la fin (en bas de la pile, maquette 30)
+std::deque<Toast> g_pile;   // le plus récent à la fin (en bas)
 
 class Toasts : public System {
 public:
@@ -49,13 +45,22 @@ public:
             for (int n = level_ + 1; n <= c->level; n++)
                 pousser({ui::tr("toast.checkpoint", std::to_string(n)), "+" + secondes(Course::checkpointBonus(n)) + " s", CP});   // maquette 30 : « +30 s »
         }
-        // RG-03 : quasi-contact (web : « Quasi-contact ×N » si combo > 1, « +250×combo ») ; un bandeau par quasi-contact,
-        // même si plusieurs tombent dans la même mise à jour (le combo de chacun : combo final − ceux qui suivent)
+        // RG-03 (WFS-47) : quasi-contact (web : « Quasi-contact ×N » si combo > 1, « +250×combo ») ; WFS-567 (RG-03) : la série se
+        // regroupe en un seul message (« QUASI-CONTACT ×3 +750 ») au lieu de s'empiler : le combo de chacun = combo final − ceux qui suivent
         for (int i = 0, d = c->nearCount - near_; i < d; i++) {
             const int combo = std::max(1, c->combo - (d - 1 - i));
-            // WFS-550 (maquette 30) : « QUASI-CONTACT +250 » puis, en combo, « COMBO ×3 +500 » à part (même total : 250 × combo)
-            pousser({ui::tr("toast.quasi"), "+250", NORMAL});
-            if (combo > 1) pousser({ui::tr("toast.combo", std::to_string(combo)), "+" + std::to_string(250 * (combo - 1)), NORMAL});
+            const std::string titre = combo > 1 ? ui::tr("toast.quasi_combo", std::to_string(combo)) : ui::tr("toast.quasi");
+            const std::string valeur = "+" + std::to_string(250 * combo);
+            auto it = std::find_if(g_pile.begin(), g_pile.end(), [](const Toast& t) { return t.serie; });
+            if (it != g_pile.end() && combo > 1) {   // même série : le message existant prend le nouveau combo, en dernier
+                Toast t = std::move(*it); g_pile.erase(it);
+                t.titre = titre; t.valeur = valeur; t.frais = true;
+                g_pile.push_back(std::move(t));
+            } else {
+                if (it != g_pile.end()) g_pile.erase(it);   // nouvelle série : l'ancienne s'efface
+                Toast t{titre, valeur, NORMAL}; t.serie = true;
+                pousser(std::move(t));
+            }
         }
         if (c->accidents > accidents_) pousser({ui::tr("toast.accident"), "", BAD});   // RG-04 : playerAccident
         // RG-04 : combo perdu sur un choc (bump) : combo > 1 remis à 0 avant la fin de son délai ; le délai écoulé
@@ -67,41 +72,31 @@ public:
 
     void drawUi(Renderer& r, const GameView& g) override {
         const Course* c = activeCourse();
-        if (g_pile.empty()) return;
         // mêmes conditions que le HUD (WFS-27) : en course seulement
         if (!c || !g.player || g.ecran != Ecran::Course || g.sceneDediee || c->state == RaceState::Over || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
-        // WFS-550 (RG-06, maquette 30 ; ordre de l'utilisateur du 2026-11-15 : la maquette à 100 %) : pile centrée sous la rangée
-        // du haut ; chaque bandeau est une bande de couleur droite, pleine au centre et fondue vers la gauche et la droite, titre
-        // sombre (blanc sur le rouge) et valeur blanche, en capitales italiques de même taille ; ils glissent du haut et s'effacent ;
-        // aucun flou (aucun coût de rendu ajouté en course). Mesures de la maquette (1600 × 720) : 42 px de haut, 7 px d'écart.
-        const float xc = W * 0.5f + (g.marges.gauche - g.marges.droite) / 2;
-        float y = bandeauxHaut(H, g.marges);
-        const float tp = 27 * k, h = 44 * k, plein = 34 * k, fondu = 30 * k, gap = 6 * k;   // maquette 30 (720 px de haut)
-        auto sommet = [](float x, float yy, const vec4& c) { return UiVertex{x, yy, -1, -1, c.x, c.y, c.z, c.w}; };
+        const float H = g.uiHeight;
+        // WFS-567 (RG-02, RG-04) : en Poursuite, le message de la poursuite (surprise, arrestation) vient en premier, puis le
+        // plus récent de la pile ; ailleurs, les 2 plus récents. Placés en haut, sous le HUD, jamais sur la route.
+        const bool poursuite = poursuiteMessage(msgPoursuite_);
+        const float encartBas = poursuite ? poursuiteEncartBas(H, g.marges.haut) : 0, encartDemi = poursuite ? poursuiteEncartDemi(H) : 0;
+        int rang = 0;
+        if (!msgPoursuite_.empty())
+            messages::dessiner(r, g, encartBas, encartDemi, rang++, ui::majuscules(msgPoursuite_), "", messages::Repere::Danger, 1.f);
+        // vies, retraits, puis les plus récents
         for (auto it = g_pile.begin(); it != g_pile.end();) {
             if (it->naissance < 0) it->naissance = g.time;
-            const double a = g.time - it->naissance;
-            if (a >= VIE) { it = g_pile.erase(it); continue; }
-            // entrée : glisse du haut (−24 px → 0), opacité 0 → 1 (sortie douce) ; sortie : s'efface sur place (ease-in)
-            float op = 1, dy = 0;
-            if (a < ENTREE) { const float e = 1 - std::pow(1 - (float)(a / ENTREE), 3.f); op = e; dy = -24 * k * (1 - e); }
-            if (a > SORTIE_DEBUT) { const float s2 = std::min(1.f, (float)((a - SORTIE_DEBUT) / SORTIE)); op = 1 - s2 * s2; }
-            const std::string titre = ui::majuscules(it->titre), valeur = it->valeur;   // maquette 30 : « +30 s » (unité en minuscule)
-            const float wt = ui::width(tp, titre, 0.06f), wv = valeur.empty() ? 0 : ui::width(tp, valeur, 0.04f), ecart = 10 * k;
-            const float wtexte = wt + (wv > 0 ? ecart + wv : 0), w = wtexte + 2 * plein, x = xc - w / 2, yy = y + dy;
-            const vec4 c1 = hex(couleur(it->genre), 0.92f * op), c0 = hex(couleur(it->genre), 0);
-            // bande : fondu gauche, plein, fondu droit (un quadrilatère à couleurs par sommet chacun)
-            const float xa = x - fondu, xb = x + plein * 0.6f, xc2 = x + w - plein * 0.6f, xd = x + w + fondu;
-            const UiVertex q1[4] = {sommet(xa, yy, c0), sommet(xb, yy, c1), sommet(xb, yy + h, c1), sommet(xa, yy + h, c0)};
-            const UiVertex q2[4] = {sommet(xb, yy, c1), sommet(xc2, yy, c1), sommet(xc2, yy + h, c1), sommet(xb, yy + h, c1)};
-            const UiVertex q3[4] = {sommet(xc2, yy, c1), sommet(xd, yy, c0), sommet(xd, yy + h, c0), sommet(xc2, yy + h, c1)};
-            r.uiQuad(q1); r.uiQuad(q2); r.uiQuad(q3);
-            const float ty = std::round(yy + (h - tp) / 2), tx = std::round(xc - wtexte / 2);
-            ui::text(r, tx, ty, tp, titre, hex(couleurTexte(it->genre), op), ui::GAUCHE, 0.06f, false, true);
-            if (wv > 0) ui::text(r, std::round(tx + wt + ecart), ty, tp, valeur, hex(TEXTE, op), ui::GAUCHE, 0.04f, false, true);
-            y += h + gap;
-            ++it;
+            if (it->frais) { it->naissance = g.time - messages::ENTREE; it->frais = false; }   // regroupé : déjà visible, vie reprise
+            if (g.time - it->naissance >= messages::VIE) it = g_pile.erase(it); else ++it;
+        }
+        const int n = std::min((int)g_pile.size(), messages::MAX_VISIBLES - rang);
+        for (int i = (int)g_pile.size() - n; i < (int)g_pile.size(); i++) {
+            const Toast& t = g_pile[i];
+            const double a = g.time - t.naissance;
+            // RG-03 : apparition et disparition en fondu (≤ 0,2 s)
+            float op = 1;
+            if (a < messages::ENTREE) op = (float)(a / messages::ENTREE);
+            if (a > messages::VIE - messages::SORTIE) op = std::min(op, (float)((messages::VIE - a) / messages::SORTIE));
+            messages::dessiner(r, g, encartBas, encartDemi, rang++, ui::majuscules(t.titre), t.valeur, repere(t.genre), std::clamp(op, 0.f, 1.f));
         }
     }
 
@@ -128,9 +123,10 @@ private:
     }
     double dPolice_ = 1e9, attentePolice_ = 0;
     void pousser(Toast t) {
-        g_pile.push_back(std::move(t));   // WFS-550 (maquette 30) : le plus récent en bas de la pile
-        while (g_pile.size() > PILE_MAX) g_pile.pop_front();
+        g_pile.push_back(std::move(t));   // le plus récent à la fin ; WFS-567 (RG-02) : le plus ancien laisse sa place
+        while (g_pile.size() > (size_t)messages::MAX_VISIBLES) g_pile.pop_front();
     }
+    std::string msgPoursuite_;   // tampon réutilisé (aucune allocation par image une fois rempli)
     void garder(const Course* c) {
         level_ = c ? c->level : 0; near_ = c ? c->nearCount : 0; accidents_ = c ? c->accidents : 0;
         combo_ = c ? c->combo : 0; timer_ = c ? c->comboTimer : 0;
@@ -141,10 +137,40 @@ private:
 
 } // namespace
 
+// WFS-567 (RG-01) : un message : fond sombre translucide au bord gauche incliné, filet de couleur sur ce bord, titre et valeur
+// clairs en capitales italiques sur une ligne. Trop large pour sa place : police réduite jusqu'à 3,5 % de H, puis valeur retirée.
+void messages::fond(Renderer& r, const Rect& q, float H, Repere rep, float op) {
+    const float bi = biais(H), f = 4 * (H / 720.f);   // filet de couleur sur le bord gauche incliné
+    dessin2d::biseau(r, q.x, q.y, q.w, q.h, bi, dessin2d::uni(hex(SOMBRE, FOND_OPACITE * op)));
+    const vec2 filet[4] = {{q.x + bi, q.y}, {q.x + bi + f, q.y}, {q.x + f, q.y + q.h}, {q.x, q.y + q.h}};
+    dessin2d::polygone(r, filet, 4, dessin2d::uni(hex(couleurRepere(rep), op)));
+}
+
+void messages::dessiner(Renderer& r, const GameView& g, float encartBas, float encartDemi, int rang, const std::string& titre,
+                        const std::string& valeur, Repere rep, float op) {
+    const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f, mg = marge(H), bi = biais(H), ec = 10 * k;
+    const float wmax = largeurMax(W, H, g.marges, encartDemi);
+    float tp = taillePolice(H);
+    auto largeur = [&](float px, bool avecValeur) {
+        const float wt = ui::width(px, titre, 0.06f), wv = avecValeur && !valeur.empty() ? ui::width(px, valeur, 0.04f) : 0;
+        return wt + (wv > 0 ? ec + wv : 0) + 2 * mg + bi;
+    };
+    bool avecValeur = true;
+    float w = largeur(tp, true);
+    if (w > wmax) { tp = std::max(H * 0.035f, tp * (wmax - 2 * mg - bi) / (w - 2 * mg - bi)); w = largeur(tp, true); }
+    if (w > wmax && !valeur.empty()) { avecValeur = false; w = largeur(tp, false); }
+    const Rect q = place(W, H, g.marges, encartBas, encartDemi, rang, std::min(w, std::max(wmax, 0.f)));
+    fond(r, q, H, rep, op);
+    const float ty = std::round(q.y + (q.h - tp) / 2), tx = std::round(q.x + bi + mg);
+    ui::text(r, tx, ty, tp, titre, hex(TEXTE, op), ui::GAUCHE, 0.06f, false, true);
+    if (avecValeur && !valeur.empty())
+        ui::text(r, std::round(tx + ui::width(tp, titre, 0.06f) + ec), ty, tp, valeur, hex(TEXTE, op), ui::GAUCHE, 0.04f, false, true);
+}
+
 // WFS-136 (accroche A4) : bandeau demandé par un autre module (feu grillé, nouveaux tracés) ; même pile, même style
 void toasts::pousser(const std::string& titre, const std::string& valeur, int genre) {
-    g_pile.push_back({titre, valeur, genre == 1 ? CP : genre == 2 ? BAD : NORMAL});
-    while (g_pile.size() > PILE_MAX) g_pile.pop_front();
+    g_pile.push_back({titre, valeur, genre == 1 ? CP : genre == 2 ? BAD : genre == 3 ? INFO : NORMAL});
+    while (g_pile.size() > (size_t)messages::MAX_VISIBLES) g_pile.pop_front();
 }
 
 WFS_SYSTEM(Toasts, 425)   // interface : après le HUD (420), avant le fondu du chargement (490)
