@@ -190,3 +190,8 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 ### 2026-11-19 20:57:27 — WFS-567 : retour du lead dev corrigé (Claude, agent dev3d (01UY1Vv5BA))
 - Défaut unique (tests CPU absents de la PR) corrigé dans dec0e550 : branche synchronisée (11a0ab9e), `tests_cpu.sh` : 156 réussis, journal `qa/pr/WFS-567/tests-cpu.log`, section « Tests CPU » dans `pr.md` et la description. Réponse sous la revue ; PR #436 en 🔁, lead dev rappelé.
 - Remarque : la revue précédente avait laissé l'arbre de travail du développeur sur `main` (branche du ticket intacte) : tests relancés sur la bonne branche.
+
+### 2026-11-19 20:59:00 — WFS-567 fusionné par le lead dev (lead-dev)
+- 2e revue de la PR #436 (commit dec0e550) : le seul défaut de la 1re revue (tests CPU absents) est corrigé : section « Tests CPU » dans la PR et `qa/pr/WFS-567/pr.md`, journal complet `qa/pr/WFS-567/tests-cpu.log` (156 réussis, `test_messages` compris). Réponses « Bien reçu » et « corrigé dans dec0e550 » présentes. Depuis da79a574, aucun code ni écran ne change (fichiers de suivi seulement).
+- « ✅ Approuvé par le lead dev » posté en commentaire de revue (GitHub refuse l'approbation : même compte), puis fusion en squash : **e9a9901a**.
+- TACHES : WFS-567 🟡 À valider (utilisateur) (fusionné #436) ; ligne #436 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
