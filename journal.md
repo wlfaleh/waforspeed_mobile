@@ -186,3 +186,7 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 - Points du lead dev : journal des tests CPU (`qa/pr/WFS-562/tests-cpu.log`, 155 réussis) et section « Tests CPU » ; capture `parcours-mode-3-cartes` refaite ; `Renderer::shutdown` remet `atlasVue_` et `photosVue_` à zéro ; accroche du rendu couverte par l'accord du PO (97672604).
 - Avant : avis de l'agent 3D « VALIDÉ avec réserves » (23d3e721) après correction des photos Checkpoint et Poursuite, de la bâche (orange de sécurité, lisible la nuit) et du lest.
 - Limite : le conteneur a redémarré pendant les tests ; suite complète relancée après la synchronisation avec `main` (14634dad).
+
+### 2026-11-19 01:43:50 — WFS-562 fusionné par le lead dev (lead-dev)
+- 2e revue du commit 5fe8cbd0 : les 4 points du refus sont corrigés (section « Tests CPU » et `tests-cpu.log`, capture `apres-parcours-mode-3-cartes` refaite, `atlasVue_` et `photosVue_` remis à zéro dans `Renderer::shutdown`, accord du PO pour l'accroche du rendu). Compilation et `tests_cpu.sh` refaits : 155 réussis. Photos et portique inchangés depuis l'avis « VALIDÉ » de l'agent 3D.
+- « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash : 2620196d. Statut 🟡 À valider (utilisateur), ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
