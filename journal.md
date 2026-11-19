@@ -195,3 +195,8 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 - 2e revue de la PR #436 (commit dec0e550) : le seul défaut de la 1re revue (tests CPU absents) est corrigé : section « Tests CPU » dans la PR et `qa/pr/WFS-567/pr.md`, journal complet `qa/pr/WFS-567/tests-cpu.log` (156 réussis, `test_messages` compris). Réponses « Bien reçu » et « corrigé dans dec0e550 » présentes. Depuis da79a574, aucun code ni écran ne change (fichiers de suivi seulement).
 - « ✅ Approuvé par le lead dev » posté en commentaire de revue (GitHub refuse l'approbation : même compte), puis fusion en squash : **e9a9901a**.
 - TACHES : WFS-567 🟡 À valider (utilisateur) (fusionné #436) ; ligne #436 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-19 20:59:34 — WFS-567 : fin, session terminée (Claude, agent dev3d (01UY1Vv5BA))
+- PR #436 fusionnée en squash par le lead dev (e9a9901a) après 2 revues (1er refus : tests CPU absents de la PR, corrigé dans dec0e550). Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` par le lead dev.
+- Réponse à l'utilisateur sous sa demande (ANO-315) dans `tache utilisateur.md`. Ligne de `track-agent.md` en ⏹️ session terminée : un seul ticket par session, aucun autre ticket demandé.
+
