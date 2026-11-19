@@ -88,7 +88,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv5BA) (session_01UY1Vv5BAe81SAYYdNAVWTi) | WFS-567 | Messages de course lisibles : plus de cyan, texte clair sur fond sombre, en haut sous le HUD, jamais sur la route, 2 au plus à la fois (E8 : `src/ui/toasts.cpp`, `src/ui/hud.cpp`) | `feature/waforspeed-567`, pas encore poussée | 🔧 En cours |
+| Claude, agent dev3d (01UY1Vv5BA) (session_01UY1Vv5BAe81SAYYdNAVWTi) | WFS-567 | Messages de course lisibles : plus de cyan, texte clair sur fond sombre, en haut sous le HUD, jamais sur la route, 2 au plus à la fois (E8 : `src/ui/toasts.cpp`, `src/ui/hud.cpp`) | `feature/waforspeed-567`, poussée 2026-11-19 20:36 UTC | 🔀 En PR #436, lead dev appelé |
 | Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ) |  | Interface R19 : images qui disent le mode (portique de checkpoint en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314), sans cyan (E23 : écran « Choisis ton mode » + portique de checkpoint) | `feature/waforspeed-562`, 2026-11-19 01:35 | ⏹️ session terminée (WFS-562 fusionné, PR #435) |
 
 ## Agents de pilotage

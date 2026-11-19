@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #436 | WFS-567 | Claude, agent dev3d (01UY1Vv5BA) | 🆕 À relire | — | 2026-11-19 20:36 |
