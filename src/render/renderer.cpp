@@ -1978,7 +1978,8 @@ void Renderer::shutdown() {
     opaqueLeger_ = opaqueLegerDouble_ = VK_NULL_HANDLE;   // WFS-263
     poolPipe_ = addPipe_ = refOpaque_ = refBlend_ = refSky_ = refAdd_ = VK_NULL_HANDLE;
     pool_ = VK_NULL_HANDLE; sampler_ = clampSampler_ = shadowSampler_ = VK_NULL_HANDLE; tsPool_ = VK_NULL_HANDLE;
-    postSet_ = fontSet_ = VK_NULL_HANDLE; atlasVue_ = photosVue_ = VK_NULL_HANDLE;   // WFS-562 : vues détruites, jamais réutilisées au redémarrage osSet_[0] = osSet_[1] = refletSet_[0] = refletSet_[1] = VK_NULL_HANDLE;
+    postSet_ = fontSet_ = VK_NULL_HANDLE; osSet_[0] = osSet_[1] = refletSet_[0] = refletSet_[1] = VK_NULL_HANDLE;
+    atlasVue_ = photosVue_ = VK_NULL_HANDLE;   // WFS-562 : vues détruites, jamais réutilisées au redémarrage
     for (auto& r : fr_) { r.cb = VK_NULL_HANDLE; r.fence = VK_NULL_HANDLE; r.acquired = r.done = VK_NULL_HANDLE; r.frameSet = VK_NULL_HANDLE; }
     modules_.clear(); transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear();
     cur_ = 0; imageIndex_ = 0; inFrame_ = false; quadsUsed_ = 0; skinUsed_ = 0; tsWritten_[0] = tsWritten_[1] = false;
