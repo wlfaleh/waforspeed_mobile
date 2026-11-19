@@ -36,7 +36,19 @@ void caisson(Maille& m, vec3 c, float w, float h, float p, float rr, int couleur
     marina::eventail(m, an.back(), couleur, AZ);
 }
 
-// platine de pied chanfreinée (acier galvanisé) et ses 4 boulons, centre au sol en (x, z)
+// lanterne de départ : bague, visière (demi-tube au-dessus de la lentille) ; face vers +z, centre de la lentille en c
+void lanterne(Maille& noir, Maille& lentille, vec3 c) {
+    const float r = FEU_D / 2;
+    grandprix::revolution(noir, c, AZ, {{-0.01f, r + 0.018f}, {0.012f, r + 0.018f}, {0.016f, r + 0.008f}, {0.012f, r + 0.002f}, {-0.01f, r + 0.002f}},
+                          16, NOIR, 0, 6.2831853f, AX, false);                                                              // bague
+    grandprix::revolution(noir, c, AZ, {{0.01f, r + 0.02f}, {VISIERE, r + 0.035f}}, 10, NOIR, 0, 3.1415927f, AX, false);   // visière (dessus)
+    // lentille bombée de polycarbonate, Ø 200 mm, légèrement en retrait de la bague
+    grandprix::revolution(lentille, c, AZ, {{-0.005f, r}, {0.012f, r * 0.94f}, {0.026f, r * 0.66f}, {0.032f, 0.f}}, 16, LENTILLE);
+}
+
+} // namespace
+
+// platine de pied chanfreinée (acier galvanisé) et ses 4 boulons, centre au sol en (x, z) ; WFS-562 : publique (portique de checkpoint)
 void platine(Maille& m, float x, float z) {
     const float a = PLATINE / 2, ch = 0.03f;
     auto contour = [&](float y) {
@@ -54,18 +66,6 @@ void platine(Maille& m, float x, float z) {
         grandprix::revolution(m, {x + sx * (a - 0.07f), PLATINE_EP, z + sz * (a - 0.07f)}, HAUT,
                               {{0, 0.0205f}, {0.013f, 0.0205f}, {0.015f, 0.017f}}, 6, ACIER);
 }
-
-// lanterne de départ : bague, visière (demi-tube au-dessus de la lentille) ; face vers +z, centre de la lentille en c
-void lanterne(Maille& noir, Maille& lentille, vec3 c) {
-    const float r = FEU_D / 2;
-    grandprix::revolution(noir, c, AZ, {{-0.01f, r + 0.018f}, {0.012f, r + 0.018f}, {0.016f, r + 0.008f}, {0.012f, r + 0.002f}, {-0.01f, r + 0.002f}},
-                          16, NOIR, 0, 6.2831853f, AX, false);                                                              // bague
-    grandprix::revolution(noir, c, AZ, {{0.01f, r + 0.02f}, {VISIERE, r + 0.035f}}, 10, NOIR, 0, 3.1415927f, AX, false);   // visière (dessus)
-    // lentille bombée de polycarbonate, Ø 200 mm, légèrement en retrait de la bague
-    grandprix::revolution(lentille, c, AZ, {{-0.005f, r}, {0.012f, r * 0.94f}, {0.026f, r * 0.66f}, {0.032f, 0.f}}, 16, LENTILLE);
-}
-
-} // namespace
 
 void treillis(Maille& m, vec3 a, vec3 b, vec3 e1, float troncon, int couleur) {
     const vec3 d = b - a;

@@ -3,8 +3,14 @@ layout(location = 0) in vec2 vUv;
 layout(location = 1) in vec4 vColor;
 layout(location = 0) out vec4 outColor;
 layout(set = 0, binding = 0) uniform sampler2D fontAtlas;   // atlas de police (WFS-26)
+layout(set = 0, binding = 1) uniform sampler2D photos;      // WFS-562 : planche de photos de l'interface (images des modes)
 void main() {
     float a = vColor.a;
+    if (vUv.x >= 7.5) {   // WFS-562 : photo (couleur du sommet : voile qui l'assombrit vers le bas de la carte)
+        vec3 p = texture(photos, vUv - vec2(8.0, 0.0)).rgb;
+        outColor = vec4(p * vColor.rgb * a, a);
+        return;
+    }
     if (vUv.x >= 5.5) {   // WFS-551 : lettre en tube de néon (contour creux du champ de distance : onglet ouvert du garage)
         float d = texture(fontAtlas, vUv - vec2(6.0, 0.0)).r;
         float w = max(fwidth(d) * 0.75, 0.01);

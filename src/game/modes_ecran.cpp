@@ -19,6 +19,7 @@
 #include "../ui/text.h"
 #include "../ui/boutons.h"   // WFS-549 (accroche E23) : boutons au modèle R19
 #include "../ui/verre.h"     // WFS-557 : fond flouté (images provisoires des modes, RG-22)
+#include "../ui/modes_photos.h"   // WFS-562 : images qui disent le mode
 #include "commandes_tactiles.h"   // WFS-557 : cartes inclinées (dessin2d)
 #include "../ui/langue.h"   // WFS-505 : textes du choix du mode en français ou en anglais
 #include "../ui/ecrans/textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
@@ -37,6 +38,7 @@ const int KMS[4] = {2, 4, 6, 10};
 const char* const DIFFS[3] = {"modes.facile", "modes.normale", "modes.difficile"};   // WFS-133 (RG-01) : indices de course5::Difficulte ; WFS-505 : clés
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
+constexpr float ASSOMBRIR_FOND = 0.22f;   // WFS-562 (RG-07) : voile du fond flouté (0,62 avant : fond noir sur le téléphone, ANO-314)
 const unsigned BG = 0x0A0B10, SURF = 0x14161F, SURF2 = 0x1E2130, TXT = 0xF2F4F8, MUTE = 0x8A90A6, ACC = 0xFF6A00, ACC2 = 0x00E5FF;
 
 struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } };
@@ -123,6 +125,7 @@ public:
         const ecrans::textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
         // WFS-517 (RG-04) : dernier mode = duel (ou inconnu) → Checkpoint présélectionné
         if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); diff_ = course5::difficulte(); ouverture_ = false; }
+        modes_photos::charger(r);   // WFS-562 (RG-03) : une fois, à la 1re ouverture de l'écran ; sans photos : scène floutée (RG-06)
         // WFS-557 (maquette 02 ; arbitrages du PO du 2026-11-16 : maquette à 100 %, RG-21, RG-22). Unité k = H / 720 (maquette
         // 1600 × 720), depuis la zone sûre. Titre et « Étape 1 sur 3 » en haut à gauche ; 3 grandes cartes inclinées ; image du mode
         // provisoire = la scène du jeu floutée (RG-22, vraies images : WFS-562) ; nom du mode choisi en orange ; « Distance » et
@@ -131,7 +134,8 @@ public:
         const float W = g.uiWidth, H = g.uiHeight, k = std::min(H / 720.f, (W - g.marges.gauche - g.marges.droite) / 1600.f);   // 16:9 : réduit, centré
         const float ox = g.marges.gauche + (W - g.marges.gauche - g.marges.droite - 1600 * k) / 2, oy = g.marges.haut + (H - g.marges.haut - g.marges.bas - 720 * k) / 2;
         (void)W;
-        verre::fondFloute(r); verre::assombrir(r, W, H, 0.62f);
+        // WFS-562 (RG-07, ANO-314) : voile du fond ramené de 62 % à ASSOMBRIR_FOND : le décor se voit derrière les cartes sur le téléphone
+        verre::fondFloute(r); verre::assombrir(r, W, H, ASSOMBRIR_FOND);
         ui::text(r, ox + 44 * k, oy + 40 * k, 56 * k, ui::majuscules(ui::tr("modes.titre")), hex(TXT), ui::GAUCHE, 0.01f, false, true);
         { ui::AvecPolice inter(ui::Police::Inter); ui::text(r, ox + 44 * k, oy + 98 * k, 13 * k, ui::tr("modes.etape"), hex(0xC9CDDA), ui::GAUCHE, 0, false); }
         manette::zonesImage().clear();   // WFS-517 (RG-03) : panneau ouvert → seuls ses boutons ont le focus (comme les réglages)
@@ -145,9 +149,11 @@ public:
             cartes_[i] = {x, y0, cw, ch};
             manette::focus(cartes_[i]);
             const vec2 q[4] = {{x + biais, y0}, {x + cw, y0}, {x + cw - biais, y0 + ch}, {x, y0 + ch}};
-            dessin2d::polygone(r, q, 4, {hex(0x1A1C22, 0.30f), hex(0x0B0C10, 0.94f), y0, y0 + ch});
-            dessin2d::contour(r, q, 4, 1 * k, sel ? hex(TXT, 0.30f) : hex(TXT, 0.12f));
             const bool reglages = sel && c.mode == ModeCourse::Course5;   // RG-21 : distance et difficulté dans la carte
+            if (modes_photos::pretes())   // WFS-562 (RG-01, RG-04) : la photo du mode remplit la carte, voile sombre sous le sujet
+                modes_photos::dessiner(r, i, q, x, y0, cw, ch, y0 + (reglages ? 0.22f : 0.52f) * ch, y0 + (reglages ? 0.42f : 0.74f) * ch, 0.90f);
+            else dessin2d::polygone(r, q, 4, {hex(0x1A1C22, 0.30f), hex(0x0B0C10, 0.94f), y0, y0 + ch});   // RG-06 : repli sans photos
+            dessin2d::contour(r, q, 4, 1 * k, sel ? hex(TXT, 0.30f) : hex(TXT, 0.12f));
             const float yn = y0 + (reglages ? 160 : 270) * k;
             ui::textBoite(r, x + 26 * k, yn, cw - 70 * k, 50 * k, 48 * k, ui::majuscules(ui::tr(c.cle)), hex(sel ? 0xFF8A3D : TXT, c.dispo ? 1.f : 0.5f), ui::GAUCHE, 0.01f, false, true);
             { ui::AvecPolice inter(ui::Police::Inter); descr(r, x + 22 * k, yn + 58 * k, cw - 70 * k, 14 * k, descCarte(c), hex(0xE6E8EE)); }
@@ -463,4 +469,44 @@ int benchParcoursCourse5(Game& g, Renderer& r, const std::string& out) {
 
 WFS_SYSTEM(ChoixMode, 458)   // interface (400-499) : par-dessus le menu (450), le salon (453) et la pause (455)
 
+} // namespace wfs
+
+namespace wfs {
+// ---------- banc « modes-ecran » (WFS-562) : écran « Choisis ton mode » avec les photos des modes, chaque carte choisie tour à
+// tour (Checkpoint, Course à 5 avec distance et difficulté, Poursuite), en français puis en anglais ; puis le repli sans photos
+// (RG-06). Captures modes-ecran-<fr|en>-<checkpoint|course5|poursuite>.png et modes-ecran-sans-photos.png. Écart si les photos ne
+// sont pas chargées ou si une carte ne se choisit pas.
+int benchModesEcran(Game& g, Renderer& r, const std::string& out) {
+    int ecarts = 0;
+    if (!g.init(r, "golf", "ville")) { WFS_ERR("modes-ecran : chargement impossible"); return 1; }
+    double t = 1500;
+    auto images = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 4 == 3) g.render(t); } };
+    auto capture = [&](const std::string& nom) { g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/" + nom + ".png"); WFS_LOG("capture %s", nom.c_str()); };
+    int doigt = 50;
+    g.allerA(Ecran::Menu); images(30);
+    choixModeBanc(true);
+    const char* noms[NB_CARTES] = {"checkpoint", "course5", "poursuite"};
+    for (const char* lg : {"fr", "en"}) {
+        ui::langue::choisir(lg[0] == 'f' ? ui::langue::Choix::Francais : ui::langue::Choix::Anglais);
+        modeCourse() = ModeCourse::Checkpoint; g_ouvert = false; ouvrirChoixMode(); images(12);
+        if (!modes_photos::pretes()) { ecarts++; WFS_ERR("modes-ecran : photos des modes non chargées (repli : scène floutée)"); }
+        for (int i = 0; i < NB_CARTES; i++) {
+            float x = 0, y = 0;
+            if (!ChoixMode::actif_ || !ChoixMode::actif_->centre("carte" + std::to_string(i), x, y)) { ecarts++; WFS_ERR("modes-ecran : carte %d absente", i); continue; }
+            const int id = doigt++;
+            g.onTouch({id, x, y, true}); images(2); g.onTouch({id, x, y, false}); images(4);
+            capture(std::string("modes-ecran-") + lg + "-" + noms[i]);
+        }
+    }
+    ui::langue::choisir(ui::langue::Choix::Automatique);
+    // RG-06 : sans photos (mémoire refusée, fichier absent), la scène floutée reste dans les cartes
+    modes_photos::liberer(r); modes_photos::refuserBanc(true);
+    modeCourse() = ModeCourse::Checkpoint; g_ouvert = false; ouvrirChoixMode(); images(8);
+    if (modes_photos::pretes()) { ecarts++; WFS_ERR("modes-ecran : photos affichées malgré le refus du banc"); }
+    capture("modes-ecran-sans-photos");
+    modes_photos::refuserBanc(false); modes_photos::liberer(r);
+    choixModeBanc(false);
+    g.shutdown();
+    return ecarts;
+}
 } // namespace wfs

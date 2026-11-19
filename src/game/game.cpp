@@ -334,7 +334,7 @@ Game::Vue Game::calculerVue(double time) {
     if (camMode == 2) {   // vitrine : on tourne autour de la voiture
         float a = orbit;
         eye = v.carPos + vec3{std::sin(a) * orbitRecul, orbitHauteur, std::cos(a) * orbitRecul};
-        look = v.carPos + vec3{0, 0.55f, 0};
+        look = v.carPos + vec3{0, 0.55f, 0} + orbitVise;   // WFS-562 (accroche) : orbitVise nul hors du banc des photos
         camInit_ = false;
     } else {
         const float back = camMode == 0 ? 5.2f : 8.0f, up = camMode == 0 ? 1.55f : 2.6f;
@@ -447,7 +447,7 @@ void Game::render(double time) {
     if (dessin3d) conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course
     if (dediee && sd.interface) view_.sceneDediee = false;   // WFS-552 (accroche) : interface du menu dessinée sur son parking
-    systemsUi();
+    if (!bancSansInterface) systemsUi();   // WFS-562 (accroche) : photos des modes sans interface
     view_.sceneDediee = dediee;   // WFS-552 (accroche)
     r_->endFrame();
 }

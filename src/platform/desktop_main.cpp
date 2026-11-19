@@ -57,6 +57,7 @@ namespace wfs { int benchLumieresBasse(Game& g, Renderer& r, const std::string& 
 namespace wfs { int benchHalos(Game& g, Renderer& r, const std::string& out); }   // WFS-337 (accroche) : eclairage_halos_banc.cpp
 namespace wfs { int benchDepartCampagne(Game& g, Renderer& r, const std::string& out); }   // WFS-374 (accroche) : depart_campagne_banc.cpp
 namespace wfs { int benchPortiqueDepart(Game& g, Renderer& r, const std::string& out); }   // WFS-559 (accroche) : portique_depart_banc.cpp
+namespace wfs { int benchPortiqueCheckpoint(Game& g, Renderer& r, const std::string& out); int benchModesPhotos(Game& g, Renderer& r, const std::string& out); int benchModesEcran(Game& g, Renderer& r, const std::string& out); }   // WFS-562 (accroche) : portique_checkpoint_banc.cpp, modes_photos_banc.cpp
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
 #include "../game/virages_banc.h"   // WFS-295 (accroche) : WFS_BANC=virages
@@ -222,6 +223,9 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "modes-ecran") { ui::chargerPolice(r); const int e = benchModesEcran(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-562 (accroche) : écran des modes avec les photos, FR / EN
+    if (banc == "modes-photos") { const int e = benchModesPhotos(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-562 (accroche) : fabrique les 3 photos des modes
+    if (banc == "portique-checkpoint") { ui::chargerPolice(r); const int e = benchPortiqueCheckpoint(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-562 (accroche) : portique de checkpoint, jour et nuit
     if (banc == "portique-depart") { ui::chargerPolice(r); const int e = benchPortiqueDepart(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-559 (accroche) : portique de départ, 5 feux
     if (banc == "depart-campagne") { ui::chargerPolice(r); const int e = benchDepartCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-374 (accroche) : départ de la Campagne, gaz tenu dès le décompte ; ANO-233
     if (banc == "halos-sol") { const int e = benchHalosSol(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-421 (accroche) : halos au sol des lampadaires, Basse / Moyenne / Haute

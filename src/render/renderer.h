@@ -204,6 +204,11 @@ public:
     void uiQuad(const UiVertex q[4]);   // WFS-65 : quadrilatère à couleurs par sommet (dégradés), u = v = −1
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
     void uiSetFontAtlas(const Image& atlas);
+    // WFS-562 (accroche, RG-03) : planche de photos de l'interface (binding 1 du jeu de la police, lu par ui.frag) ; Image{} :
+    // texture blanche. Attend la fin des images en vol (jeu de descripteurs réécrit) : à appeler au chargement d'un écran, pas à chaque image.
+    void uiSetPhotos(const Image& planche);
+    // quadrilatère de photo : sommets p (ordre du dessin), uv dans la planche (0..1), couleur par sommet (multiplie la photo, alpha prémultiplié)
+    void uiPhoto(const vec2 p[4], const vec2 uv[4], const vec4 c[4]);
     // WFS-48 : biais = décalage en x du bord haut par rapport au bord bas (italique synthétique), 0 = droit
     void uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais = 0);
     void endFrame();
@@ -355,6 +360,7 @@ private:
     std::unordered_set<VkDescriptorSet> jeuxMat_;   // WFS-187 : jeux des matériaux vivants (copies d'un matériau : libéré une fois)
     VkShaderModule modScene_[6]{};   // scene.vert, scene.frag, sky.vert, sky.frag, scene_skin.vert, scene_skin.frag
     VkDescriptorSet postSet_ = VK_NULL_HANDLE, fontSet_ = VK_NULL_HANDLE;
+    VkImageView atlasVue_ = VK_NULL_HANDLE, photosVue_ = VK_NULL_HANDLE;   // WFS-562 : vues liées au jeu de la police (0 : atlas, 1 : photos)
 
     static constexpr int FRAMES = 2;
     struct FrameRes {
