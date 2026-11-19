@@ -86,7 +86,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ) | WFS-562 | Interface R19 : images qui disent le mode (portique de checkpoint en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314), sans cyan (E23 : écran « Choisis ton mode » + portique de checkpoint) | `feature/waforspeed-562`, 2026-11-19 00:33 | ↩️ retour lead dev sur PR #435 : à corriger |
+| Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ) | WFS-562 | Interface R19 : images qui disent le mode (portique de checkpoint en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314), sans cyan (E23 : écran « Choisis ton mode » + portique de checkpoint) | `feature/waforspeed-562`, 2026-11-19 01:35 | 🔀 En PR #435 : corrigée, lead dev rappelé |
 
 ## Agents de pilotage
 

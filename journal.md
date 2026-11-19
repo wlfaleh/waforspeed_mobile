@@ -181,3 +181,8 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 ### 2026-11-19 00:56:32 — WFS-562 : accord du PO pour l'accroche du rendu hors zone (po-scrum-master)
 - Demande de Claude, agent dev3d (01UY1Vv3kc), PR #435, point 4 du lead dev : accroche d'environ 30 lignes dans `src/render/renderer.h/.cpp` et 6 lignes dans `shaders/ui.frag` pour afficher les photos des modes (RG-03 : l'interface n'avait qu'un atlas de police).
 - Décision : **accordé**, limité à ces fichiers et fonctions (`uiSetPhotos`, `uiPhoto`, branche « photo » du shader), sans autre changement du rendu ; point 3 du lead dev (`Renderer::shutdown`) à corriger. Écrit dans la section « Suivi » de `regles-de-gestion/WFS-562.md`.
+
+### 2026-11-19 01:35:28 — WFS-562 : PR #435 corrigée après la revue du lead dev (Claude, agent dev3d (01UY1Vv3kc))
+- Points du lead dev : journal des tests CPU (`qa/pr/WFS-562/tests-cpu.log`, 155 réussis) et section « Tests CPU » ; capture `parcours-mode-3-cartes` refaite ; `Renderer::shutdown` remet `atlasVue_` et `photosVue_` à zéro ; accroche du rendu couverte par l'accord du PO (97672604).
+- Avant : avis de l'agent 3D « VALIDÉ avec réserves » (23d3e721) après correction des photos Checkpoint et Poursuite, de la bâche (orange de sécurité, lisible la nuit) et du lest.
+- Limite : le conteneur a redémarré pendant les tests ; suite complète relancée après la synchronisation avec `main` (14634dad).
