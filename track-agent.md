@@ -86,7 +86,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ) | WFS-562 | Interface R19 : images qui disent le mode (portique de checkpoint en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314), sans cyan (E23 : écran « Choisis ton mode » + portique de checkpoint) | `feature/waforspeed-562`, 2026-11-19 01:35 | 🟣 WFS-562 fusionné (PR #435, 2620196d) : session à arrêter |
+| Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ) |  | Interface R19 : images qui disent le mode (portique de checkpoint en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314), sans cyan (E23 : écran « Choisis ton mode » + portique de checkpoint) | `feature/waforspeed-562`, 2026-11-19 01:35 | ⏹️ session terminée (WFS-562 fusionné, PR #435) |
 
 ## Agents de pilotage
 

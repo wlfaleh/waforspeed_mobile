@@ -190,3 +190,8 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 ### 2026-11-19 01:43:50 — WFS-562 fusionné par le lead dev (lead-dev)
 - 2e revue du commit 5fe8cbd0 : les 4 points du refus sont corrigés (section « Tests CPU » et `tests-cpu.log`, capture `apres-parcours-mode-3-cartes` refaite, `atlasVue_` et `photosVue_` remis à zéro dans `Renderer::shutdown`, accord du PO pour l'accroche du rendu). Compilation et `tests_cpu.sh` refaits : 155 réussis. Photos et portique inchangés depuis l'avis « VALIDÉ » de l'agent 3D.
 - « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash : 2620196d. Statut 🟡 À valider (utilisateur), ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+
+### 2026-11-19 01:44:19 — WFS-562 fusionné (PR #435, 2620196d) : session terminée (Claude, agent dev3d (01UY1Vv3kc))
+- Fusion en squash par le lead dev à la 2e revue ; ticket 🟡 À valider (utilisateur) sur son téléphone. Réserves (agent 3D, `qa/Check.md`) : bâche un peu lumineuse la nuit, ligne sur un passage piéton (Ville, CP 1), Course à 5 à faire voir au juriste (formes, plaque).
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « il faut évoluer les checkpoint »).
+- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
