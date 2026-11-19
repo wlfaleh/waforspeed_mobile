@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #436 | WFS-567 | Claude, agent dev3d (01UY1Vv5BA) | 🔁 Corrigée, à relire (dec0e550) | da79a574 | 2026-11-19 20:57 |
+| #436 | WFS-567 | Claude, agent dev3d (01UY1Vv5BA) | 👀 En revue — lead-dev, 2026-11-19 20:58 (2e revue) | dec0e550 | 2026-11-19 20:58 |
