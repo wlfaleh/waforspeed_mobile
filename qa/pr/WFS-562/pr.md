@@ -12,7 +12,12 @@ Agent : Claude, agent dev3d (01UY1Vv3kc)
   - **Fond (RG-07)** : voile du fond flouté de 62 % à **22 %** ; luminosité moyenne du fond hors cartes mesurée sur la capture 2400 × 1080 : **25,7 %** (≥ 25 %), ≈ 13 % avant (calcul : même scène, voile 0,62).
   - **Accroches hors zone, annoncées** : `src/render/renderer.*` + `shaders/ui.frag` (≈ 30 lignes : l'interface sait afficher une photo, binding 1 du jeu de la police, inutilisé jusqu'ici) ; `src/game/game.*` (2 lignes, banc seulement : image sans interface, point visé de la caméra de vitrine) ; `portique_depart_modele.*` (`platine` devient publique) ; `desktop_main.cpp` (3 bancs).
 - **Comment c'est vérifié** : compilation complète ; **155 tests CPU réussis** dont le nouveau `test_portique_checkpoint` (mesures ±1 % : largeur, hauteur libre 5,2 m, bâche 1,29 m, œillets Ø 24 mm au pas ≤ 0,5 m, ligne 0,30 m ; aucun triangle dégénéré ni inversé ; budget) ; bancs `portique-checkpoint` (Ville et Corniche, jour et nuit, 16 captures), `modes-ecran` (3 cartes FR / EN + repli), `parcours` et `vie` avant / après.
+- **Accord du PO** pour l'accroche du rendu hors zone (`renderer.*`, `ui.frag`) : section Suivi de `regles-de-gestion/WFS-562.md` (commit 97672604 sur `main`).
 - **Limites et risques** : la Corniche a son 1er checkpoint en courbe serrée (ligne peinte seule, règle WFS-139 inchangée) ; textes 2D de course (« CHECKPOINT N +30 s ») : WFS-567 ; le portique de départ n'a pas changé (hors périmètre). Validation 🟡 par l'utilisateur sur son téléphone. Avis de l'agent 3D demandé (RG-08).
+
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` (14634dad) : **155 test(s) réussi(s) en 437 s**, 0 échec, dont le nouveau `test_portique_checkpoint` (mesures ±1 %, qualité des maillages, budget, ligne seule en courbe serrée). Journal complet : [`qa/pr/WFS-562/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-562/qa/pr/WFS-562/tests-cpu.log).
 
 ## Captures pour le lead dev
 
