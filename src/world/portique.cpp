@@ -23,6 +23,10 @@ using namespace portique_checkpoint;
 
 constexpr float DEGAGEMENT = 1.f;      // pieds à 1 m du bord de la chaussée (comme avant)
 constexpr unsigned ENCRE = 0x141414;   // encre noire de l'impression (texte)
+constexpr unsigned BACHE_SRGB = 0xFF7A1A, BLANC_SRGB = 0xE8E8E4;
+// la nuit, la bâche éclairée par ses deux projecteurs LED : part de l'albédo renvoyée (avis de l'agent 3D, R2 : lisible même
+// quand toutes les lumières en cône de l'image sont prises, Corniche)
+constexpr float ECLAIRAGE_NUIT = 0.22f;
 
 // bâche et projecteurs du portique dessiné, lus par la lumière de nuit (PortiqueLumiere) ; vide sans portique
 struct BachePose { bool visible = false; vec3 centre{}, avant{}; };
@@ -45,15 +49,21 @@ public:
         mats_[ALU] = mat({0.913f, 0.922f, 0.924f}, 1, 0.38f);
         mats_[ACIER] = mat({0.56f, 0.57f, 0.58f}, 1, 0.6f);
         mats_[NOIR] = mat({0.035f, 0.035f, 0.038f}, 0, 0.5f);
-        mats_[BACHE] = mat(vie::lin(0xF06414), 0, 0.55f);
+        // orange de sécurité (vinyle fluo-orange imprimé) : assez clair pour rester orange à l'ombre (avis de l'agent 3D, R1)
+        mats_[BACHE] = mat(vie::lin(BACHE_SRGB), 0, 0.55f);
         mats_[ENCRE_NOIRE] = mat(vie::lin(ENCRE), 0, 0.7f);
-        mats_[ENCRE_BLANCHE] = mat(vie::lin(0xE8E8E4), 0, 0.6f);
+        mats_[ENCRE_BLANCHE] = mat(vie::lin(BLANC_SRGB), 0, 0.6f);
         mats_[LAITON] = mat({0.75f, 0.74f, 0.70f}, 1, 0.35f);
         mats_[VERRE] = mat({0.02f, 0.02f, 0.022f}, 0, 0.06f);
         mats_[PEINTURE] = mat({0.75f, 0.75f, 0.73f}, 0, 0.5f);
         mats_[ATTACHE] = Material{};   // tendeurs : matériau NOIR (aucun matériau créé)
         Material allume; allume.color = {0.9f, 0.9f, 0.88f, 1}; allume.rough = 0.06f; allume.emissive = vie::lin(0xFFF2E0) * 3.f;   // LED 5 000 K
         verreNuit_ = r.makeMaterial(allume, nullptr, nullptr, nullptr);
+        for (int k : {BACHE, ENCRE_BLANCHE}) {   // mêmes matériaux, plus la lumière des projecteurs renvoyée (nuit seulement)
+            const vec3 c = vie::lin(k == BACHE ? BACHE_SRGB : BLANC_SRGB);
+            Material m; m.color = {c.x, c.y, c.z, 1}; m.rough = k == BACHE ? 0.55f : 0.6f; m.emissive = c * ECLAIRAGE_NUIT;
+            nuit_[k == BACHE ? 0 : 1] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+        }
         actif_ = true;
     }
     void render(Renderer& r, const GameView& g) override {
@@ -71,7 +81,8 @@ public:
         const bool details = length(centre_ - g.camPos) < DETAILS_M;   // œillets et tendeurs : de près seulement
         for (int p = 0; p < NB_PIECES; p++)
             if (pieces_[p].indexCount && (details || (p != LAITON && p != ATTACHE)))
-                r.draw(pieces_[p], p == VERRE && g.night ? verreNuit_ : mats_[p == ATTACHE ? NOIR : p], I);
+                r.draw(pieces_[p], g.night && p == VERRE ? verreNuit_ : g.night && p == BACHE ? nuit_[0] : g.night && p == ENCRE_BLANCHE ? nuit_[1]
+                                   : mats_[p == ATTACHE ? NOIR : p], I);
         if (texte_.indexCount) r.draw(texte_, atlas_.materiau(r, ENCRE, 0.f), I);
         g_bache = {bache_, centre_, avant_};
     }
@@ -81,7 +92,7 @@ public:
         liberer(r);
         atlas_.detruire(r);
         for (int k = 0; k < NB_PIECES; k++) if (k != ATTACHE) r.destroy(mats_[k]);
-        r.destroy(verreNuit_);
+        r.destroy(verreNuit_); r.destroy(nuit_[0]); r.destroy(nuit_[1]);
         actif_ = false; g_bache = {};
     }
 private:
@@ -144,7 +155,7 @@ private:
     bool actif_ = false, bache_ = false;
     long long cle_ = -1;
     vie::AtlasTextes atlas_;
-    Material mats_[NB_PIECES]{}, verreNuit_{};
+    Material mats_[NB_PIECES]{}, verreNuit_{}, nuit_[2]{};   // nuit_ : bâche et encre blanche éclairées
     Mesh pieces_[NB_PIECES]{}, texte_{};
     vec3 centre_{}, avant_{};
 };

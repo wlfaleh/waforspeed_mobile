@@ -77,9 +77,9 @@ int benchModesPhotos(Game& g, Renderer& r, const std::string& out) {
             avancer(60); g.render(t);
         }
         if (!portiqueCheckpointVisible()) { ecarts++; WFS_ERR("modes-photos : aucun portique de checkpoint dressé"); }
-        avancer(9);
+        avancer(1.5);   // sous le portique (avis de l'agent 3D)
         g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{};
-        viser(-14.0, -2.6, 2.8f, {-7.5f, -0.5f, 0.5f});   // voiture à ≈ 34 % de la hauteur, haut du portique à ≈ 6 %
+        viser(-14.0, 0.5f, 4.6f, {-7.0f, 0.3f, 2.4f});   // portique entier en haut, voiture dessous vers 45 % de la hauteur
         photo("modes-photo-checkpoint");
         g.modeManette = false;
     }
@@ -88,7 +88,7 @@ int benchModesPhotos(Game& g, Renderer& r, const std::string& out) {
     {
         image(60 * 3);
         joueur.playerX = 0;
-        course5BancSuiveurs({{3.0, 0}, {-2.5, 2}, {-8.5, 1}, {9.0, 2}});
+        course5BancSuiveurs({{2.0, 0}, {-1.5, 2}, {7.0, 1}, {-3.5, 0}});   // resserrés, aucun au premier plan
         image(3);
         g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{}; g.manette.gas = true;
         image(2);
@@ -102,10 +102,10 @@ int benchModesPhotos(Game& g, Renderer& r, const std::string& out) {
     {
         image(60 * 3);
         g.setAutopilot(false); g.modeManette = true; g.manette = DriveInput{}; g.manette.gas = true;
-        // tenue 5,5 m derrière le joueur, un peu sur sa gauche (on voit les deux voitures depuis l'avant), gyrophares allumés
-        poursuiteBancPolice(true, -5.5, joueur.playerX - 0.24);
+        // tenue 4,5 m derrière le joueur, dans sa file, gyrophares allumés ; vue de trois quarts arrière : la police au premier plan
+        poursuiteBancPolice(true, -4.5, joueur.playerX);
         image(6);
-        viser(7.5, -2.6, 1.7f, {3.5f, -0.5f, 0.3f});   // joueur à ≈ 35 %, police derrière lui à ≈ 30 %
+        viser(-13.0, -3.0, 2.6f, {-7.0f, -0.5f, 0.2f});   // police vers 37 %, joueur devant elle vers 30 %
         photo("modes-photo-poursuite");
         poursuiteBancPolice(false, 0, 0);
         g.modeManette = false;

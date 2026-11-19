@@ -151,7 +151,7 @@ public:
             const vec2 q[4] = {{x + biais, y0}, {x + cw, y0}, {x + cw - biais, y0 + ch}, {x, y0 + ch}};
             const bool reglages = sel && c.mode == ModeCourse::Course5;   // RG-21 : distance et difficulté dans la carte
             if (modes_photos::pretes())   // WFS-562 (RG-01, RG-04) : la photo du mode remplit la carte, voile sombre sous le sujet
-                modes_photos::dessiner(r, i, q, x, y0, cw, ch, y0 + (reglages ? 0.22f : 0.42f) * ch, y0 + (reglages ? 0.42f : 0.70f) * ch, 0.90f);
+                modes_photos::dessiner(r, i, q, x, y0, cw, ch, y0 + (reglages ? 0.22f : 0.52f) * ch, y0 + (reglages ? 0.42f : 0.74f) * ch, 0.90f);
             else dessin2d::polygone(r, q, 4, {hex(0x1A1C22, 0.30f), hex(0x0B0C10, 0.94f), y0, y0 + ch});   // RG-06 : repli sans photos
             dessin2d::contour(r, q, 4, 1 * k, sel ? hex(TXT, 0.30f) : hex(TXT, 0.12f));
             const float yn = y0 + (reglages ? 160 : 270) * k;

@@ -104,6 +104,13 @@ Modele construire(float ouverture, float largeurChaussee, bool sansPortique) {
     md.hauteurTotale = yB + SECTION / 2;
     for (float s : {-1.f, 1.f}) {
         portique_depart::platine(md.pieces[ACIER], s * xp, 0);
+        // lest (avis de l'agent 3D, R3) : 2 plaques d'acier galvanisé de 600 × 150 × 25 mm (≈ 17,7 kg chacune) de part et d'autre
+        // du pied, posées sur la platine, arêtes chanfreinées
+        for (float sz : {-1.f, 1.f})
+            for (int c = 0; c < LEST_PLAQUES; c++) {
+                const float y = portique_depart::PLATINE_EP + LEST_EP * (c + 0.5f), z = sz * (SECTION / 2 + 0.005f + LEST_L / 2);   // dans l'emprise de la platine
+                campagne::poutre(md.pieces[ACIER], {s * xp - portique_depart::PLATINE / 2, y, z}, {s * xp + portique_depart::PLATINE / 2, y, z}, HAUT, LEST_L, LEST_EP, 0.003f, ACIER);
+            }
         portique_depart::treillis(alu, {s * xp, portique_depart::PLATINE_EP, 0}, {s * xp, md.hauteurTotale, 0}, AX, portique_depart::TRONCON_PIED, ALU);
     }
     // poutres d'un bout à l'autre : leurs extrémités couvrent les pieds (blocs d'angle)

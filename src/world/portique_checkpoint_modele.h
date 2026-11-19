@@ -10,6 +10,7 @@
 // (vers les voitures qui arrivent) : la bâche avant regarde vers +z. Ligne du checkpoint en z = 0.
 // Mesures (fiches techniques publiques) :
 //   - treillis carré 290 mm (membrures Ø 50 × 2 mm, diagonales Ø 20 mm), platines 600 × 600 × 10 mm : portique_depart_modele.h ;
+//     lest : plaques d'acier galvanisé 600 × 150 × 25 mm (≈ 17,7 kg), 2 de chaque côté du pied ;
 //   - hauteur libre sous la poutre basse : 5,2 m (au-dessus des 4,0 m d'un poids lourd, directive 96/53/CE, et des 4,5 m de
 //     hauteur libre des ouvrages routiers) ; 1,0 m libre entre les deux poutres ;
 //   - bâche PVC enduit 510 g/m² (« frontlit », la plus courante en extérieur), 0,5 mm ; ourlet soudé de 40 mm sur le pourtour
@@ -42,6 +43,8 @@ constexpr float OEILLET_PAS = 0.5f, OEILLET_DI = 0.012f, OEILLET_DE = 0.024f;
 constexpr float DAMIER = 0.30f;                // côté d'une case du damier
 constexpr int DAMIER_COLONNES = 3;
 constexpr float LIGNE_L = 0.30f, LIGNE_EP = 0.003f;   // ligne de chronométrage peinte
+constexpr float LEST_L = 0.15f, LEST_EP = 0.025f;   // plaques de lest d'acier sur les platines
+constexpr int LEST_PLAQUES = 2;                     // par côté du pied (4 par pied)
 constexpr float PROJ_W = 0.30f, PROJ_H = 0.25f, PROJ_P = 0.07f, PROJ_BRAS = 0.6f, PROJ_Y = 3.2f;
 
 struct Modele {
