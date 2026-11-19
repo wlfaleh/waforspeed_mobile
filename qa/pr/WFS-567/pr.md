@@ -24,6 +24,18 @@
   - Zone de code : la consigne de départ est dessinée par `src/world/portique_depart.cpp` (WFS-559) et le bandeau des surprises par `poursuite_system.cpp`, pas par `hud.cpp` / `poursuite.cpp` : seul leur dessin 2D change (noté au journal).
   - Pas encore vu sur téléphone : statut 🟡 À valider (utilisateur) après la fusion.
 
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` (commit testé `11a0ab9e`) : **156 test(s) réussi(s) en 421 s**, 0 échec, dont le nouveau `test_messages` (aucun cyan, contraste ≥ 4,5:1, 2 messages au plus hors de la zone de la route en 1280x720, 1600x720 et 2400x1080 avec ou sans encoche, lettres ≥ 3,5 % de H, durées, titres ≤ 18 caractères FR / EN). Journal complet : [`qa/pr/WFS-567/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-567/qa/pr/WFS-567/tests-cpu.log).
+
+Fin du journal :
+```
+[OK] test_messages (0 s)
+…
+[OK] test_voitures_retirees (0 s)
+tests CPU : 156 test(s) réussi(s) en 421 s
+```
+
 ## Captures pour le lead dev (8 après)
 
 Dossier : [`qa/pr/WFS-567`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-567/qa/pr/WFS-567) — produit par `tools/qa/captures_pr.sh`.
