@@ -172,3 +172,8 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 - Accroches hors zone (annoncées) : `src/render/renderer.*` + `shaders/ui.frag` (affichage d'une photo dans l'interface, binding 1 du jeu de la police), `src/game/game.*` (2 lignes de banc), `portique_depart_modele.*` (`platine` publique), `desktop_main.cpp` (bancs `portique-checkpoint`, `modes-photos`, `modes-ecran`).
 - Vérifié : compilation complète, 155 tests CPU réussis (nouveau `test_portique_checkpoint`), captures avant / après dans `qa/pr/WFS-562/`. Aucun téléchargement.
 - Suite : avis de l'agent 3D (RG-08), puis lead dev.
+
+### 2026-11-19 00:55:41 — WFS-562 : PR #435 refusée par le lead dev (lead-dev)
+- Revue du commit 23d3e721 : toutes les captures ouvertes, tout le diff lu, compilation et `tests_cpu.sh` refaits (155 réussis), avis de l'agent 3D « VALIDÉ avec réserves » lu. Rendu conforme (photos, portique sans cyan, fond à 35 % au lieu de 20 %).
+- Points à corriger : (1) section « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; (2) `apres-parcours-mode-3-cartes` périmée (anciennes photos) ; (3) `Renderer::shutdown` : remettre `atlasVue_` et `photosVue_` à zéro ; (4) accroche du rendu d'environ 30 lignes : accord écrit du PO dans `regles-de-gestion/WFS-562.md`.
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/435
