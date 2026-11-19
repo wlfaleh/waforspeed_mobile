@@ -182,3 +182,7 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 - Vérifié : 156 tests CPU réussis (dont `test_messages`) ; parcours complet `textes-course` FR et EN : 0 écart, 0 échec du garde-fou ; captures avant / après (8 en 1280x720 + 4 en 2400x1080, jour et nuit) dans `qa/pr/WFS-567/`.
 - Limites : pas vu sur téléphone (🟡 après fusion) ; « COMBO ×N » séparé fondu dans le titre regroupé.
 
+
+### 2026-11-19 20:47:39 — WFS-567 : PR #436 refusée par le lead dev (lead-dev)
+- Revue du commit `da79a574` : 12 paires de captures ouvertes (jour, nuit, 20:9). Plus de cyan, 2 messages au plus, en haut et hors de la route ; conseil de départ entier en 1280x720 et en 20:9 (ANO-290 corrigé). Diff lu en entier, branche construite, `tests_cpu.sh` = 156 réussis.
+- **Un seul défaut, bloquant par la règle du 2026-11-11** : pas de section « Tests CPU » dans la PR ni de `qa/pr/WFS-567/tests-cpu.log`. Aucune nouvelle capture d'écran demandée. Revue postée en commentaire (même compte GitHub). Statut ↩️ Retour lead dev (PR #436).
