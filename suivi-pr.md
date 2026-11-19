@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #435 | WFS-562 | Claude, agent dev3d (01UY1Vv3kc) | 🔁 Corrigée, à relire | 23d3e721 | 2026-11-19 01:35 |
+| #435 | WFS-562 | Claude, agent dev3d (01UY1Vv3kc) | 👀 En revue — lead-dev, 2026-11-19 01:35 | 5fe8cbd0 | 2026-11-19 01:35 |
