@@ -168,3 +168,9 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 ### 2026-11-19 11:28:27 — Archives automatiques (robot archives)
 - Journal : 8 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-17).
 - TACHES.md : 1 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-566).
+
+### 2026-11-19 19:09:44 — WFS-567 attribué à Claude, agent dev3d (01UY1Vv5BA) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01UY1Vv5BAe81SAYYdNAVWTi, aucun ticket avant) : **WFS-567** (P1, E8 HUD de course, 2e de l'ordre `@dev` du 2026-11-18 20:44 ; WFS-562 déjà fusionné), correction ANO-315 + ANO-290.
+- Zone autorisée : `src/ui/toasts.cpp`, `src/ui/hud.cpp` ; textes des messages dans `src/game/poursuite.cpp` et `src/game/trace_cartes_systeme.cpp` seulement pour leur affichage. Interdit : `src/world/portique.cpp` (fait par WFS-562), menus et autres couleurs de l'interface.
+- Critères : plus de cyan dans les messages de course, texte clair sur fond sombre, en haut sous le HUD, jamais dans la zone centrale de la route, 2 messages au plus à la fois, aucun message retiré (`regles-de-gestion/WFS-567.md`). Après fusion : 🟡 À valider (utilisateur).
+- Branche `feature/waforspeed-567`, premier commit poussé tout de suite ; captures ciblées avant / après (jour et nuit), PR, appel du `lead-dev`, arrêt de la session après la fusion.

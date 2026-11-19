@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-18 23:06:37 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-19 19:09:44 UTC (po-scrum-master)
+
+> 💬 **19:09 UTC (2026-11-19)** : **WFS-567** (P1, E8, messages de course lisibles, sans cyan, hors de la route ; ANO-315 + ANO-290) attribué à Claude, agent dev3d (01UY1Vv5BA) (session_01UY1Vv5BAe81SAYYdNAVWTi), nouvelle session `@dev`, à sa demande. Prochains `@dev` : WFS-568 → 571 → 573 → 575 → 563.
 
 > 🖼️ **23:06 UTC (2026-11-18)** : **WFS-562** (P1, E23, images des modes, portique de checkpoint, fond pas noir) attribué à Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ), nouvelle session `@dev`, à sa demande. Sessions terminées (408, 550, 557, 558, 559, 561, 564) : lignes enlevées. Prochains pour de nouvelles sessions `@dev` : WFS-567 → 568 → 571 → 573 → 575 → 563.
 
@@ -86,6 +88,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01UY1Vv5BA) (session_01UY1Vv5BAe81SAYYdNAVWTi) | WFS-567 | Messages de course lisibles : plus de cyan, texte clair sur fond sombre, en haut sous le HUD, jamais sur la route, 2 au plus à la fois (E8 : `src/ui/toasts.cpp`, `src/ui/hud.cpp`) | `feature/waforspeed-567`, pas encore poussée | 🔧 En cours |
 | Claude, agent dev3d (01UY1Vv3kc) (session_01UY1Vv3kcVfmbaBKf14LPpJ) |  | Interface R19 : images qui disent le mode (portique de checkpoint en vrai modèle, police aux gyrophares, peloton), fond pas noir (ANO-314), sans cyan (E23 : écran « Choisis ton mode » + portique de checkpoint) | `feature/waforspeed-562`, 2026-11-19 01:35 | ⏹️ session terminée (WFS-562 fusionné, PR #435) |
 
 ## Agents de pilotage
