@@ -10,9 +10,11 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/course_system.h"
+#include "../game/poursuite.h"   // WFS-567 : encart SCORE / POLICE (la consigne passe dessous)
 #include "../game/track.h"
 #include "../ui/langue.h"
 #include "../ui/text.h"
+#include "../ui/toasts.h"   // WFS-567 : style et place des messages de course
 #include "enseignes.h"
 #include "portique_depart_modele.h"
 
@@ -26,7 +28,6 @@ constexpr float HAUTEUR_LIBRE = 5.5f;  // RG-02 : hauteur libre sous la poutre
 
 // couleurs de l'interface (skill design-street-racing, tokens.md), codes sRGB
 const vec4 TEXTE_UI{242 / 255.f, 244 / 255.f, 248 / 255.f, 1};       // --text
-const vec4 FOND_UI{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.72f};         // --bg en verre teinté
 
 // position des feux, lue par la lumière de nuit (PortiqueDepartLumiere) ; vide tant que le portique n'est pas construit
 struct FeuxPoses { bool construit = false; vec3 centre{}, avant{}; };
@@ -105,17 +106,29 @@ public:
             ui::text(r, x, y, px, "GO", ui::ORANGE, ui::CENTRE, 0.04f, false, true);
             return;
         }
+        // WFS-567 (RG-05, ANO-290 ; RG-01, RG-02) : consigne dans le style des messages de course (fond sombre translucide, filet
+        // blanc d'information), entière à l'écran en 1280x720 comme en 20:9 : jamais sous la rangée du haut du HUD ni sous l'encart
+        // SCORE / POLICE de la Poursuite, jamais dans la zone centrale de la route ; police plus grande (2,8 % de H, avant 2,25 %)
         const std::string& a = ui::tr("depart.consigne.debut");
         const std::string& b = ui::tr("depart.consigne.gaz");
         const std::string& d = ui::tr("depart.consigne.fin");
-        const float px = std::max(14.f, 2.25f * u);
-        const float wa = ui::width(px, a, 0.f), wb = ui::width(px, b, 0.f), wd = ui::width(px, d, 0.f), w = wa + wb + wd;
-        const float pad = px * 0.9f, h = px * 1.9f, x0 = std::clamp(x - w / 2 - pad, g.marges.gauche + 4.f, W - g.marges.droite - w - 2 * pad - 4.f);
-        r.uiRect(x0, y, w + 2 * pad, h, FOND_UI);
-        const float ty = y + (h - px) / 2;
-        ui::text(r, x0 + pad, ty, px, a, TEXTE_UI, ui::GAUCHE, 0.f, false);
-        ui::text(r, x0 + pad + wa, ty, px, b, ui::ORANGE, ui::GAUCHE, 0.f, false);
-        ui::text(r, x0 + pad + wa + wb, ty, px, d, TEXTE_UI, ui::GAUCHE, 0.f, false);
+        static std::string tampon;   // message de la poursuite (non lu ici)
+        const float encartBas = poursuiteMessage(tampon) ? poursuiteEncartBas(H, g.marges.haut) : 0;
+        float px = std::max(14.f, 2.8f * u);
+        const float pad = messages::marge(H), bi = messages::biais(H), wLibre = W - g.marges.gauche - g.marges.droite - 8.f;
+        float wa = ui::width(px, a, 0.f), wb = ui::width(px, b, 0.f), wd = ui::width(px, d, 0.f), w = wa + wb + wd;
+        if (w + 2 * pad + bi > wLibre) {   // écran étroit : police réduite pour que la consigne tienne en entier
+            px *= (wLibre - 2 * pad - bi) / w;
+            wa = ui::width(px, a, 0.f); wb = ui::width(px, b, 0.f); wd = ui::width(px, d, 0.f); w = wa + wb + wd;
+        }
+        const float h = messages::hauteur(H), wt = w + 2 * pad + bi;
+        y = std::max(messages::haut(H, g.marges, encartBas), std::min(y, H * 0.30f - h));   // RG-02 : au-dessus de la zone de la route
+        const float x0 = std::clamp(x - wt / 2, g.marges.gauche + 4.f, W - g.marges.droite - wt - 4.f);
+        messages::fond(r, {x0, y, wt, h}, H, messages::Repere::Info, 1.f);
+        const float ty = std::round(y + (h - px) / 2), tx = std::round(x0 + bi + pad);
+        ui::text(r, tx, ty, px, a, TEXTE_UI, ui::GAUCHE, 0.f, false);
+        ui::text(r, tx + wa, ty, px, b, ui::ORANGE, ui::GAUCHE, 0.f, false);
+        ui::text(r, tx + wa + wb, ty, px, d, TEXTE_UI, ui::GAUCHE, 0.f, false);
     }
 
     static int feux() {

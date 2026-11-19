@@ -33,6 +33,7 @@
 #include "game.h"
 #include "player.h"
 #include "poursuite.h"
+#include "../ui/toasts.h"   // WFS-567 : géométrie de l'encart (poursuiteEncartBas, poursuiteEncartDemi)
 #include "../ui/resultats_parking.h"   // WFS-561 (accroche) : résultats dans le parking, tableau LED (maquette 11)
 #include "police_bandes.h"   // WFS-460 : bandes « POLICE » posées sur la tôle
 #include "camera_vue.h"      // WFS-460 (banc) : vues Cockpit et Poursuite
@@ -490,7 +491,7 @@ public:
         if (fini_ && overT_ >= 0.9) { if (!verre::couvert()) { if (resultats3d::affiche()) resultat3d(r, g); else resultat(r, W, H, u); } return; }   // WFS-561 : scène 3D, sinon fenêtre 2D (repli, RG-08)
         if (!c || c->state == RaceState::Over) return;
         // RG-06 : en haut au centre : score (100 → 1), police (nombre de voitures), bandeau de surprise
-        const float cx = (g.marges.gauche + W - g.marges.droite) / 2, y0 = g.marges.haut + 2 * u, pw = 40 * u, ph = 15.5f * u;
+        const float cx = (g.marges.gauche + W - g.marges.droite) / 2, y0 = g.marges.haut + 2 * u, pw = 2 * poursuiteEncartDemi(H), ph = poursuiteEncartBas(H, g.marges.haut) - y0;   // WFS-567 : géométrie partagée (poursuite.h)
         r.uiRect(cx - pw / 2, y0, pw, ph, SURFACE);
         const vec4 coul = etat_.score > 50 ? TEXTE : etat_.score > 20 ? ui::ORANGE : DANGER;
         static textes::Capitales libScore{"police.score"}, libPolice{"police.police"};   // WFS-506 (RG-01)
@@ -517,22 +518,19 @@ public:
             r.uiRect(cx - tw / 2, ty, tw, 4.6f * u, SURFACE);
             ui::text(r, cx, ty + 0.8f * u, 3 * u, perte, DANGER, ui::CENTRE, 0.06f, false, true);
         }
-        if (const int n = compteArrestation(etat_)) {   // WFS-540 (RG-03) : « ARRESTATION 4 » … « 1 », à la place du bandeau de surprise
+        // WFS-567 (RG-04) : compte de l'arrestation et bandeau de surprise : affichés par le système des messages (toasts.cpp),
+        // avec les autres messages de course, dans le même style (poursuiteMessage, plus bas)
+    }
+    // WFS-567 (RG-04) : message de la poursuite pour le système des messages : « ARRESTATION 4 » … « 1 » (WFS-540, RG-03), sinon
+    // le bandeau court (RG-05, WFS-141 : 1,5 s ; WFS-338 : « TRAVAUX » tenu tant que le chantier est devant)
+    bool message(std::string& texte) const {
+        texte.clear();
+        if (!actif_ || fini_) return false;
+        if (const int n = compteArrestation(etat_)) {
             char b[8]; std::snprintf(b, sizeof b, "%d", n);
-            static std::string arr;
-            textes::remplir(arr, "police.arrestation", b);
-            const float k = H / 720.f, bw = std::max(46 * u, ui::width(3.6f * u, arr, 0.1f) + 8 * u), bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
-            r.uiRect(bx, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
-            ui::text(r, bx + bw / 2, by + 1.7f * u, 3.6f * u, arr, TEXTE, ui::CENTRE, 0.1f, false, true);
-        } else if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
-            // WFS-141 (RG-02, ANO-57) : à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 + 10 + 40 + 8 + 40 px
-            // de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route ; effacé après
-            // 1,5 s. Taille inchangée (ordre permanent du 2026-11-06 sur la taille des textes : pas de passage à 5 %)
-            const std::string& ban = annonceAffichee(ban_);   // WFS-506 (RG-01)
-            const float k = H / 720.f, bw = std::max(46 * u, ui::width(3.6f * u, ban, 0.1f) + 8 * u), bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
-            r.uiRect(bx, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
-            ui::text(r, bx + bw / 2, by + 1.7f * u, 3.6f * u, ban, TEXTE, ui::CENTRE, 0.1f, false, true);
-        }
+            textes::remplir(texte, "police.arrestation", b);
+        } else if (banT_ > 0 && !ban_.empty()) texte = annonceAffichee(ban_);   // WFS-506 (RG-01)
+        return true;
     }
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Course) return false;
@@ -916,6 +914,7 @@ WFS_SYSTEM(PoursuiteSystem, 224)   // gameplay (200-299) : après la course (210
 
 // WFS-125 : banc d'essai (parcours RG-09)
 int poursuitePolice(double* rd, bool* fixe, int max) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->police(rd, fixe, max) : 0; }   // WFS-173
+bool poursuiteMessage(std::string& texte) { if (PoursuiteSystem::actif) return PoursuiteSystem::actif->message(texte); texte.clear(); return false; }   // WFS-567
 const std::vector<poursuite::Police>* poursuiteVoitures(const char** car) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->voitures(car) : nullptr; }   // WFS-272 (accroche)
 bool poursuiteBouton(const std::string& nom, float& x, float& y) {
     const PoursuiteSystem* s = PoursuiteSystem::actif;

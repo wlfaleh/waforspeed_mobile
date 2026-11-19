@@ -120,6 +120,7 @@ else()
   add_executable(test_reglages_onglets tests/test_reglages_onglets.cpp)   # WFS-291, WFS-318 : lignes et onglets des réglages
   add_executable(test_reglages_etoiles tests/test_reglages_etoiles.cpp src/game/boutique.cpp src/game/boutique_banc.cpp src/game/score_course.cpp src/game/personnalisation.cpp src/game/sauvegarde.cpp src/game/profil.cpp src/game/track.cpp src/core/configgame.cpp)   # WFS-546 : mode testeur, bouton étoile (+2500 ★) du menu caché
   add_executable(test_langue tests/test_langue.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/profil.cpp src/game/track.cpp)   # WFS-504 : tables FR / EN, langue du téléphone, clé langue=
+  add_executable(test_messages tests/test_messages.cpp)   # WFS-567 : messages de course (place, couleurs, contraste, titres courts)
   add_executable(test_banc_telephone tests/test_banc_telephone.cpp src/render/banc_telephone.cpp)   # WFS-420 : banc de performance du téléphone
   add_executable(test_fantome_etiquette tests/test_fantome_etiquette.cpp src/game/fantome.cpp src/game/binarypack.cpp)   # WFS-318 : réglage et étiquette du fantôme
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json

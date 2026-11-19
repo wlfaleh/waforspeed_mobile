@@ -49,7 +49,7 @@ public:
         // RG-07 : nouveaux tracés, une fois, au premier départ après la mise de côté des anciens records
         if (c->state == RaceState::Play && sauvegarde().nouveauxTraces) {
             sauvegarde().nouveauxTraces = false;
-            toasts::pousser(ui::tr("toast.nouveaux_traces"), ui::tr("toast.nouveaux_records"), 0);   // WFS-506
+            toasts::pousser(ui::tr("toast.nouveaux_traces"), ui::tr("toast.nouveaux_records"), 3);   // WFS-506 ; WFS-567 : information (filet blanc)
         }
         if (c->state != RaceState::Play) { attente_ = -1; return; }
         // RG-03 : feu grillé sans toucher personne → +50 (arcade : aucune pénalité)
