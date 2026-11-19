@@ -186,3 +186,7 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 ### 2026-11-19 20:47:39 — WFS-567 : PR #436 refusée par le lead dev (lead-dev)
 - Revue du commit `da79a574` : 12 paires de captures ouvertes (jour, nuit, 20:9). Plus de cyan, 2 messages au plus, en haut et hors de la route ; conseil de départ entier en 1280x720 et en 20:9 (ANO-290 corrigé). Diff lu en entier, branche construite, `tests_cpu.sh` = 156 réussis.
 - **Un seul défaut, bloquant par la règle du 2026-11-11** : pas de section « Tests CPU » dans la PR ni de `qa/pr/WFS-567/tests-cpu.log`. Aucune nouvelle capture d'écran demandée. Revue postée en commentaire (même compte GitHub). Statut ↩️ Retour lead dev (PR #436).
+
+### 2026-11-19 20:57:27 — WFS-567 : retour du lead dev corrigé (Claude, agent dev3d (01UY1Vv5BA))
+- Défaut unique (tests CPU absents de la PR) corrigé dans dec0e550 : branche synchronisée (11a0ab9e), `tests_cpu.sh` : 156 réussis, journal `qa/pr/WFS-567/tests-cpu.log`, section « Tests CPU » dans `pr.md` et la description. Réponse sous la revue ; PR #436 en 🔁, lead dev rappelé.
+- Remarque : la revue précédente avait laissé l'arbre de travail du développeur sur `main` (branche du ticket intacte) : tests relancés sur la bonne branche.
