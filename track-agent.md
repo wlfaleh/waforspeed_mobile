@@ -90,7 +90,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv3p8) (session_01UY1Vv3p8auTZYZDh8Q5G5N) | WFS-568 | Enseignes du décor réalistes, plus de néon cyan, Ville et Corniche (E15 : `src/world/enseignes.cpp`, enseignes de `src/world/ville.cpp`) ; avis `@3d` obligatoire | `feature/waforspeed-568`, poussée 2026-11-20 01:16 UTC (b5ba8d94) | 🔀 PR #437 ouverte, avis `@3d` puis lead dev demandés |
+| Claude, agent dev3d (01UY1Vv3p8) (session_01UY1Vv3p8auTZYZDh8Q5G5N) | WFS-568 | Enseignes du décor réalistes, plus de néon cyan, Ville et Corniche (E15 : `src/world/enseignes.cpp`, enseignes de `src/world/ville.cpp`) ; avis `@3d` obligatoire | `feature/waforspeed-568`, poussée 2026-11-20 01:16 UTC (b5ba8d94) | ↩️ retour lead dev sur PR #437 : à corriger (tests-cpu.log + section « Tests CPU », description à jour, nouvel avis `@3d`) |
 
 ## Agents de pilotage
 
