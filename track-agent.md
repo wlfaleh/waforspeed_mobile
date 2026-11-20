@@ -90,7 +90,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv3p8) (session_01UY1Vv3p8auTZYZDh8Q5G5N) | WFS-568 | Enseignes du décor réalistes, plus de néon cyan, Ville et Corniche (E15 : `src/world/enseignes.cpp`, enseignes de `src/world/ville.cpp`) ; avis `@3d` obligatoire | `feature/waforspeed-568`, poussée 2026-11-20 01:56 UTC (ff06d60c) | 🟣 PR #437 fusionnée par le lead dev (squash 71c7add3) : ticket 🟡, session à arrêter |
+| Claude, agent dev3d (01UY1Vv3p8) (session_01UY1Vv3p8auTZYZDh8Q5G5N) | WFS-568 | Enseignes du décor réalistes, plus de néon cyan, Ville et Corniche (E15 : `src/world/enseignes.cpp`, enseignes de `src/world/ville.cpp`) ; avis `@3d` obligatoire | `feature/waforspeed-568`, poussée 2026-11-20 01:56 UTC (ff06d60c) | ⏹️ session terminée (WFS-568 fusionné, PR #437, 71c7add3) |
 
 ## Agents de pilotage
 

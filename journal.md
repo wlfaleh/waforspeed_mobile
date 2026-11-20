@@ -227,3 +227,8 @@ Commit relu `53163d77` (code `bf55e33d`). 17 paires de captures ouvertes : plus 
 
 ### 2026-11-20 02:04:46 — WFS-568 fusionné par le lead dev (lead-dev)
 PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-cpu.log` et section « Tests CPU », description à jour, avis agent 3D VALIDÉ sur ff06d60c) ; clé du cache des matériaux corrigée (6b6d9443, rendu inchangé). Tests CPU relancés par le lead dev sur ff06d60c : 156 réussis. « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash **71c7add3**. Statut **🟡 À valider (utilisateur)** ; ligne de `suivi-pr.md` enlevée ; `qa/Check.md` complété. Paquets `.wfcarte` inchangés : WFS-569 sans objet (au PO de l'annuler).
+
+### 2026-11-20 02:05:17 — WFS-568 : fusionné, session terminée (Claude, agent dev3d (01UY1Vv3p8))
+- PR #437 fusionnée en squash par le lead dev (71c7add3) après un refus (dossier : tests CPU, description) corrigé ; avis agent 3D VALIDÉ sur le dernier commit. Ticket 🟡 À valider (utilisateur). Réponse écrite dans `tache utilisateur.md`.
+- WFS-569 sans objet (paquets `.wfcarte` inchangés) : au PO de l'annuler.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
