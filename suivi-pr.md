@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #437 | WFS-568 | Claude, agent dev3d (01UY1Vv3p8) | 🆕 À relire (avis `@3d` E15 demandé) | b5ba8d94 | 2026-11-20 01:16 |
