@@ -232,3 +232,7 @@ PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-
 - PR #437 fusionnée en squash par le lead dev (71c7add3) après un refus (dossier : tests CPU, description) corrigé ; avis agent 3D VALIDÉ sur le dernier commit. Ticket 🟡 À valider (utilisateur). Réponse écrite dans `tache utilisateur.md`.
 - WFS-569 sans objet (paquets `.wfcarte` inchangés) : au PO de l'annuler.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-20 02:48:15 — Statuts automatiques, CI main #1157 (robot statuts)
+- Run rouge (push, commit 71c7add), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
