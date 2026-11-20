@@ -11,6 +11,8 @@
 #include "../game/track.h"
 #include "ville_quartiers.h"
 #include "zones.h"
+#include "mobilier_ville.h"   // WFS-568 : pavés chanfreinés, pièces tournées
+#include "../render/eclairage_unites.h"   // WFS-568 : couleur du rétroéclairage
 
 namespace wfs {
 namespace vie {
@@ -89,6 +91,8 @@ bool Palette::construire(Renderer& r) {
     materiau = r.makeMaterial(m, &img_, nullptr, nullptr);
     return img_.img != VK_NULL_HANDLE;
 }
+// WFS-568 : autre matériau sur la même texture de palette (métal, plexiglas, rétroéclairage) : la texture reste unique
+Material Palette::variante(Renderer& r, const Material& m) { return r.makeMaterial(m, &img_, nullptr, nullptr); }
 void Palette::detruire(Renderer& r) { r.destroy(materiau); if (img_.img) r.vk().destroy(img_); img_ = Image{}; couleurs_.clear(); }   // WFS-187 (accroche) : jeux de descripteurs rendus
 
 Material neon(Renderer& r, unsigned hex, float emission) {
@@ -113,7 +117,10 @@ std::vector<uint32_t> codepoints(const std::string& s) {
 }
 } // namespace
 
-void AtlasTextes::ajouter(const std::string& t) { if (std::find(textes_.begin(), textes_.end(), t) == textes_.end()) textes_.push_back(t); }
+void AtlasTextes::ajouter(const std::string& t, unsigned couleur) {
+    if (std::find(textes_.begin(), textes_.end(), t) == textes_.end()) textes_.push_back(t);
+    couleurs_[t] = couleur;   // WFS-568 : couleur des lettres (blanc par défaut : rendu d'avant inchangé)
+}
 
 bool AtlasTextes::construire(Renderer& r) {
     std::vector<uint8_t> ttf;
@@ -151,7 +158,17 @@ bool AtlasTextes::construire(Renderer& r) {
         T.aspect = (x - x0 + 8.f) / LIGNE; T.ok = true;
         places_[textes_[t]] = T;
     }
-    img_ = r.vk().essayerUploadTexture(px.data(), AW, AH, false);   // WFS-446 (RG-04) : voie de repli de WFS-418
+    // WFS-568 : lettres de couleur (sRGB, comme la palette) ; le blanc d'avant reste 1,0 (rendu inchangé pour les textes blancs).
+    // Autour des lettres, la couleur du texte déborde dans les texels transparents (sinon le filtrage foncerait les bords).
+    for (size_t t = 0; t < textes_.size() && t < (size_t)(2 * lignes); t++) {
+        const int col = (int)t / lignes, row = (int)t % lignes;
+        const unsigned coul = couleurs_.count(textes_[t]) ? couleurs_[textes_[t]] : 0xFFFFFFu;
+        for (int Y = row * LIGNE; Y < (row + 1) * LIGNE && Y < AH; Y++) for (int X = col * (AW / 2); X < (col + 1) * (AW / 2); X++) {
+            uint8_t* q = &px[((size_t)Y * AW + X) * 4];
+            q[0] = (uint8_t)(coul >> 16); q[1] = (uint8_t)(coul >> 8); q[2] = (uint8_t)coul;
+        }
+    }
+    img_ = r.vk().essayerUploadTexture(px.data(), AW, AH, true);   // WFS-446 (RG-04) : voie de repli de WFS-418
     if (!img_.img) { WFS_WARN("vie : mémoire graphique insuffisante : atlas des enseignes refusé, enseignes sans texte (WFS-446)"); places_.clear(); return false; }
     WFS_LOG("vie : %zu textes d'enseignes dans l'atlas", places_.size());
     return true;
@@ -162,24 +179,130 @@ const Texte& AtlasTextes::texte(const std::string& t) const {
     return it == places_.end() ? vide : it->second;
 }
 const Material& AtlasTextes::materiau(Renderer& r, unsigned hex, float emission, float seuil) {
-    auto it = mats_.find(hex);
+    const Cle cle{hex, emission, seuil, false};   // WFS-568 : une couleur peut servir avec deux émissions (jour, nuit)
+    auto it = mats_.find(cle);
     if (it != mats_.end()) return it->second;
     Material m; const vec3 c = lin(hex);
     m.color = {c.x, c.y, c.z, 1}; m.rough = 0.5f; m.emissive = c * emission; m.cutoff = seuil; m.flags = MAT_MASK | MAT_DOUBLE;   // WFS-94 : seuil réglable (circuit)
-    return mats_[hex] = r.makeMaterial(m, &img_, nullptr, nullptr);
+    return mats_[cle] = r.makeMaterial(m, &img_, nullptr, nullptr);
 }
-void AtlasTextes::detruire(Renderer& r) { for (auto& [h, m] : mats_) r.destroy(m); if (img_.img) r.vk().destroy(img_); img_ = Image{}; mats_.clear(); places_.clear(); textes_.clear(); }   // WFS-187 (accroche) : jeux de descripteurs rendus
+const Material& AtlasTextes::materiauCouleurs(Renderer& r, float emission, float seuil, float rugosite) {
+    const Cle cle{0xFFFFFFu, emission, seuil + rugosite * 1e-3f, true};
+    auto it = mats_.find(cle);
+    if (it != mats_.end()) return it->second;
+    // WFS-568 : lettres de la couleur de l'atlas (couleur blanche du matériau) ; émission × couleur de la texture (MAT_EMTEX)
+    Material m; m.rough = rugosite; m.emissive = vec3{1, 1, 1} * emission; m.cutoff = seuil; m.flags = MAT_MASK | MAT_DOUBLE | MAT_EMTEX;
+    return mats_[cle] = r.makeMaterial(m, &img_, nullptr, nullptr);
+}
+void AtlasTextes::detruire(Renderer& r) { for (auto& [h, m] : mats_) r.destroy(m); if (img_.img) r.vk().destroy(img_); img_ = Image{}; mats_.clear(); places_.clear(); textes_.clear(); couleurs_.clear(); }   // WFS-187 (accroche) : jeux de descripteurs rendus
 
 } // namespace vie
 
-// ---------------------------------------------------------------- panneaux néon le long de la route (DECOR.board)
+// ---------------------------------------------------------------- enseignes sur mâts le long de la route (DECOR.board)
+// WFS-568 (ANO-316, demande de l'utilisateur du 2026-11-18) : plus de panneau néon cyan sur deux poteaux carrés. Chaque
+// panneau est un vrai caisson d'enseigne double face sur deux mâts, modélisé pièce par pièce (aucune forme nue, règle du
+// 2026-11-09) aux mesures courantes de ces ouvrages :
+//   - massif de béton affleurant (0,70 × 0,70 m, 10 cm hors sol, arêtes chanfreinées), platine d'acier galvanisé
+//     450 × 450 × 25 mm et 4 tiges d'ancrage M24 (rondelle, écrou hexagonal de 36 mm sur plats, bout fileté) ;
+//   - mât en tube d'acier Ø 219,1 mm (série EN 10219), thermolaqué gris anthracite RAL 7016, fourreau soudé au pied ;
+//     selle de fixation (plat de 30 mm, 4 boulons) sous le caisson ;
+//   - caisson en profilé d'aluminium anodisé de 8,40 × 3,20 × 0,40 m (bas à 6,0 m), couvertine débordante, faces en
+//     plexiglas diffusant en retrait de 3 cm dans le cadre, impression de la face propre à chaque commerce ;
+//   - la nuit, caisson rétroéclairé (tubes fluorescents ou LED derrière le plexiglas) : seule la partie translucide de
+//     l'impression s'allume (le fond OU les lettres, selon le commerce), luminance bornée, sans halo ; de jour, rien
+//     n'est allumé : les couleurs se lisent à la peinture.
+// WFS-568 : place des enseignes sur mâts d'une carte (Ville : plan des quartiers ; Corniche : côté terre tous les 180 segments) ;
+// partagé avec le banc d'essai (captures ciblées). Même code et mêmes tirages qu'avant : les panneaux ne bougent pas.
+constexpr int NB_BOARDS = 5;   // textes de BOARD_TEXTS
+std::vector<vie::PanneauRoute> vie::panneauxRoute(const MapDef& map, Track& t) {
+    std::vector<PanneauRoute> out;
+    const bool ville = !std::strcmp(map.id, "ville");
+    const int64_t len = (int64_t)t.segmentCount();
+    if (ville) {   // panneaux du plan des quartiers (city.centre : tous les 130 à 180 segments, côté tiré, pas sur un lampadaire)
+        for (const wfs::ville::Panneau& b : wfs::ville::plan(map, len).panneaux) out.push_back({b.seg, b.side, b.texte});
+    } else {   // Corniche : côté terre tous les 180 segments
+        Mulberry32 D(map.seed * 31 + 23);
+        // WFS-139 (accroche) : tracé 2 : aucun panneau (8,6 m au-dessus du bas-côté) dans un virage serré, un tunnel, un
+        // rond-point ou un carrefour, ni dans les 60 m qui précèdent (il cacherait la route ou tomberait dessus)
+        auto gene = [&](int64_t n) { for (int64_t k = n - 50; k <= n + 10; k += 5) { const trace::Section* s = trace::sectionA(t, (double)k * SEG);
+            if (trace::rayonInterieur(t, (double)k * SEG).m < 100 || (s && (s->type == trace::Type::Tunnel || s->type == trace::Type::RondPoint || s->type == trace::Type::Feux || s->type == trace::Type::Lacets))) return true; } return false; };
+        for (int64_t n = 60; n < len - 40; n += 180) {
+            if (n % 24 >= 10 && n % 24 <= 14) n += 6;   // pas sur un lampadaire
+            const int texte = (int)(D.next() * NB_BOARDS);   // tirage gardé : les autres panneaux ne changent pas
+            if (!gene(n)) out.push_back({n, -1, texte});
+        }
+    }
+    return out;
+}
+
 namespace {
 using namespace vie;
-// BOARD_TEXTS de js/world/decor.js
-const std::pair<const char*, unsigned> BOARD_TEXTS[] = {{"WAFORSPEED", 0xFF6A00}, {"GARAGE 88", 0x00E5FF}, {"TURBO CAFÉ", 0xFF6A00},
-                                                         {"NUIT BLANCHE", 0x00E5FF}, {"PNEUS 24/7", 0x00E5FF}};
-constexpr int NB_BOARDS = 5;
+// textes de BOARD_TEXTS (js/world/decor.js) : l'ordre et les tirages ne changent pas (indices du plan de la Ville).
+// WFS-568 (RG-01, RG-02) : chaque commerce a sa propre impression, aux couleurs d'enseignes réelles, sans cyan.
+struct Impression {
+    const char* texte;
+    unsigned fond, lettres;    // sRGB : fond de la face, lettres
+    bool fondLumineux;         // true : le fond est translucide (il s'allume) et les lettres opaques ; false : l'inverse
+};
+const Impression BOARD_TEXTS[] = {
+    {"WAFORSPEED", 0x15161a, 0xff6a00, false},   // lettres orange sur fond noir mat
+    {"GARAGE 88", 0x1c3766, 0xf4f4f0, false},    // garage : lettres blanches sur caisson bleu marine
+    {"TURBO CAFÉ", 0x4a2f1c, 0xf0e2c4, false},   // café : lettres crème sur fond brun bois
+    {"NUIT BLANCHE", 0x121014, 0xff5c9e, false}, // boîte de nuit : lettres rose néon sur fond noir
+    {"PNEUS 24/7", 0xf2c40c, 0x141414, true},    // pneus : lettres noires sur fond jaune (le jaune s'allume)
+};
+static_assert(sizeof(BOARD_TEXTS) / sizeof(BOARD_TEXTS[0]) == NB_BOARDS);
 struct Panneau { int64_t seg; int side, texte; };
+
+// mesures du modèle (m)
+constexpr float CAISSON_L = 8.4f, CAISSON_H = 3.2f, CAISSON_E = 0.40f, CAISSON_BAS = 6.0f, PROFIL = 0.12f;
+constexpr float MAT_R = 0.2191f / 2, MAT_ECART = 2.0f;   // mâts à ±2 m du milieu du caisson (le 1er reste à RW + 1 : collision)
+
+// un caisson double face sur deux mâts ; R : origine au sol sous le milieu du caisson, x latéral (loin de la route), z le
+// long de la route (les deux faces regardent ±z) ; tampons : peint (mât, béton), metal (aluminium, acier galvanisé),
+// faces (fond imprimé), lettres (texte de l'atlas, 1 mm devant la face)
+void caissonSurMats(mobilier::Sortie peint, mobilier::Sortie metal, mobilier::Sortie faces, Geo& lettres, const mobilier::Repere& R,
+                    const Texte& T, vec2 uvMat, vec2 uvBeton, vec2 uvAlu, vec2 uvGalva, vec2 uvFond) {
+    using mobilier::pave; using mobilier::tour;
+    const int nm = 20;   // côtés du mât (vu de près au bord de la route)
+    for (float xm : {-MAT_ECART, MAT_ECART}) {
+        pave(peint, R, {xm, 0.0f, 0}, {0.35f, 0.10f, 0.35f}, 0.02f, uvBeton);                       // massif (10 cm hors sol)
+        pave(metal, R, {xm, 0.1125f, 0}, {0.225f, 0.0125f, 0.225f}, 0.006f, uvGalva);                // platine 450 × 25
+        for (float a : {-1.f, 1.f}) for (float b : {-1.f, 1.f}) {                                   // 4 tiges M24 : rondelle, écrou, bout fileté
+            const vec3 c{xm + a * 0.17f, 0.125f, b * 0.17f};
+            tour(metal, R, c, {{0.022f, 0}, {0.022f, 0.004f}, {0, 0.004f}}, 12, uvGalva);
+            tour(metal, R, c + vec3{0, 0.004f, 0}, {{0.0208f, 0}, {0.0208f, 0.019f}, {0.018f, 0.022f}, {0, 0.022f}}, 6, uvGalva);
+            tour(metal, R, c + vec3{0, 0.026f, 0}, {{0.012f, 0}, {0.012f, 0.03f}, {0.009f, 0.034f}, {0, 0.034f}}, 8, uvGalva);
+        }
+        // fourreau soudé au pied puis fût (le haut entre de 5 cm dans le caisson)
+        tour(peint, R, {xm, 0.125f, 0}, {{MAT_R + 0.02f, 0}, {MAT_R + 0.02f, 0.012f}, {MAT_R + 0.006f, 0.03f}, {MAT_R + 0.006f, 0.30f},
+                                         {MAT_R, 0.315f}, {MAT_R, CAISSON_BAS - 0.07f}, {0, CAISSON_BAS - 0.07f}}, nm, uvMat);
+        pave(metal, R, {xm, CAISSON_BAS - 0.045f, 0}, {0.20f, 0.015f, 0.17f}, 0.004f, uvGalva);      // selle de fixation
+        for (float a : {-1.f, 1.f}) for (float b : {-1.f, 1.f})                                      // et ses 4 boulons (têtes vers le bas)
+            tour(metal, R, {xm + a * 0.15f, CAISSON_BAS - 0.075f, b * 0.12f}, {{0.015f, 0}, {0.015f, 0.014f}, {0, 0.014f}}, 6, uvGalva);
+        pave(peint, R, {xm, CAISSON_BAS - 0.06f, 0}, {MAT_R * 0.95f, 0.004f, MAT_R * 0.95f}, 0.002f, uvMat);   // cordon de soudure
+    }
+    // caisson : cadre en profilé d'aluminium (traverses et montants chanfreinés), couvertine débordante, faces en retrait
+    const float hl = CAISSON_L / 2, hh = CAISSON_H / 2, he = CAISSON_E / 2, yc = CAISSON_BAS + hh;
+    pave(metal, R, {0, CAISSON_BAS + PROFIL / 2, 0}, {hl, PROFIL / 2, he}, 0.015f, uvAlu);
+    pave(metal, R, {0, CAISSON_BAS + CAISSON_H - PROFIL / 2, 0}, {hl, PROFIL / 2, he}, 0.015f, uvAlu);
+    for (float sx : {-1.f, 1.f}) pave(metal, R, {sx * (hl - PROFIL / 2), yc, 0}, {PROFIL / 2, hh - PROFIL, he}, 0.015f, uvAlu);
+    pave(metal, R, {0, CAISSON_BAS + CAISSON_H + 0.015f, 0}, {hl + 0.02f, 0.015f, he + 0.025f}, 0.008f, uvAlu);   // couvertine
+    for (float sx : {-1.f, 1.f}) for (float sz : {-1.f, 1.f})                                                   // équerres d'angle (vis)
+        pave(metal, R, {sx * (hl - 0.03f), CAISSON_BAS + CAISSON_H - 0.03f, sz * (he + 0.002f)}, {0.022f, 0.022f, 0.002f}, 0.003f, uvGalva);
+    // faces : plexiglas de 8 mm en retrait de 3 cm du nu du cadre (le volume entre les deux faces ferme le caisson)
+    const float zf = he - 0.03f;
+    pave(faces, R, {0, yc, 0}, {hl - PROFIL, hh - PROFIL, zf}, 0.004f, uvFond);
+    // lettres imprimées sur chaque face (1 mm devant), centrées, 2,0 m de haut au plus, marges de 30 cm
+    if (!T.ok) return;
+    const float h = 2.0f, w = std::min(CAISSON_L - 2 * PROFIL - 0.6f, h * T.aspect), hs = h * w / (h * T.aspect);
+    for (int face : {-1, 1}) {
+        // sens de lecture tiré de la normale de la face (droite du lecteur = haut × normale) : jamais de texte en miroir, quel
+        // que soit le côté de la route (le repère est indirect à gauche)
+        const vec3 c = R.p({0, yc, face * (zf + 0.001f)}), n = R.z * (float)face;
+        plan(lettres, c, normalize(cross(vec3{0, 1, 0}, n)), {0, 1, 0}, n, w, hs, T.u0, T.v0, T.u1, T.v1);
+    }
+}
 
 class Enseignes : public System {
 public:
@@ -187,81 +310,74 @@ public:
     void init(Renderer& r, const GameView& g) override {
         actif_ = false;
         if (!g.map || !g.track) return;
-        const bool ville = !std::strcmp(g.map->id, "ville"), plage = !std::strcmp(g.map->id, "plage");
-        if (!ville && !plage) return;   // RG-09 : Ville et Corniche (Grand Prix : WFS-53)
-        const int64_t len = (int64_t)g.track->segmentCount();
-        if (ville) {   // panneaux du plan des quartiers (city.centre : tous les 130 à 180 segments, côté tiré, pas sur un lampadaire)
-            for (const wfs::ville::Panneau& b : wfs::ville::plan(*g.map, len).panneaux) panneaux_.push_back({b.seg, b.side, b.texte});
-        } else {   // Corniche : côté terre tous les 180 segments
-            Mulberry32 D(g.map->seed * 31 + 23);
-            // WFS-139 (accroche) : tracé 2 : aucun panneau (8,6 m au-dessus du bas-côté) dans un virage serré, un tunnel, un
-            // rond-point ou un carrefour, ni dans les 60 m qui précèdent (il cacherait la route ou tomberait dessus)
-            auto gene = [&](int64_t n) { for (int64_t k = n - 50; k <= n + 10; k += 5) { const trace::Section* s = trace::sectionA(*g.track, (double)k * SEG);
-                if (trace::rayonInterieur(*g.track, (double)k * SEG).m < 100 || (s && (s->type == trace::Type::Tunnel || s->type == trace::Type::RondPoint || s->type == trace::Type::Feux || s->type == trace::Type::Lacets))) return true; } return false; };
-            for (int64_t n = 60; n < len - 40; n += 180) {
-                if (n % 24 >= 10 && n % 24 <= 14) n += 6;   // pas sur un lampadaire
-                const int texte = (int)(D.next() * NB_BOARDS);   // tirage gardé : les autres panneaux ne changent pas
-                if (!gene(n)) panneaux_.push_back({n, -1, texte});
-            }
-        }
-        for (auto& b : BOARD_TEXTS) atlas_.ajouter(b.first);
+        if (std::strcmp(g.map->id, "ville") && std::strcmp(g.map->id, "plage")) return;   // RG-09 : Ville et Corniche (Grand Prix : WFS-53)
+        for (const PanneauRoute& b : panneauxRoute(*g.map, *g.track)) panneaux_.push_back({b.seg, b.side, b.texte});
+        for (auto& b : BOARD_TEXTS) atlas_.ajouter(b.texte, b.lettres);   // WFS-568 : lettres de la couleur du commerce
         if (!atlas_.construire(r)) { panneaux_.clear(); return; }
-        uvPoteau_ = palette_.uv(0x2a2d33); uvFond_ = palette_.uv(0x0b0c14);
+        // couleurs (sRGB) : RAL 7016 thermolaqué, béton, aluminium anodisé naturel, acier galvanisé, fonds des impressions
+        const vec2 uvMat = palette_.uv(0x383e42), uvBeton = palette_.uv(0x8d8a84), uvAlu = palette_.uv(0xa9acb0), uvGalva = palette_.uv(0x8c9094);
+        vec2 uvFond[NB_BOARDS];
+        for (int i = 0; i < NB_BOARDS; i++) uvFond[i] = palette_.uv(BOARD_TEXTS[i].fond);
         palette_.construire(r);
-        for (int i = 0; i < NB_BOARDS; i++) { neons_[i] = neon(r, BOARD_TEXTS[i].second); atlas_.materiau(r, BOARD_TEXTS[i].second); }
+        Material mm; mm.metal = 1; mm.rough = 0.42f; mm.flags = MAT_DOUBLE;                            // aluminium et acier
+        metal_ = palette_.variante(r, mm);
+        Material mp; mp.rough = 0.22f; mp.flags = MAT_DOUBLE;                                             // plexiglas imprimé (lisse)
+        plexi_ = palette_.variante(r, mp);
+        // WFS-568 (RG-04) : rétroéclairage 4 000 K derrière le plexiglas, la nuit seulement ; × la couleur de l'impression
+        double k4000[3]; lumiere::couleurTemperature(4000, k4000);
+        const vec3 retro = vec3{(float)k4000[0], (float)k4000[1], (float)k4000[2]} * FACE_NUIT;
+        mp.emissive = retro; mp.flags |= MAT_EMTEX;
+        plexiNuit_ = palette_.variante(r, mp);
+        lettresJour_ = &atlas_.materiauCouleurs(r, 0.f);
+        lettresNuit_ = &atlas_.materiauCouleurs(r, LETTRES_NUIT);
         Track& t = *g.track;
         for (const Panneau& b : panneaux_) {   // géométrie construite une fois (≈ 1 panneau / 200 m)
             const Repere p = repere(t, b.seg * SEG);
             const float s = (float)b.side, R = (float)RW;
-            boite(fixe_, lateral(p, s * (R + 1), 0.15f), p.r, p.f, 0.3f, 6.2f, 0.3f, uvPoteau_);
-            boite(fixe_, lateral(p, s * (R + 5), 0.15f), p.r, p.f, 0.3f, 6.2f, 0.3f, uvPoteau_);
-            boite(fixe_, lateral(p, s * (R + 2), 6.f), p.r, p.f, 8.6f, 3.6f, 0.3f, uvFond_);
-            boite(lumiere_[b.texte], lateral(p, s * (R + 2), 9.6f), p.r, p.f, 8.6f, 0.14f, 0.34f, {0, 0});
-            boite(lumiere_[b.texte], lateral(p, s * (R + 2), 5.88f), p.r, p.f, 8.6f, 0.14f, 0.34f, {0, 0});
-            // texte des deux côtés du panneau (face à la circulation dans les deux sens)
-            const Texte& T = atlas_.texte(BOARD_TEXTS[b.texte].first);
-            const float h = 2.0f, w = std::min(7.8f, h * T.aspect);
-            for (int face : {-1, 1}) {
-                const vec3 c = lateral(p, s * (R + 2), 7.8f) + p.f * (0.17f * face);
-                plan(texte_[b.texte], c, p.r * (float)-face, {0, 1, 0}, p.f * (float)face, w, h, T.u0, T.v0, T.u1, T.v1);
-            }
+            const mobilier::Repere M = mobilier::repere(lateral(p, s * (R + 1 + MAT_ECART), 0.f), p.r * s, p.f);
+            const bool fl = BOARD_TEXTS[b.texte].fondLumineux;
+            caissonSurMats(peint_, metalG_, fl ? facesLum_ : facesSombres_, fl ? lettresSombres_ : lettresLum_, M,
+                           atlas_.texte(BOARD_TEXTS[b.texte].texte), uvMat, uvBeton, uvAlu, uvGalva, uvFond[b.texte]);
         }
-        if (!fixe_.i.empty()) mFixe_ = r.makeMesh(fixe_.v, fixe_.i);
-        for (int i = 0; i < NB_BOARDS; i++) {
-            if (!lumiere_[i].i.empty()) mLumiere_[i] = r.makeMesh(lumiere_[i].v, lumiere_[i].i);
-            if (!texte_[i].i.empty()) mTexte_[i] = r.makeMesh(texte_[i].v, texte_[i].i);
-        }
+        for (auto [geo, mesh] : {std::pair{&peint_, &mPeint_}, {&metalG_, &mMetal_}, {&facesLum_, &mFacesLum_}, {&facesSombres_, &mFacesSombres_},
+                                  {&lettresLum_, &mLettresLum_}, {&lettresSombres_, &mLettresSombres_}})
+            if (!geo->i.empty()) *mesh = r.makeMesh(geo->v, geo->i);
         actif_ = true;
-        WFS_LOG("vie : %zu panneaux néon (%s)", panneaux_.size(), g.map->id);
+        WFS_LOG("vie : %zu enseignes sur mâts (%s)", panneaux_.size(), g.map->id);
     }
     void render(Renderer& r, const GameView& g) override {
         if (!actif_ || g.sceneDediee) return;
         const mat4 I = mat4::identity();
-        if (mFixe_.indexCount) r.draw(mFixe_, palette_.materiau, I);
-        for (int i = 0; i < NB_BOARDS; i++) {
-            if (mLumiere_[i].indexCount) r.draw(mLumiere_[i], neons_[i], I);
-            if (mTexte_[i].indexCount) r.draw(mTexte_[i], atlas_.materiau(r, BOARD_TEXTS[i].second), I);
-        }
+        if (mPeint_.indexCount) r.draw(mPeint_, palette_.materiau, I);
+        if (mMetal_.indexCount) r.draw(mMetal_, metal_, I);
+        if (mFacesSombres_.indexCount) r.draw(mFacesSombres_, plexi_, I);
+        if (mFacesLum_.indexCount) r.draw(mFacesLum_, g.night ? plexiNuit_ : plexi_, I);
+        if (mLettresSombres_.indexCount) r.draw(mLettresSombres_, *lettresJour_, I);
+        if (mLettresLum_.indexCount) r.draw(mLettresLum_, g.night ? *lettresNuit_ : *lettresJour_, I);
     }
     void shutdown(Renderer& r) override {
         r.vk().waitIdle();
-        for (Mesh* m : {&mFixe_}) if (m->indexCount) r.destroy(*m);
-        for (int i = 0; i < NB_BOARDS; i++) { if (mLumiere_[i].indexCount) r.destroy(mLumiere_[i]); if (mTexte_[i].indexCount) r.destroy(mTexte_[i]); }
+        for (Mesh* m : {&mPeint_, &mMetal_, &mFacesLum_, &mFacesSombres_, &mLettresLum_, &mLettresSombres_}) if (m->indexCount) { r.destroy(*m); *m = Mesh{}; }
         atlas_.detruire(r); palette_.detruire(r);
-        for (Material& m : neons_) r.destroy(m);   // WFS-187 (accroche) : jeux de descripteurs rendus
+        for (Material* m : {&metal_, &plexi_, &plexiNuit_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
+        lettresJour_ = lettresNuit_ = nullptr;
         actif_ = false;
     }
 private:
+    // luminances de nuit (unités d'émission du moteur) : bornées pour qu'aucune enseigne ne fasse de halo (RG-04)
+    static constexpr float FACE_NUIT = 0.9f, LETTRES_NUIT = 1.5f;
     bool actif_ = false;
     std::vector<Panneau> panneaux_;
     AtlasTextes atlas_; Palette palette_;
-    vec2 uvPoteau_, uvFond_;
-    Geo fixe_, lumiere_[NB_BOARDS], texte_[NB_BOARDS];
-    Mesh mFixe_, mLumiere_[NB_BOARDS], mTexte_[NB_BOARDS];
-    Material neons_[NB_BOARDS];
+    Geo peint_, metalG_, facesLum_, facesSombres_, lettresLum_, lettresSombres_;
+    Mesh mPeint_, mMetal_, mFacesLum_, mFacesSombres_, mLettresLum_, mLettresSombres_;
+    Material metal_, plexi_, plexiNuit_;
+    const Material *lettresJour_ = nullptr, *lettresNuit_ = nullptr;
 };
 
 } // namespace
+
+const char* vie::textePanneauRoute(int texte) { return texte >= 0 && texte < NB_BOARDS ? BOARD_TEXTS[texte].texte : ""; }
 
 WFS_SYSTEM(Enseignes, 107)   // décor (100-199) : après les piétons (106)
 
