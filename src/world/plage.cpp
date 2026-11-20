@@ -3061,7 +3061,10 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         std::vector<vie::PanneauRoute> P = vie::panneauxRoute(mapById("plage"), t);
         std::stable_sort(P.begin(), P.end(), [](const vie::PanneauRoute& a, const vie::PanneauRoute& b) {   // « NUIT BLANCHE » d'abord (ANO-316)
             return !std::strcmp(vie::textePanneauRoute(a.texte), "NUIT BLANCHE") && std::strcmp(vie::textePanneauRoute(b.texte), "NUIT BLANCHE"); });
-        for (size_t k = 1; k < P.size(); k++) if (P[k].texte != P[0].texte) { std::swap(P[1], P[k]); break; }   // 2e : un autre commerce
+        // 2e : « PNEUS 24/7 » (le seul fond qui s'allume la nuit) s'il y en a, sinon un autre commerce
+        bool pneus = false;
+        for (size_t k = 1; k < P.size() && !pneus; k++) if (!std::strcmp(vie::textePanneauRoute(P[k].texte), "PNEUS 24/7")) { std::swap(P[1], P[k]); pneus = true; }
+        if (!pneus) for (size_t k = 1; k < P.size(); k++) if (P[k].texte != P[0].texte) { std::swap(P[1], P[k]); break; }
         for (size_t k = 0; k < P.size() && k < 2; k++) for (int nuit = 0; nuit < 2; nuit++) {
             const std::string nom = "carte-plage-enseigne-" + std::to_string(k + 1) + (nuit ? "-nuit" : "");
             setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);

@@ -204,9 +204,9 @@ void AtlasTextes::detruire(Renderer& r) { for (auto& [h, m] : mats_) r.destroy(m
 // 2026-11-09) aux mesures courantes de ces ouvrages :
 //   - massif de béton affleurant (0,70 × 0,70 m, 10 cm hors sol, arêtes chanfreinées), platine d'acier galvanisé
 //     450 × 450 × 25 mm et 4 tiges d'ancrage M24 (rondelle, écrou hexagonal de 36 mm sur plats, bout fileté) ;
-//   - mât en tube d'acier Ø 219,1 mm (série EN 10219), thermolaqué gris anthracite RAL 7016, fourreau soudé au pied ;
+//   - mât en tube d'acier Ø 273,0 mm (série EN 10219 ; avis de l'agent 3D, PR #437), thermolaqué gris anthracite RAL 7016, fourreau soudé au pied ;
 //     selle de fixation (plat de 30 mm, 4 boulons) sous le caisson ;
-//   - caisson en profilé d'aluminium anodisé de 8,40 × 3,20 × 0,40 m (bas à 6,0 m), couvertine débordante, faces en
+//   - caisson en profilé d'aluminium anodisé de 8,40 × 3,20 × 0,40 m (bas à 4,6 m, haut à 7,8 m : totem de 4 à 8 m, RG-03), couvertine débordante, faces en
 //     plexiglas diffusant en retrait de 3 cm dans le cadre, impression de la face propre à chaque commerce ;
 //   - la nuit, caisson rétroéclairé (tubes fluorescents ou LED derrière le plexiglas) : seule la partie translucide de
 //     l'impression s'allume (le fond OU les lettres, selon le commerce), luminance bornée, sans halo ; de jour, rien
@@ -255,8 +255,8 @@ static_assert(sizeof(BOARD_TEXTS) / sizeof(BOARD_TEXTS[0]) == NB_BOARDS);
 struct Panneau { int64_t seg; int side, texte; };
 
 // mesures du modèle (m)
-constexpr float CAISSON_L = 8.4f, CAISSON_H = 3.2f, CAISSON_E = 0.40f, CAISSON_BAS = 6.0f, PROFIL = 0.12f;
-constexpr float MAT_R = 0.2191f / 2, MAT_ECART = 2.0f;   // mâts à ±2 m du milieu du caisson (le 1er reste à RW + 1 : collision)
+constexpr float CAISSON_L = 8.4f, CAISSON_H = 3.2f, CAISSON_E = 0.40f, CAISSON_BAS = 4.6f, PROFIL = 0.12f;
+constexpr float MAT_R = 0.2730f / 2, MAT_ECART = 2.0f;   // mâts à ±2 m du milieu du caisson (le 1er reste à RW + 1 : collision)
 
 // un caisson double face sur deux mâts ; R : origine au sol sous le milieu du caisson, x latéral (loin de la route), z le
 // long de la route (les deux faces regardent ±z) ; tampons : peint (mât, béton), metal (aluminium, acier galvanisé),
@@ -368,7 +368,7 @@ public:
     }
 private:
     // luminances de nuit (unités d'émission du moteur) : bornées pour qu'aucune enseigne ne fasse de halo (RG-04)
-    static constexpr float FACE_NUIT = 0.9f, LETTRES_NUIT = 1.5f;
+    static constexpr float FACE_NUIT = 0.45f, LETTRES_NUIT = 1.25f;   // grande face jaune : moitié des lettres (pas de halo)
     bool actif_ = false;
     std::vector<Panneau> panneaux_;
     AtlasTextes atlas_; Palette palette_;

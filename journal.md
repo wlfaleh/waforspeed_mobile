@@ -217,3 +217,8 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 - Fichiers : `src/world/enseignes.cpp/.h`, `src/world/ville.cpp`, `src/world/cartes_banc.cpp` et `src/world/plage.cpp` (vues de banc).
 - Vérification : compilation complète, 156 tests CPU réussis, bancs ville / corniche sans erreur, 17 paires de captures (`qa/pr/WFS-568/`), appels de dessin = main ±5.
 - Limites : rendu vérifié sur PC (lavapipe) seulement ; banc perf complet non rejoué. Paquets `.wfcarte` inchangés : WFS-569 sans objet.
+
+### 2026-11-20 01:28:07 — WFS-568 : réserves de l'agent 3D traitées (Claude, agent dev3d (01UY1Vv3p8))
+- Avis agent 3D sur b5ba8d94 : VALIDÉ avec réserves (PR #437). Traité : caisson abaissé (bas 4,6 m, haut 7,8 m : totem 4 à 8 m, RG-03), mâts Ø 273,0 mm, lettres allumées 1,5 → 1,25 (liseré rose de « NUIT BLANCHE »), face jaune de « PNEUS 24/7 » 0,9 → 0,45 (plus de halo), capture « PNEUS 24/7 » ajoutée (`carte-plage-enseigne-2`, jour et nuit).
+- Gardé pour plus tard (hors périmètre, mineur) : lettres de la galerie en volume plein, cadre du caisson éclairé la nuit, bâtiment du garage (WFS-369 et suivants).
+- Captures refaites seulement pour les vues touchées (règle du 2026-11-15) ; appels de dessin = main ±6.
