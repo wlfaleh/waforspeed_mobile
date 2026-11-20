@@ -73,7 +73,8 @@ enum Couleur {
     U_CREME, U_MARCHE, U_TAPIS, U_ENDUIT, U_SOL_GARAGE, U_PONT, U_NOIR, U_PIG0, U_SHI0 = U_PIG0 + 4, U_HUS0 = U_SHI0 + 6,
     U_LAISSE = U_HUS0 + 6, U_PARKING, U_ALU,
     U_FONTE, U_AFFICHE,   // WFS-369 : fonte peinte, affiche
-    U_CHASSIS, U_MENUIS, U_VOLETK, U_METALK, U_NB   // WFS-410 : menuiseries des lieux (albédos du kit de WFS-402)
+    U_CHASSIS, U_MENUIS, U_VOLETK, U_METALK,   // WFS-410 : menuiseries des lieux (albédos du kit de WFS-402)
+    U_CAISSON_GARAGE, U_CADRE_CAISSON, U_NB   // WFS-568 : face bleu marine du caisson « GARAGE 88 », cadre d'aluminium anodisé
 };
 constexpr uint32_t PALETTE[U_NB] = {
     0x3a3d44, 0x6b4a2e, 0xbfe8ff, 0xc9c4b8, 0x4aa3c7,
@@ -100,7 +101,9 @@ constexpr uint32_t PALETTE[U_NB] = {
     // WFS-369 : fonte peinte vert foncé des bancs et grilles (RAL 6009, albédo ≈ 0,04), affiche claire sous verre
     0x27352d, 0xd6cdbd,
     // WFS-410 : bois peint blanc cassé (RAL 9001, albédo 0,70), bois teinté des portes, volets peints, aluminium laqué sombre (0,28)
-    0xdad7ce, 0x76614b, 0x557c65, 0x8f9090};
+    0xdad7ce, 0x76614b, 0x557c65, 0x8f9090,
+    // WFS-568 : plexiglas imprimé bleu marine du caisson du garage, profilé d'aluminium anodisé naturel
+    0x1c3766, 0xa9acb0};
 vec2 uvc(int c) { return {(c + 0.5f) / (float)U_NB, 0.5f}; }
 
 // teintes du feuillage (VEG_TINT de life.js) : tilleuls sur le matériau des platanes, pins sur leur propre matériau
@@ -1324,11 +1327,17 @@ public:
             m.cutoff = nuit_ ? (k ? archi::lieux::VITRINES_ALLUMEES : archi::lieux::ETAGES_ALLUMES) : 0.f;
             mats_[k ? P_VITRE_COMMERCE : P_VITRE_ETAGE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         }
-        for (const char* x : {"CASINO", "GARAGE 88", "GALERIE DES ARCADES", "LUNA MODE", "ATELIER 7", "MAISON VERTE"}) atlasLieux_.ajouter(x);
+        // WFS-568 (ANO-316, RG-01, RG-02) : plus de cyan ; chaque commerce a la couleur de sa vraie enseigne (sRGB) : lettres
+        // découpées laiton de la galerie, blanc chaud, rouge brique et vert des boutiques, lettres blanches imprimées sur le
+        // caisson bleu marine du garage ; le casino garde son néon or-rose (RG-05)
+        static const std::pair<const char*, unsigned> TEXTES_LIEUX[] = {{"CASINO", 0xffffff}, {"GARAGE 88", 0xf4f4f0}, {"GALERIE DES ARCADES", 0xc9a45c},
+                                                                       {"LUNA MODE", 0xf2ebdd}, {"ATELIER 7", 0xb5402f}, {"MAISON VERTE", 0x3f8a4f}};
+        for (const auto& [x, c] : TEXTES_LIEUX) atlasLieux_.ajouter(x, c);
         if (!P.lieux.empty() && atlasLieux_.construire(r)) {
-            // néons bornés (pas de halo qui mange l'écran) : or-rose pour le casino, cyan pour les autres (design-street-racing)
+            // néon or-rose borné du casino (pas de halo qui mange l'écran) ; WFS-568 (RG-04) : les autres enseignes sont
+            // rétroéclairées la nuit (lettres × leur couleur) et éteintes le jour (couleur de la peinture seulement)
             enseigneMat_[0] = &atlasLieux_.materiau(r, 0xffb347, nuit_ ? 2.2f : 0.5f, 0.45f);
-            enseigneMat_[1] = &atlasLieux_.materiau(r, 0x00e5ff, nuit_ ? 1.8f : 0.35f, 0.45f);
+            enseigneMat_[1] = &atlasLieux_.materiauCouleurs(r, nuit_ ? 1.4f : 0.f, 0.45f, 0.45f);
         }
         for (const ville::Lieu& l : P.lieux) if (l.t == ville::CASINO && !luxe_[0].ok) {
             if (!loadCarModel(r, "cars/sf90.wfm", luxe_[0]) || !loadCarModel(r, "cars/gallardo.wfm", luxe_[1])) WFS_ERR("Ville : voitures du casino introuvables");
@@ -1402,13 +1411,17 @@ public:
         auto bloc = [&](Geo& g, float lat, float al, float y0, float hx, float hz, float h, vec2 uv) {
             carte::box(g, P(lat, al, 0), X, Z, 2 * hx, h, 2 * hz, uv, y0);
         };
-        // enseigne : texte de l'atlas des lieux, centré en (lat, al, y), sur la face tournée vers la route, hauteur des lettres h
-        auto enseigne = [&](Geo& g, const char* txt, float lat, float al, float y, float h, float largeurMax) {
+        // enseigne : texte de l'atlas des lieux, centré en (lat, al, y), sur la face tournée vers la route, hauteur des lettres h ;
+        // WFS-568 (RG-03) : couches > 1 = lettres découpées en relief (épaisseur couches × 1 cm, posées sur des entretoises de
+        // 2 cm devant le mur) ; décalage : distance de la face avant au plan lat (2 cm par défaut, 1 mm pour une impression)
+        auto enseigne = [&](Geo& g, const char* txt, float lat, float al, float y, float h, float largeurMax, int couches = 1, float decalage = 0.02f) {
             const vie::Texte& T = atlasLieux_.texte(txt);
             if (!T.ok) return;
             const float hl = h / 0.62f, w = std::min(hl * T.aspect, largeurMax), k = w / (hl * T.aspect);
-            const vec3 o = P(lat - 0.02f, al, y), hx = Z * (-s * w / 2), hy = up * (hl * k / 2), n = -X;
-            quad(g, o - hx - hy, o + hx - hy, o + hx + hy, o - hx + hy, n, {T.u0, T.v1}, {T.u1, T.v1}, {T.u1, T.v0}, {T.u0, T.v0});
+            for (int c = 0; c < couches; c++) {
+                const vec3 o = P(lat - decalage + 0.01f * (float)c, al, y), hx = Z * (-s * w / 2), hy = up * (hl * k / 2), n = -X;
+                quad(g, o - hx - hy, o + hx - hy, o + hx + hy, o - hx + hy, n, {T.u0, T.v1}, {T.u1, T.v1}, {T.u1, T.v0}, {T.u0, T.v0});
+            }
         };
         switch (l.t) {
         case ville::CASINO: {
@@ -1505,9 +1518,10 @@ public:
             }
             bloc(U, b0 + 13.f, 0, 9.f, 13.f, demi, 3.f, uvc(U_CLAIR));                                     // bandeau opaque
             bloc(U, b0 - 2.5f, 0, 4.f, 2.5f, 10.f, 0.35f, uvc(U_ALU));                                     // auvent de l'entrée
-            enseigne(out[P_TXT_B], "GALERIE DES ARCADES", b0 - 0.1f, 0, 10.5f, 1.6f, 40.f);
+            // WFS-568 (RG-03) : lettres découpées en relief (galerie : 4 cm de laiton ; boutiques : 3 cm), 2 cm devant le bandeau
+            enseigne(out[P_TXT_B], "GALERIE DES ARCADES", b0 - 0.1f, 0, 10.5f, 1.6f, 40.f, lod ? 1 : 4, 0.06f);
             const char* boutiques[3] = {"LUNA MODE", "ATELIER 7", "MAISON VERTE"};
-            for (int k = 0; k < 3; k++) enseigne(out[P_TXT_B], boutiques[k], b0 - 0.1f, -26.f + k * 26.f + (k == 1 ? 14.f : 0.f), 7.5f, 0.7f, 10.f);
+            for (int k = 0; k < 3; k++) enseigne(out[P_TXT_B], boutiques[k], b0 - 0.1f, -26.f + k * 26.f + (k == 1 ? 14.f : 0.f), 7.5f, 0.7f, 10.f, lod ? 1 : 3, 0.05f);
             break;
         }
         case ville::GARAGE: {
@@ -1554,8 +1568,18 @@ public:
                 bloc(U, f0 + 6.5f, al0 + sd, 0.17f, 0.18f, 0.18f, 3.f, uvc(U_PONT));
                 if (!lod) bloc(U, f0 + 6.5f, al0 + sd * 0.55f, 1.1f, 0.9f, 0.06f, 0.08f, uvc(U_PONT));   // bras
             }
-            bloc(U, f0 - 0.15f, al0, 3.7f, 0.12f, 2.6f, 1.1f, uvc(U_NOIR));                                 // fond de l'enseigne
-            enseigne(out[P_TXT_B], "GARAGE 88", f0 - 0.3f, al0, 4.25f, 0.65f, 4.8f);
+            {   // WFS-568 (RG-03) : caisson d'enseigne lumineux de 5,20 × 1,10 × 0,20 m sur la façade (au lieu d'un fond noir en
+                // boîte) : cadre en profilé d'aluminium chanfreiné, face en plexiglas bleu marine en retrait de 2 cm, lettres blanches
+                // imprimées 1 cm devant (dos du caisson contre le mur)
+                const mobilier::Repere Rc = mobilier::repere(P(f0 - 0.10f, al0, 0), X * -1.f, Z);   // x vers la route
+                const float yc = 4.25f, hz = 2.6f, hy = 0.55f, e = 0.10f, pr = 0.06f;
+                const vec2 cad = uvc(U_CADRE_CAISSON);
+                mobilier::pave(U, Rc, {0, yc + hy - pr / 2, 0}, {e, pr / 2, hz}, 0.01f, cad);
+                mobilier::pave(U, Rc, {0, yc - hy + pr / 2, 0}, {e, pr / 2, hz}, 0.01f, cad);
+                for (float sz : {-1.f, 1.f}) mobilier::pave(U, Rc, {0, yc, sz * (hz - pr / 2)}, {e, hy - pr, pr / 2}, 0.01f, cad);
+                mobilier::pave(U, Rc, {-0.01f, yc, 0}, {e - 0.01f, hy - pr, hz - pr}, 0.003f, uvc(U_CAISSON_GARAGE));
+                enseigne(out[P_TXT_B], "GARAGE 88", f0 - 0.10f - e + 0.01f, al0, yc, 0.6f, 4.6f, 1, 0.001f);
+            }
             break;
         }
         }

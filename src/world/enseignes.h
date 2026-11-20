@@ -4,10 +4,11 @@
 //   - atlas de textes : enseignes, panneaux et portique écrits une fois au démarrage avec la police du jeu
 //     (Rajdhani Bold, stb_truetype, comme le texte de l'interface WFS-26), lettres blanches sur fond transparent :
 //     dessinées en alpha découpé avec une émission de la couleur du néon (lettres lumineuses, fond invisible).
-// Systèmes : Enseignes (panneaux néon BOARD_TEXTS, ordre 107), Portique (checkpoint, 108), Commerces (SHOPS, 109).
+// Systèmes : Enseignes (caissons d’enseigne sur mâts BOARD_TEXTS, WFS-568, ordre 107), Portique (checkpoint, 108), Commerces (SHOPS, 109).
 #pragma once
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 #include "../core/math.h"
 #include "../render/renderer.h"
@@ -31,6 +32,7 @@ class Palette {
 public:
     vec2 uv(unsigned hex);   // ajoute la couleur si besoin (64 au plus)
     bool construire(Renderer& r);
+    Material variante(Renderer& r, const Material& m);   // WFS-568 : autre matériau sur la même texture (après construire)
     void detruire(Renderer& r);
     Material materiau;
 private:
@@ -50,22 +52,31 @@ void plan(Geo& g, vec3 c, vec3 x, vec3 y, vec3 n, float w, float h, float u0, fl
 struct Texte { float u0 = 0, v0 = 0, u1 = 0, v1 = 0, aspect = 1; bool ok = false; };
 class AtlasTextes {
 public:
-    void ajouter(const std::string& utf8);           // avant construire()
+    void ajouter(const std::string& utf8, unsigned couleur = 0xFFFFFF);   // avant construire() ; WFS-568 : couleur sRGB des lettres
     bool construire(Renderer& r);
     const Texte& texte(const std::string& utf8) const;
     void detruire(Renderer& r);
     // matériau du néon d'une couleur (lettres en alpha découpé + émission), créé à la demande
     const Material& materiau(Renderer& r, unsigned hex, float emission = 1.6f, float seuil = 0.45f);
+    // WFS-568 : lettres de la couleur donnée à ajouter() (une couleur par commerce), émission × cette couleur
+    const Material& materiauCouleurs(Renderer& r, float emission, float seuil = 0.45f, float rugosite = 0.5f);
 private:
+    using Cle = std::tuple<unsigned, float, float, float, bool>;   // couleur, émission, seuil, rugosité, lettres de couleur
     std::vector<std::string> textes_;
     std::map<std::string, Texte> places_;
-    std::map<unsigned, Material> mats_;
+    std::map<std::string, unsigned> couleurs_;
+    std::map<Cle, Material> mats_;
     Image img_{};
 };
 
 // matériau néon uni (barres lumineuses) d'une couleur 0xRRGGBB
 Material neon(Renderer& r, unsigned hex, float emission = 2.2f);
 vec3 lin(unsigned hex);
+
+// WFS-568 : enseignes sur mâts le long de la route (Ville, Corniche) : segment, côté (−1 / +1), texte (indice de BOARD_TEXTS)
+struct PanneauRoute { int64_t seg; int side, texte; };
+std::vector<PanneauRoute> panneauxRoute(const MapDef& map, Track& t);
+const char* textePanneauRoute(int texte);
 
 // serviettes de la plage (beachLife du jeu web) : partagées entre leur dessin (Commerces) et les baigneurs (Pietons)
 struct Serviette { double s; float lat, rot; int couleur; };

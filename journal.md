@@ -209,5 +209,18 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 - Zone : `src/world/enseignes.cpp`, enseignes des lieux de `src/world/ville.cpp` (l. ≈ 1325-1332) et leurs actifs. Règles : `regles-de-gestion/WFS-568.md` (RG-01 à RG-08, captures demandées). Avis « Avis agent 3D : VALIDÉ » obligatoire avant fusion (E15). Skills en plus : `expert-realisme-3d` (lecture), `expert-cartes` si un paquet `.wfcarte` change (tâche compagne WFS-569). Après fusion : 🟡 À valider (utilisateur).
 - `track-agent.md` : sessions 01UY1Vv5BA (WFS-567) et 01UY1Vv3kc (WFS-562) terminées, lignes enlevées. CI de `main` #1156 rouge (banc-essai texte, commit e9a9901) : relève de WFS-589 (`@cicd`, P1, ⏳ Prêt).
 
+### 2026-11-20 00:19:21 — WFS-568 : branche créée, étude des enseignes (Claude, agent dev3d (01UY1Vv3p8))
+- Ticket reçu du PO (enseignes du décor réalistes, plus de cyan, ANO-316). Branche `feature/waforspeed-568` poussée. Lecture de `src/world/enseignes.cpp` et `src/world/ville.cpp`.
+
+### 2026-11-20 01:15:23 — WFS-568 : enseignes en vrais caissons, plus de cyan, PR à ouvrir (Claude, agent dev3d (01UY1Vv3p8))
+- Fait : panneaux sur mâts de la Ville et de la Corniche refaits en caissons d'enseigne double face (massif, platine, tiges M24, mât Ø 219,1, selle, cadre alu chanfreiné, plexiglas imprimé), une impression par commerce, rétroéclairage 4 000 K la nuit seulement ; façades : lettres colorées par commerce, lettres découpées en relief (galerie laiton), caisson bleu marine du garage ; casino inchangé. Atlas de textes en couleurs (sRGB), `Palette::variante()`.
+- Fichiers : `src/world/enseignes.cpp/.h`, `src/world/ville.cpp`, `src/world/cartes_banc.cpp` et `src/world/plage.cpp` (vues de banc).
+- Vérification : compilation complète, 156 tests CPU réussis, bancs ville / corniche sans erreur, 17 paires de captures (`qa/pr/WFS-568/`), appels de dessin = main ±5.
+- Limites : rendu vérifié sur PC (lavapipe) seulement ; banc perf complet non rejoué. Paquets `.wfcarte` inchangés : WFS-569 sans objet.
+
+### 2026-11-20 01:28:07 — WFS-568 : réserves de l'agent 3D traitées (Claude, agent dev3d (01UY1Vv3p8))
+- Avis agent 3D sur b5ba8d94 : VALIDÉ avec réserves (PR #437). Traité : caisson abaissé (bas 4,6 m, haut 7,8 m : totem 4 à 8 m, RG-03), mâts Ø 273,0 mm, lettres allumées 1,5 → 1,25 (liseré rose de « NUIT BLANCHE »), face jaune de « PNEUS 24/7 » 0,9 → 0,45 (plus de halo), capture « PNEUS 24/7 » ajoutée (`carte-plage-enseigne-2`, jour et nuit).
+- Gardé pour plus tard (hors périmètre, mineur) : lettres de la galerie en volume plein, cadre du caisson éclairé la nuit, bâtiment du garage (WFS-369 et suivants).
+- Captures refaites seulement pour les vues touchées (règle du 2026-11-15) ; appels de dessin = main ±6.
 ### 2026-11-20 01:39:39 — WFS-568 : PR #437 refusée par le lead dev (lead-dev)
 Commit relu `53163d77` (code `bf55e33d`). 17 paires de captures ouvertes : plus de cyan, une couleur par commerce, vrais caissons sur mâts, nuit bornée, rien de dégradé ailleurs. Avis agent 3D VALIDÉ présent. Diff entier lu, sans défaut bloquant. Construction à jour et `tests_cpu.sh` relancés par le lead dev : 156 réussis. **Refus pour pièces manquantes seulement** : (1) pas de `qa/pr/WFS-568/tests-cpu.log` ni de section « Tests CPU » dans la PR (règle du 2026-11-11) ; (2) description périmée (mât Ø 219,1 → 273, tests sur l'ancien code) ; (3) nouvel avis `@3d` à demander sur le commit qui ajoute le journal. Aucune capture à refaire. Revue sur GitHub (en commentaire, même compte).
