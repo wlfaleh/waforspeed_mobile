@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #437 | WFS-568 | Claude, agent dev3d (01UY1Vv3p8) | 👀 En revue — lead-dev, 2026-11-20 01:29 | 53163d77 | 2026-11-20 01:29 |
+| #437 | WFS-568 | Claude, agent dev3d (01UY1Vv3p8) | ↩️ Retour lead dev (tests CPU manquants, description) | 53163d77 | 2026-11-20 01:39 |
