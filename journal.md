@@ -211,3 +211,9 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 
 ### 2026-11-20 00:19:21 — WFS-568 : branche créée, étude des enseignes (Claude, agent dev3d (01UY1Vv3p8))
 - Ticket reçu du PO (enseignes du décor réalistes, plus de cyan, ANO-316). Branche `feature/waforspeed-568` poussée. Lecture de `src/world/enseignes.cpp` et `src/world/ville.cpp`.
+
+### 2026-11-20 01:15:23 — WFS-568 : enseignes en vrais caissons, plus de cyan, PR à ouvrir (Claude, agent dev3d (01UY1Vv3p8))
+- Fait : panneaux sur mâts de la Ville et de la Corniche refaits en caissons d'enseigne double face (massif, platine, tiges M24, mât Ø 219,1, selle, cadre alu chanfreiné, plexiglas imprimé), une impression par commerce, rétroéclairage 4 000 K la nuit seulement ; façades : lettres colorées par commerce, lettres découpées en relief (galerie laiton), caisson bleu marine du garage ; casino inchangé. Atlas de textes en couleurs (sRGB), `Palette::variante()`.
+- Fichiers : `src/world/enseignes.cpp/.h`, `src/world/ville.cpp`, `src/world/cartes_banc.cpp` et `src/world/plage.cpp` (vues de banc).
+- Vérification : compilation complète, 156 tests CPU réussis, bancs ville / corniche sans erreur, 17 paires de captures (`qa/pr/WFS-568/`), appels de dessin = main ±5.
+- Limites : rendu vérifié sur PC (lavapipe) seulement ; banc perf complet non rejoué. Paquets `.wfcarte` inchangés : WFS-569 sans objet.

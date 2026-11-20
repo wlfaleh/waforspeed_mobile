@@ -309,6 +309,7 @@ public:
     const char* name() const override { return "enseignes"; }
     void init(Renderer& r, const GameView& g) override {
         actif_ = false;
+        panneaux_.clear();   // WFS-568 : une nouvelle course ne rajoute pas ses panneaux à ceux de la précédente
         if (!g.map || !g.track) return;
         if (std::strcmp(g.map->id, "ville") && std::strcmp(g.map->id, "plage")) return;   // RG-09 : Ville et Corniche (Grand Prix : WFS-53)
         for (const PanneauRoute& b : panneauxRoute(*g.map, *g.track)) panneaux_.push_back({b.seg, b.side, b.texte});
@@ -331,33 +332,35 @@ public:
         lettresJour_ = &atlas_.materiauCouleurs(r, 0.f);
         lettresNuit_ = &atlas_.materiauCouleurs(r, LETTRES_NUIT);
         Track& t = *g.track;
-        for (const Panneau& b : panneaux_) {   // géométrie construite une fois (≈ 1 panneau / 200 m)
-            const Repere p = repere(t, b.seg * SEG);
+        for (const Panneau& b : panneaux_) {   // géométrie construite une fois (≈ 1 panneau / 200 m) ; un jeu de maillages par
+            const Repere p = repere(t, b.seg * SEG);   // panneau : le moteur écarte ceux hors de la vue (sphère englobante, WFS-82)
             const float s = (float)b.side, R = (float)RW;
             const mobilier::Repere M = mobilier::repere(lateral(p, s * (R + 1 + MAT_ECART), 0.f), p.r * s, p.f);
-            const bool fl = BOARD_TEXTS[b.texte].fondLumineux;
-            caissonSurMats(peint_, metalG_, fl ? facesLum_ : facesSombres_, fl ? lettresSombres_ : lettresLum_, M,
-                           atlas_.texte(BOARD_TEXTS[b.texte].texte), uvMat, uvBeton, uvAlu, uvGalva, uvFond[b.texte]);
+            Geo peint, metal, faces, lettres;
+            caissonSurMats(peint, metal, faces, lettres, M, atlas_.texte(BOARD_TEXTS[b.texte].texte), uvMat, uvBeton, uvAlu, uvGalva, uvFond[b.texte]);
+            Caisson c; c.fondLumineux = BOARD_TEXTS[b.texte].fondLumineux;
+            for (auto [geo, mesh] : {std::pair{&peint, &c.peint}, {&metal, &c.metal}, {&faces, &c.faces}, {&lettres, &c.lettres}})
+                if (!geo->i.empty()) *mesh = r.makeMesh(geo->v, geo->i);
+            caissons_.push_back(c);
         }
-        for (auto [geo, mesh] : {std::pair{&peint_, &mPeint_}, {&metalG_, &mMetal_}, {&facesLum_, &mFacesLum_}, {&facesSombres_, &mFacesSombres_},
-                                  {&lettresLum_, &mLettresLum_}, {&lettresSombres_, &mLettresSombres_}})
-            if (!geo->i.empty()) *mesh = r.makeMesh(geo->v, geo->i);
         actif_ = true;
         WFS_LOG("vie : %zu enseignes sur mâts (%s)", panneaux_.size(), g.map->id);
     }
     void render(Renderer& r, const GameView& g) override {
         if (!actif_ || g.sceneDediee) return;
         const mat4 I = mat4::identity();
-        if (mPeint_.indexCount) r.draw(mPeint_, palette_.materiau, I);
-        if (mMetal_.indexCount) r.draw(mMetal_, metal_, I);
-        if (mFacesSombres_.indexCount) r.draw(mFacesSombres_, plexi_, I);
-        if (mFacesLum_.indexCount) r.draw(mFacesLum_, g.night ? plexiNuit_ : plexi_, I);
-        if (mLettresSombres_.indexCount) r.draw(mLettresSombres_, *lettresJour_, I);
-        if (mLettresLum_.indexCount) r.draw(mLettresLum_, g.night ? *lettresNuit_ : *lettresJour_, I);
+        for (const Caisson& c : caissons_) {   // la nuit, seule la partie translucide de l'impression s'allume (fond OU lettres)
+            const bool fondAllume = g.night && c.fondLumineux, lettresAllumees = g.night && !c.fondLumineux;
+            if (c.peint.indexCount) r.draw(c.peint, palette_.materiau, I);
+            if (c.metal.indexCount) r.draw(c.metal, metal_, I);
+            if (c.faces.indexCount) r.draw(c.faces, fondAllume ? plexiNuit_ : plexi_, I);
+            if (c.lettres.indexCount) r.draw(c.lettres, lettresAllumees ? *lettresNuit_ : *lettresJour_, I);
+        }
     }
     void shutdown(Renderer& r) override {
         r.vk().waitIdle();
-        for (Mesh* m : {&mPeint_, &mMetal_, &mFacesLum_, &mFacesSombres_, &mLettresLum_, &mLettresSombres_}) if (m->indexCount) { r.destroy(*m); *m = Mesh{}; }
+        for (Caisson& c : caissons_) for (Mesh* m : {&c.peint, &c.metal, &c.faces, &c.lettres}) if (m->indexCount) r.destroy(*m);
+        caissons_.clear(); panneaux_.clear();
         atlas_.detruire(r); palette_.detruire(r);
         for (Material* m : {&metal_, &plexi_, &plexiNuit_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         lettresJour_ = lettresNuit_ = nullptr;
@@ -369,8 +372,8 @@ private:
     bool actif_ = false;
     std::vector<Panneau> panneaux_;
     AtlasTextes atlas_; Palette palette_;
-    Geo peint_, metalG_, facesLum_, facesSombres_, lettresLum_, lettresSombres_;
-    Mesh mPeint_, mMetal_, mFacesLum_, mFacesSombres_, mLettresLum_, mLettresSombres_;
+    struct Caisson { Mesh peint, metal, faces, lettres; bool fondLumineux = false; };
+    std::vector<Caisson> caissons_;
     Material metal_, plexi_, plexiNuit_;
     const Material *lettresJour_ = nullptr, *lettresNuit_ = nullptr;
 };
