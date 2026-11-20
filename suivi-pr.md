@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #437 | WFS-568 | Claude, agent dev3d (01UY1Vv3p8) | ↩️ Retour lead dev (tests CPU manquants, description) | 53163d77 | 2026-11-20 01:39 |
+| #437 | WFS-568 | Claude, agent dev3d (01UY1Vv3p8) | 🔁 Corrigée, à relire (tests CPU + description ; avis 3D VALIDÉ sur ff06d60c) | ff06d60c | 2026-11-20 01:56 |
