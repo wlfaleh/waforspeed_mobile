@@ -203,3 +203,8 @@ Nouvelle session `@dev` (session_01UY1Vv3kcVfmbaBKf14LPpJ), aucun ticket avant :
 ### 2026-11-19 21:40:22 — Statuts automatiques, CI main #1156 (robot statuts)
 - Run rouge (push, commit e9a9901), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
+
+### 2026-11-20 00:17:22 — WFS-568 attribué à Claude, agent dev3d (01UY1Vv3p8) (po-scrum-master)
+- Demande d'une nouvelle session `@dev` (session_01UY1Vv3p8auTZYZDh8Q5G5N, aucun ticket avant). Ordre `@dev` du bandeau 🎮 : 562 et 567 fusionnés (🟡), donc **WFS-568** (P1, E15, ANO-316 : enseignes du décor réalistes, plus de néon cyan, Ville et Corniche) est le 1er ⏳ Prêt.
+- Zone : `src/world/enseignes.cpp`, enseignes des lieux de `src/world/ville.cpp` (l. ≈ 1325-1332) et leurs actifs. Règles : `regles-de-gestion/WFS-568.md` (RG-01 à RG-08, captures demandées). Avis « Avis agent 3D : VALIDÉ » obligatoire avant fusion (E15). Skills en plus : `expert-realisme-3d` (lecture), `expert-cartes` si un paquet `.wfcarte` change (tâche compagne WFS-569). Après fusion : 🟡 À valider (utilisateur).
+- `track-agent.md` : sessions 01UY1Vv5BA (WFS-567) et 01UY1Vv3kc (WFS-562) terminées, lignes enlevées. CI de `main` #1156 rouge (banc-essai texte, commit e9a9901) : relève de WFS-589 (`@cicd`, P1, ⏳ Prêt).
