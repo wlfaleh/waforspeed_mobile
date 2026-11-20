@@ -61,7 +61,7 @@ public:
     // WFS-568 : lettres de la couleur donnée à ajouter() (une couleur par commerce), émission × cette couleur
     const Material& materiauCouleurs(Renderer& r, float emission, float seuil = 0.45f, float rugosite = 0.5f);
 private:
-    using Cle = std::tuple<unsigned, float, float, bool>;   // couleur, émission, seuil, lettres de couleur
+    using Cle = std::tuple<unsigned, float, float, float, bool>;   // couleur, émission, seuil, rugosité, lettres de couleur
     std::vector<std::string> textes_;
     std::map<std::string, Texte> places_;
     std::map<std::string, unsigned> couleurs_;

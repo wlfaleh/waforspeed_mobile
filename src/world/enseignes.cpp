@@ -179,7 +179,7 @@ const Texte& AtlasTextes::texte(const std::string& t) const {
     return it == places_.end() ? vide : it->second;
 }
 const Material& AtlasTextes::materiau(Renderer& r, unsigned hex, float emission, float seuil) {
-    const Cle cle{hex, emission, seuil, false};   // WFS-568 : une couleur peut servir avec deux émissions (jour, nuit)
+    const Cle cle{hex, emission, seuil, 0.5f, false};   // WFS-568 : une couleur peut servir avec deux émissions (jour, nuit)
     auto it = mats_.find(cle);
     if (it != mats_.end()) return it->second;
     Material m; const vec3 c = lin(hex);
@@ -187,7 +187,7 @@ const Material& AtlasTextes::materiau(Renderer& r, unsigned hex, float emission,
     return mats_[cle] = r.makeMaterial(m, &img_, nullptr, nullptr);
 }
 const Material& AtlasTextes::materiauCouleurs(Renderer& r, float emission, float seuil, float rugosite) {
-    const Cle cle{0xFFFFFFu, emission, seuil + rugosite * 1e-3f, true};
+    const Cle cle{0xFFFFFFu, emission, seuil, rugosite, true};
     auto it = mats_.find(cle);
     if (it != mats_.end()) return it->second;
     // WFS-568 : lettres de la couleur de l'atlas (couleur blanche du matériau) ; émission × couleur de la texture (MAT_EMTEX)
