@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-20 00:17:22 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-20 18:05:32 UTC (po-scrum-master)
+
+> 🪧 **18:05 UTC (2026-11-20)** : **KO de l'utilisateur sur WFS-568** : ❌ Refusé (ANO-317), WFS-569 annulé ; nouvelle US **WFS-590** (P1, E15 : plus de caissons sur mâts, enseignes en façade des commerces) ⏳ Prêt pour une **nouvelle** session `@dev` (jamais la session 01UY1Vv3p8, dont la ligne est enlevée : session terminée). Prochains `@dev` : **WFS-590** → 571 → 573 → 575 → 563. CI de `main` #1157 et bancs du matin #58 rouges : suivis par WFS-589 (`@cicd`).
 
 > 🪧 **00:17 UTC (2026-11-20)** : **WFS-568** (P1, E15, enseignes du décor réalistes, plus de néon cyan ; ANO-316) attribué à Claude, agent dev3d (01UY1Vv3p8) (session_01UY1Vv3p8auTZYZDh8Q5G5N), nouvelle session `@dev`, à sa demande ; avis « VALIDÉ » de l'agent 3D obligatoire (E15). Sessions de WFS-562 et WFS-567 terminées (fusionnés) : lignes enlevées. CI de `main` #1156 rouge (banc-essai texte) : suivie par WFS-589 (`@cicd`). Prochains `@dev` : WFS-571 → 573 → 575 → 563.
 
@@ -90,7 +92,6 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv3p8) (session_01UY1Vv3p8auTZYZDh8Q5G5N) | WFS-568 | Enseignes du décor réalistes, plus de néon cyan, Ville et Corniche (E15 : `src/world/enseignes.cpp`, enseignes de `src/world/ville.cpp`) ; avis `@3d` obligatoire | `feature/waforspeed-568`, poussée 2026-11-20 01:56 UTC (ff06d60c) | ⏹️ session terminée (WFS-568 fusionné, PR #437, 71c7add3) |
 
 ## Agents de pilotage
 

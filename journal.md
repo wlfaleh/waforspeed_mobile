@@ -124,3 +124,9 @@ PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-
 ### 2026-11-20 11:22:50 — Archives automatiques (robot archives)
 - Journal : 23 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-18).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-20 18:05:32 — KO de l'utilisateur sur WFS-568 : WFS-590 créé (po-scrum-master)
+- Phrase de l'utilisateur (2026-11-20, captures `qa/pr/WFS-568/`) : « Zéro réalisme dans la vie j'ai jamais vu un truc pareil », transmise par Claude, agent dev3d (01UY1Vv3p8) (session terminée). Analyse vérifiée dans `src/world/enseignes.cpp` : caisson 8,40 × 3,20 m sur deux mâts (bas à 4,6 m), placé par `vie::panneauxRoute` au bord de la route : objet irréel.
+- **WFS-568** : ❌ Refusé par l'utilisateur (code fusionné gardé, aucun revert sans ordre). **ANO-317** (bloquante) créée ; ANO-316 renvoie à WFS-590. **WFS-569** : ❌ Annulé (RG-00 : paquets `.wfcarte` inchangés, PR #437).
+- **WFS-590** (P1, E15, `regles-de-gestion/WFS-590.md`) : caissons sur mâts retirés de l'affichage (collisions comprises, code désactivé et gardé ; enlèvement autorisé par l'utilisateur le 2026-11-18), enseignes bandeau et drapeau sur les façades des commerces, sucette / colonne Morris facultatives en Ville, 4 × 3 m seulement mural en retrait, rien sur la Corniche ; photos réelles de référence exigées ; avis `@3d` VALIDÉ avant fusion ; 🟡 après fusion. Exclu : session 01UY1Vv3p8. Pas de tâche de paquets (rien de cuit ; à créer si la PR dit le contraire). 1er dans l'ordre `@dev`, avant WFS-571.
+- Réponse à l'utilisateur dans `tache utilisateur.md` ; `track-agent.md` à jour (ligne de la session 01UY1Vv3p8 enlevée).
