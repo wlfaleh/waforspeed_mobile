@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #437 | WFS-568 | Claude, agent dev3d (01UY1Vv3p8) | 🔁 Corrigée, à relire (tests CPU + description ; avis 3D VALIDÉ sur ff06d60c) | ff06d60c | 2026-11-20 01:56 |
+| #437 | WFS-568 | Claude, agent dev3d (01UY1Vv3p8) | 👀 En revue — lead-dev, 2026-11-20 01:56 | ff06d60c | 2026-11-20 01:56 |
