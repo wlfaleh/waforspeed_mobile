@@ -155,12 +155,12 @@ public:
         for (const Shop& s : SHOPS) { atlas_.ajouter(s.nom); for (unsigned c : {s.bg, s.aw0, s.aw1}) palette_.uv(c); }
         for (unsigned c : {0x2a2d33u, 0x3b4a58u, 0x2a2c30u, 0xe9e4dau, 0x3a3d44u, 0xd8d8d8u, 0x5a4a3au, 0x3f6f2au}) palette_.uv(c);
         for (unsigned c : SERVIETTES) palette_.uv(c);
-        for (unsigned c : MOBILIER) palette_.uv(c);
-        palette_.uv(C_CROIX);   // WFS-590   // WFS-369 : couleurs du mobilier de terrasse, avant l'envoi de la palette (sinon gris)
+        for (unsigned c : MOBILIER) palette_.uv(c);   // WFS-369 : couleurs du mobilier de terrasse, avant l'envoi de la palette (sinon gris)
+        palette_.uv(C_CROIX);   // WFS-590 : vert de la croix de pharmacie
         if (ville_ && !atlas_.construire(r)) return;
         palette_.construire(r);
-        bougie_ = neon(r, 0xffd9a0, 3.f);
-        croixNuit_ = neon(r, C_CROIX, 1.1f);   // WFS-590 (RG-06) : croix de pharmacie allumée la nuit seulement, sans halo   // WFS-356 : bougie ; la vitrine (0,65 de WFS-356) prend la pièce de nuit du kit (WFS-410, ci-dessous)
+        bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 : bougie ; la vitrine (0,65 de WFS-356) prend la pièce de nuit du kit (WFS-410, ci-dessous)
+        croixNuit_ = neon(r, C_CROIX, 1.1f);   // WFS-590 (RG-06) : croix de pharmacie allumée la nuit seulement, sans halo
         {   // WFS-410 (avis de l'agent 3D, B1 et R5) : vitrines de la devanture avec la pièce de nuit du kit (decor.glsl) : la boutique
             // se voit derrière la vitre, éclairée par le ciel de jour ; la nuit 60 % des vitrines allumées (lampe de 2 850 K à 31,8 cd/m²,
             // teintes et luminances tirées par vitrine), sous la luminance d'un lampadaire ; plus de plaque bleu nuit unie

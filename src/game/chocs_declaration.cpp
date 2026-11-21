@@ -72,8 +72,10 @@ int declarerVille(Track& t, const MapDef& map) {
             }
         }
     }
-    // panneaux néon (enseignes.cpp) : deux poteaux de 30 × 30 cm à RW + 1 et RW + 5
-    for (const ville::Panneau& b : P.panneaux) for (float l : {R + 1.f, R + 5.f}) declarer(t, b.seg, boite((float)b.side * l, 0.15f, 0.15f, Genre::Poteau));
+    // panneaux néon (enseignes.cpp) : deux poteaux de 30 × 30 cm à RW + 1 et RW + 5 ; WFS-590 (RG-01) : plus dessinés, donc plus
+    // solides (aucun obstacle invisible) tant que ville::CAISSONS_SUR_MATS est faux
+    if (ville::CAISSONS_SUR_MATS)
+        for (const ville::Panneau& b : P.panneaux) for (float l : {R + 1.f, R + 5.f}) declarer(t, b.seg, boite((float)b.side * l, 0.15f, 0.15f, Genre::Poteau));
     // carrefours à feux : 4 mâts de 7 cm à RW + 0,8 m (ligne d'arrêt, et 7,7 m après le milieu de la rue transversale)
     for (const ville::Carrefour& cf : P.carrefours)
         for (float sd : {-1.f, 1.f}) {
