@@ -283,6 +283,19 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({nom, b.seg * 2 + (b.side > 0), 0, true, 4, VueCamera::Poursuite, (float)RW + 3.f, 6.2f, 20});
             lieux.push_back({nom + "-route", b.seg, 60, true});
         }
+        {   // WFS-590 (RG-02, RG-03) : enseignes bandeau et drapeau des commerces, vues du bord de la chaussée (cam 4, 11 m avant, façade
+            // visée à 3,4 m), jour et nuit : le premier commerce, la première pharmacie (croix verte), et la rue en caméra de course
+            int n = 0; bool pharma = false;
+            for (const ville::Commerce& c : P.commerces) {
+                if ((n >= 1 && c.kind != 8) || (c.kind == 8 && pharma)) continue;
+                const int64_t m = c.seg + (int64_t)((c.decal + c.len / 2) / SEG_M);
+                const std::string nom = "carte-ville-enseigne-facade-" + std::to_string(++n);
+                lieux.push_back({nom, m * 2 + (c.side > 0), 0, true, 4, VueCamera::Poursuite, (float)RW + 6.45f, 3.4f, 11});
+                if (n == 1) lieux.push_back({"carte-ville-enseigne-rue", m, 40, true});
+                if (c.kind == 8) pharma = true;
+                if (n >= 2) break;
+            }
+        }
         if (!P.promeneurs.empty()) lieux.push_back({"carte-ville-chien", (int64_t)P.promeneurs[0].s, 12, false});
         if (!P.carrefours.empty()) lieux.push_back({"carte-ville-pigeons", P.carrefours[0].croise - (int64_t)(15 / SEG_M), -20, false});
         // WFS-269 : gros plans de l'occlusion précalculée : pied de façade d'un immeuble de plus de 15 m, vu du trottoir à hauteur

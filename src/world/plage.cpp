@@ -1791,7 +1791,7 @@ public:
         // enseignes : textes de l'atlas commun (enseignes.cpp, police du jeu), allumés la nuit
         for (const char* s : TEXTES_ETAB) atlas_.ajouter(s);
         if (atlas_.construire(r)) {
-            const float em = night_ ? 1.4f : 0.6f;
+            const float em = night_ ? 1.4f : 0.f;   // WFS-590 (RG-06) : de jour, aucune enseigne allumée (avant : 0,6)
             mats_[P_TXT_CHAUD] = atlas_.materiau(r, 0xffd9a0, em);
             mats_[P_TXT_ROSE] = atlas_.materiau(r, 0xff3a6a, night_ ? 1.8f : 0.6f);
             mats_[P_TXT_FROID] = atlas_.materiau(r, 0xe6f2ff, em);
@@ -2030,8 +2030,12 @@ public:
             quad(out[P_UNI], Q(fl, a0, y0 + 3.4f), Q(fl, a1, y0 + 3.4f), Q(fl - 2.2f, a1, y0 + 2.75f), Q(fl - 2.2f, a0, y0 + 2.75f), uv);
             quad(out[P_UNI], Q(fl - 2.2f, a0, y0 + 2.75f), Q(fl - 2.2f, a1, y0 + 2.75f), Q(fl - 2.2f, a1, y0 + 2.5f), Q(fl - 2.2f, a0, y0 + 2.5f), uv);
         }
-        box(out[P_UNI], Q(fl - 0.1f, 0, y0 + 3.5f), X, Z, 0.08f, std::min(L * 0.36f, 3.6f), 0.7f, palUv(C_ALU));
-        texte(out[P_TXT_CHAUD], e.variante % 2 ? "CAFÉ DE LA PLAGE" : "CAFÉ DU PORT", Q(fl - 0.19f, 0, y0 + 3.85f), X, 0.46f, std::min(L * 0.68f, 6.8f));
+        {   // WFS-590 (RG-02) : enseigne bandeau du café à plat sur la façade (caisson d'aluminium, face bleu marine, lettres chaudes
+            // rétroéclairées la nuit), au lieu d'une plaque d'aluminium de 8 cm posée devant le mur (forme nue)
+            vie::Bandeau b; b.largeur = std::min(L * 0.72f, 7.2f); b.bas = 3.5f; b.lettres = 0.60f;
+            vie::enseigneBandeau(out[P_UNI], out[P_UNI], out[P_TXT_CHAUD], mobilier::repere(Q(fl, 0, y0), X * -1.f, Z), b,
+                                 atlas_.texte(e.variante % 2 ? "CAFÉ DE LA PLAGE" : "CAFÉ DU PORT"), palUv(C_ALU), palUv(C_MARINE));
+        }
         if (lod) return;
         // terrasse : 2 rangs de tables, sous et devant le store ; une table sur deux en Basse ; bougie la nuit
         int k = 0;
@@ -2114,8 +2118,11 @@ public:
             facadeLieu(out, f, Q(fl, 0, y0), X, lod, C_MURV0 + 3, C_MURV0 + 3);
         }
         box(out[P_UNI], Q(fl - 0.12f, 0, y0 + 3.05f), X, Z, 0.12f, L / 2 - 0.6f, 0.35f, palUv(C_GLISS));   // rideau roulé
-        box(out[P_UNI], Q(fl - 0.1f, 0, y0 + 3.5f), X, Z, 0.06f, L / 2 - 0.7f, 0.75f, palUv(C_ALU));
-        texte(out[P_TXT_FROID], "LOCATION SCOOTERS", Q(fl - 0.17f, 0, y0 + 3.87f), X, 0.42f, L - 1.8f);
+        {   // WFS-590 (RG-02) : enseigne bandeau de la boutique (caisson d'aluminium, face anthracite), au-dessus du coffre du rideau
+            vie::Bandeau b; b.largeur = L - 1.4f; b.hauteur = 0.75f; b.bas = 3.5f; b.lettres = 0.62f;
+            vie::enseigneBandeau(out[P_UNI], out[P_UNI], out[P_TXT_FROID], mobilier::repere(Q(fl, 0, y0), X * -1.f, Z), b,
+                                 atlas_.texte("LOCATION SCOOTERS"), palUv(C_ALU), palUv(C_METALK));
+        }
         box(out[P_UNI], Q(((float)RW + 4.2f + fl) / 2, 0, y0), X, Z, (fl - (float)RW - 4.2f) / 2, L / 2 + 1.f, 0.35f, palUv(C_DALLE));
         if (lod) return;
         static const int COUL[4] = {C_SCOOT0, C_SCOOT1, C_SCOOT2, C_SCOOT3};
@@ -3074,6 +3081,28 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
             g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + ".png");
             WFS_LOG("capture %s : « %s », segment %lld", nom.c_str(), vie::textePanneauRoute(P[k].texte), (long long)P[k].seg);
             g.shutdown();
+        }
+        // WFS-590 (RG-02) : enseignes bandeau en façade du premier café et de la location de scooters, vues du bord de la chaussée
+        // côté terre (œil à 1,6 m, 12 m avant), jour et nuit : carte-plage-enseigne-facade-<cafe|scooters>[-nuit]
+        for (int ty : {plage::E_CAFE, plage::E_SCOOTERS}) {
+            const plage::Etab* e = nullptr;
+            for (const plage::Etab& x : plage::etablissements(mapById("plage"), L)) if (x.type == ty && x.seg > 60) { e = &x; break; }
+            if (!e) { WFS_ERR("banc corniche-enseignes : établissement %d absent", ty); continue; }
+            for (int nuit = 0; nuit < 2; nuit++) {
+                const std::string nom = std::string("carte-plage-enseigne-facade-") + (ty == plage::E_CAFE ? "cafe" : "scooters") + (nuit ? "-nuit" : "");
+                setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+                setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, e->seg - 30)).c_str(), 1);
+                g.init(r, "golf", "plage"); g.setAutopilot(false); g.camMode = 0;
+                for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
+                const float fl = plage::FACADE_LAT;   // côté terre : latéral négatif (X = −r)
+                const TrackPoint o = t.point(((double)e->seg - 12 / SEG_M) * SEG, -((float)RW + 1.f)), c = t.point((double)e->seg * SEG, -fl);
+                g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + 1.6f, (float)o.z};
+                g_vueDessus.cible = {(float)c.x, (float)c.y + 3.2f, (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = 50;
+                g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + ".png");
+                g_vueDessus.actif = false;
+                WFS_LOG("capture %s : segment %lld", nom.c_str(), (long long)e->seg);
+                g.shutdown();
+            }
         }
         unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
         return;

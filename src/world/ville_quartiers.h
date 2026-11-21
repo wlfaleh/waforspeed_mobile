@@ -31,6 +31,10 @@ struct Objet {
 struct Commerce { int64_t seg; int side; float len; int kind; uint32_t clients; float decal; };
 // panneau néon (DECOR.board) : texte = indice dans BOARD_TEXTS
 struct Panneau { int64_t seg; int side, texte; };
+// WFS-590 (ANO-317, RG-01) : les caissons d'enseigne sur mâts au bord de la route n'existent pas dans une ville française
+// (ordre de l'utilisateur du 2026-11-20) : ni dessinés (enseignes.cpp) ni solides (collision de leur mât). Le code et les
+// tirages restent (plan des quartiers inchangé) ; true les remet.
+inline constexpr bool CAISSONS_SUR_MATS = false;
 // sprite de collision (collide du jeu web) : décalage en largeurs de chaussée (offset / RW), demi-largeur touchée
 struct Choc { float offset, hit; };
 

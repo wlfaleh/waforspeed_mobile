@@ -12,6 +12,7 @@
 #include <vector>
 #include "../core/math.h"
 #include "../render/renderer.h"
+#include "mobilier_ville.h"   // WFS-590 : enseignes en façade modélisées (pavés chanfreinés, tubes)
 
 namespace wfs {
 class Track;
@@ -68,6 +69,31 @@ private:
     std::map<Cle, Material> mats_;
     Image img_{};
 };
+
+// ---------------------------------------------------------------- WFS-590 : enseignes de commerce en façade (ANO-317)
+// Ce qui existe vraiment dans une rue commerçante française (Code de l'environnement, art. R581-58 à R581-65 : enseigne à
+// plat sur la façade, sans dépasser le mur ni les limites du 1er étage ; enseigne perpendiculaire : saillie ≤ 1/10 de la
+// largeur de la rue et ≤ 2 m, règlement de voirie courant : bas à 2,50 m au moins au-dessus du trottoir). Repère de
+// chaque modèle : origine au pied du mur, x hors du mur (vers la rue), y vers le haut, z le long de la façade.
+// Lettres : quad du texte de l'atlas (couleur et allumage par le matériau de l'appelant), 1 mm devant la face.
+struct Bandeau {
+    float largeur = 6.f;      // le long de la façade (largeur de la devanture au plus)
+    float hauteur = 0.70f;    // caisson de 0,60 à 0,80 m (lettres de 25 à 50 cm)
+    float epaisseur = 0.15f;  // caisson lumineux de 10 à 20 cm, dos contre le mur
+    float bas = 3.15f;        // bas du caisson au-dessus du trottoir (au-dessus de la vitrine et du store : 2,8 à 3,2 m)
+    float lettres = 0.60f;    // hauteur de la ligne de texte de l'atlas (majuscules ≈ la moitié : 30 cm), réduite si le texte est trop long
+};
+// enseigne bandeau : cadre en profilé d'aluminium de 50 mm (chanfreins), joues, face imprimée en retrait de 20 mm, lettres
+void enseigneBandeau(mobilier::Sortie cadre, mobilier::Sortie face, mobilier::Sortie lettres, const mobilier::Repere& R,
+                     const Bandeau& b, const Texte& T, vec2 uvCadre, vec2 uvFond);
+// enseigne drapeau (perpendiculaire au mur) : platine vissée (4 vis), potence en tube d'acier Ø 33,7 mm (bras et tirant),
+// deux pattes, caisson double face 0,60 × 0,60 × 0,12 m de x = 0,16 à 0,76 m (saillie 0,79 m), bas à « bas » (≥ 2,5 m) ;
+// T : mot court du commerce sur les deux faces (« CAFÉ », « PAIN »… : majuscules de 15 cm au plus)
+void enseigneDrapeau(mobilier::Sortie metal, mobilier::Sortie face, mobilier::Sortie lettres, const mobilier::Repere& R, float bas,
+                     const Texte& T, vec2 uvMetal, vec2 uvCadre, vec2 uvFond);
+// croix de pharmacie (enseigne drapeau d'officine) : même platine et potence, croix grecque de 0,62 m (bras de 0,20 m),
+// 0,10 m d'épaisseur, arêtes chanfreinées ; « croix » : la partie verte (allumée la nuit par l'appelant)
+void croixPharmacie(mobilier::Sortie metal, mobilier::Sortie croix, const mobilier::Repere& R, float bas, vec2 uvMetal, vec2 uvCroix);
 
 // matériau néon uni (barres lumineuses) d'une couleur 0xRRGGBB
 Material neon(Renderer& r, unsigned hex, float emission = 2.2f);
