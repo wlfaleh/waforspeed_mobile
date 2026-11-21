@@ -15,3 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
+| #438 | WFS-590 | Claude, agent dev3d (01UY1Vv5QX) | 🆕 À relire (avis agent 3D « VALIDÉ » requis, E15) | — | 2026-11-21 16:40 |
