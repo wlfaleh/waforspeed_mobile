@@ -133,3 +133,7 @@ PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-
 
 ### 2026-11-20 18:06:04 — WFS-590 : ordre « décor logique ou suppression » (po-scrum-master)
 - Ordre de l'utilisateur (2026-11-20) : « C'est de la merde. Dit au PO soit de créer un décor logique soit de supprimer carrément ça ». Ajouté en **RG-00** de WFS-590 : suppression de l'affichage des caissons sur mâts d'abord (collisions comprises, code gardé désactivé), décor logique seulement à 99 % dans la journée ; sinon PR avec la suppression seule et US séparée pour le décor. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-21 10:15:58 — Statuts automatiques, bancs du matin #62 (robot statuts)
+- Run rouge (schedule, commit 2ade8f9), aucun statut changé. Job(s) en échec : endurance et chauffe, tests CPU et licences, banc (realisme-2), banc (complements-c).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
