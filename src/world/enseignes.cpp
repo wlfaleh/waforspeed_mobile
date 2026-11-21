@@ -196,6 +196,79 @@ const Material& AtlasTextes::materiauCouleurs(Renderer& r, float emission, float
 }
 void AtlasTextes::detruire(Renderer& r) { for (auto& [h, m] : mats_) r.destroy(m); if (img_.img) r.vk().destroy(img_); img_ = Image{}; mats_.clear(); places_.clear(); textes_.clear(); couleurs_.clear(); }   // WFS-187 (accroche) : jeux de descripteurs rendus
 
+
+// ---------------------------------------------------------------- WFS-590 : enseignes de commerce en façade
+namespace {
+// texte de l'atlas posé à plat en c (monde), normale n, largeur w, hauteur h (lu depuis le côté de n, jamais en miroir)
+void lettresSur(mobilier::Sortie s, vec3 c, vec3 n, float w, float h, const Texte& T) {
+    const vec3 x = normalize(cross(vec3{0, 1, 0}, n)) * (w / 2), y{0, h / 2, 0};
+    const uint32_t k = (uint32_t)s.v.size();
+    const vec3 P[4] = {c - x - y, c + x - y, c + x + y, c - x + y};
+    const vec2 U[4] = {{T.u0, T.v1}, {T.u1, T.v1}, {T.u1, T.v0}, {T.u0, T.v0}};
+    for (int q = 0; q < 4; q++) s.v.push_back({P[q].x, P[q].y, P[q].z, n.x, n.y, n.z, U[q].x, U[q].y});
+    s.i.insert(s.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
+}
+// taille du texte dans un cadre (hMax, wMax) : la hauteur baisse si le texte est trop long
+vec2 tailleTexte(const Texte& T, float hMax, float wMax) {
+    float h = hMax, w = h * T.aspect;
+    if (w > wMax) { h *= wMax / w; w = wMax; }
+    return {w, h};
+}
+// platine murale (160 × 400 × 12 mm, 4 vis à tête hexagonale de 13 mm) et potence : bras horizontal à yBras jusqu'à 0,79 m,
+// tirant de 45° vers le haut du mur, bouchons soudés aux bouts
+void potence(mobilier::Sortie s, const mobilier::Repere& R, float yBras, vec2 uv) {
+    using mobilier::pave; using mobilier::tour; using mobilier::tube;
+    const float yp = yBras + 0.16f;   // milieu de la platine
+    pave(s, R, {0.006f, yp, 0}, {0.006f, 0.20f, 0.08f}, 0.003f, uv);
+    for (float a : {-1.f, 1.f}) for (float b : {-1.f, 1.f}) {   // vis dans l'axe x (repère tourné : y local = x du mur)
+        const mobilier::Repere V{R.p({0.012f, yp + a * 0.16f, b * 0.05f}), R.z, R.x, R.y};
+        tour(s, V, {0, 0, 0}, {{0.0075f, 0}, {0.0075f, 0.006f}, {0.006f, 0.008f}, {0, 0.008f}}, 6, uv);
+    }
+    tube(s, R, {{0.012f, yBras, 0}, {0.79f, yBras, 0}}, 0.0169f, 10, uv);                  // bras Ø 33,7 mm
+    tube(s, R, {{0.012f, yBras + 0.32f, 0}, {0.44f, yBras + 0.012f, 0}}, 0.0120f, 8, uv);  // tirant Ø 24 mm
+}
+} // namespace
+
+void enseigneBandeau(mobilier::Sortie cadre, mobilier::Sortie face, mobilier::Sortie lettres, const mobilier::Repere& R,
+                     const Bandeau& b, const Texte& T, vec2 uvCadre, vec2 uvFond) {
+    using mobilier::pave;
+    const float E = b.epaisseur, hl = b.largeur / 2, hh = b.hauteur / 2, yc = b.bas + hh, pr = 0.05f, ret = 0.02f;
+    pave(cadre, R, {E / 2, b.bas + b.hauteur - pr / 2, 0}, {E / 2, pr / 2, hl}, 0.008f, uvCadre);   // traverse haute
+    pave(cadre, R, {E / 2, b.bas + pr / 2, 0}, {E / 2, pr / 2, hl}, 0.008f, uvCadre);               // traverse basse
+    for (float sz : {-1.f, 1.f}) pave(cadre, R, {E / 2, yc, sz * (hl - pr / 2)}, {E / 2, hh - pr, pr / 2}, 0.008f, uvCadre);   // joues
+    pave(face, R, {(E - ret) / 2, yc, 0}, {(E - ret) / 2, hh - pr, hl - pr}, 0.002f, uvFond);       // face imprimée en retrait
+    if (!T.ok) return;
+    const vec2 t = tailleTexte(T, b.lettres, b.largeur - 2 * pr - 0.30f);
+    lettresSur(lettres, R.p({E - ret + 0.001f, yc, 0}), R.x, t.x, t.y, T);
+}
+
+void enseigneDrapeau(mobilier::Sortie metal, mobilier::Sortie face, mobilier::Sortie lettres, const mobilier::Repere& R, float bas,
+                     const Texte& T, vec2 uvMetal, vec2 uvCadre, vec2 uvFond) {
+    using mobilier::pave;
+    constexpr float X0 = 0.16f, C = 0.60f, HE = 0.06f, pr = 0.035f, ret = 0.015f;
+    const float xc = X0 + C / 2, yc = bas + C / 2, yBras = bas + C + 0.06f;
+    potence(metal, R, yBras, uvMetal);
+    for (float xp : {X0 + 0.10f, X0 + C - 0.10f}) for (float sz : {-1.f, 1.f})   // pattes plates (40 × 5 mm) du bras au caisson
+        pave(metal, R, {xp, bas + C + 0.03f, sz * (HE - 0.0025f)}, {0.02f, 0.045f, 0.0025f}, 0.001f, uvMetal);
+    pave(face, R, {xc, bas + C - pr / 2, 0}, {C / 2, pr / 2, HE}, 0.006f, uvCadre);   // cadre (profilé de 35 mm)
+    pave(face, R, {xc, bas + pr / 2, 0}, {C / 2, pr / 2, HE}, 0.006f, uvCadre);
+    for (float sx : {-1.f, 1.f}) pave(face, R, {xc + sx * (C / 2 - pr / 2), yc, 0}, {pr / 2, C / 2 - pr, HE}, 0.006f, uvCadre);
+    pave(face, R, {xc, yc, 0}, {C / 2 - pr, C / 2 - pr, HE - ret}, 0.002f, uvFond);   // faces imprimées en retrait
+    if (!T.ok) return;
+    const vec2 t = tailleTexte(T, 0.30f, C - 2 * pr - 0.06f);
+    for (float sz : {-1.f, 1.f}) lettresSur(lettres, R.p({xc, yc, sz * (HE - ret + 0.001f)}), R.z * sz, t.x, t.y, T);
+}
+
+void croixPharmacie(mobilier::Sortie metal, mobilier::Sortie croix, const mobilier::Repere& R, float bas, vec2 uvMetal, vec2 uvCroix) {
+    using mobilier::pave;
+    constexpr float X0 = 0.16f, C = 0.62f, B = 0.20f, HE = 0.05f;
+    const float xc = X0 + C / 2, yc = bas + C / 2, yBras = bas + C + 0.06f;
+    potence(metal, R, yBras, uvMetal);
+    pave(metal, R, {xc, bas + C + 0.03f, 0}, {0.02f, 0.03f, 0.012f}, 0.002f, uvMetal);   // patte du haut de la croix
+    pave(croix, R, {xc, yc, 0}, {B / 2, C / 2, HE}, 0.012f, uvCroix);                     // montant
+    for (float sx : {-1.f, 1.f}) pave(croix, R, {xc + sx * (B / 2 + (C - B) / 4), yc, 0}, {(C - B) / 4, B / 2, HE}, 0.012f, uvCroix);   // bras
+}
+
 } // namespace vie
 
 // ---------------------------------------------------------------- enseignes sur mâts le long de la route (DECOR.board)

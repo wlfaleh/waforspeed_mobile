@@ -43,11 +43,15 @@ const Shop SHOPS[] = {
     {"PHARMACIE", 0x0f7a3c, 0xffffff, 0x0f7a3c, 0xe9f3ec, false}, {"BEACH BAR", 0x1d8fb8, 0xffe9a8, 0x1d8fb8, 0xffe9a8, true},
 };
 constexpr int NB_SHOPS = 10;
+// WFS-590 (RG-03) : mot de l'enseigne drapeau de chaque commerce (les vrais drapeaux portent un mot court lisible de loin :
+// « CAFÉ », « PAIN »… ; le nom complet est sur le bandeau) ; la pharmacie a sa croix verte (texte inutilisé)
+const char* const DRAPEAUX[NB_SHOPS] = {"CAFÉ", "RESTO", "BAR", "PIZZA", "PAIN", "BIÈRE", "GLACES", "SUSHI", "", "BAR"};
 // couleurs des serviettes (C2.flagC du jeu web : drapeaux vifs)
 const unsigned SERVIETTES[6] = {0xe2262b, 0x1d6fb8, 0xffd23a, 0x2f8f4f, 0xff6a00, 0xf4f4f0};
 // WFS-369 : mobilier de terrasse : aluminium, plateau, cannage, bois du mât, fonte du pied, terre cuite, terreau, deux verts de buis
 enum : unsigned { C_ALU = 0x8e9297, C_PLATEAU = 0xe9e4da, C_CANNAGE = 0x9c7444, C_BOIS = 0x8a6a48, C_FONTE = 0x2e3034, C_POT = 0xa65a3c,
-                  C_TERRE = 0x3b2a1e, C_BUIS0 = 0x34502a, C_BUIS1 = 0x456b33 };
+                  C_TERRE = 0x3b2a1e, C_BUIS0 = 0x34502a, C_BUIS1 = 0x456b33,
+                  C_CROIX = 0x1f9a4a };   // WFS-590 : vert de la croix de pharmacie (éteinte, de jour)
 const unsigned MOBILIER[9] = {C_ALU, C_PLATEAU, C_CANNAGE, C_BOIS, C_FONTE, C_POT, C_TERRE, C_BUIS0, C_BUIS1};
 
 using Commerce = ville::Commerce;
@@ -147,13 +151,16 @@ public:
         len_ = (int64_t)g.track->segmentCount();
         if (ville_ && commerces(*g.map, len_).empty()) return;
         map_ = g.map;
+        for (int k = 0; k < NB_SHOPS; k++) if (*DRAPEAUX[k]) atlas_.ajouter(DRAPEAUX[k]);   // WFS-590 : mots des drapeaux
         for (const Shop& s : SHOPS) { atlas_.ajouter(s.nom); for (unsigned c : {s.bg, s.aw0, s.aw1}) palette_.uv(c); }
         for (unsigned c : {0x2a2d33u, 0x3b4a58u, 0x2a2c30u, 0xe9e4dau, 0x3a3d44u, 0xd8d8d8u, 0x5a4a3au, 0x3f6f2au}) palette_.uv(c);
         for (unsigned c : SERVIETTES) palette_.uv(c);
-        for (unsigned c : MOBILIER) palette_.uv(c);   // WFS-369 : couleurs du mobilier de terrasse, avant l'envoi de la palette (sinon gris)
+        for (unsigned c : MOBILIER) palette_.uv(c);
+        palette_.uv(C_CROIX);   // WFS-590   // WFS-369 : couleurs du mobilier de terrasse, avant l'envoi de la palette (sinon gris)
         if (ville_ && !atlas_.construire(r)) return;
         palette_.construire(r);
-        bougie_ = neon(r, 0xffd9a0, 3.f);   // WFS-356 : bougie ; la vitrine (0,65 de WFS-356) prend la pièce de nuit du kit (WFS-410, ci-dessous)
+        bougie_ = neon(r, 0xffd9a0, 3.f);
+        croixNuit_ = neon(r, C_CROIX, 1.1f);   // WFS-590 (RG-06) : croix de pharmacie allumée la nuit seulement, sans halo   // WFS-356 : bougie ; la vitrine (0,65 de WFS-356) prend la pièce de nuit du kit (WFS-410, ci-dessous)
         {   // WFS-410 (avis de l'agent 3D, B1 et R5) : vitrines de la devanture avec la pièce de nuit du kit (decor.glsl) : la boutique
             // se voit derrière la vitre, éclairée par le ciel de jour ; la nuit 60 % des vitrines allumées (lampe de 2 850 K à 31,8 cd/m²,
             // teintes et luminances tirées par vitrine), sous la luminance d'un lampadaire ; plus de plaque bleu nuit unie
@@ -195,7 +202,9 @@ public:
             if (mt.pal.indexCount) r.draw(mt.pal, palette_.materiau, I);
             const Mesh& par = g.night ? mt.soir : mt.jour;
             if (par.indexCount) r.draw(par, palette_.materiau, I);
-            for (auto& [coul, me] : m.textes) if (me.indexCount) r.draw(me, atlas_.materiau(r, coul, g.night ? 1.4f : 0.6f), I);
+            if (m.croix.indexCount) r.draw(m.croix, g.night ? croixNuit_ : palette_.materiau, I);   // WFS-590
+            // WFS-590 (RG-06) : de jour, rien d'allumé (avant : lettres à 0,6) ; la nuit, lettres rétroéclairées
+            for (auto& [coul, me] : m.textes) if (me.indexCount) r.draw(me, atlas_.materiau(r, coul, g.night ? 1.4f : 0.f), I);
         }
     }
     void shutdown(Renderer& r) override {
@@ -206,19 +215,19 @@ public:
         for (auto& gm : graveyard_) r.destroy(gm.second);
         graveyard_.clear();
         atlas_.detruire(r); palette_.detruire(r);
-        for (Material* m : {&vitreJour_, &vitreNuit_, &bougie_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
+        for (Material* m : {&vitreJour_, &vitreNuit_, &bougie_, &croixNuit_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         actif_ = false;
     }
 private:
     struct MeshTerrasse { Mesh pal, jour, soir; };   // WFS-369 : tables et chaises, parasols ouverts (jour), fermés (nuit)
-    struct Morceau { Mesh pal, vitre, jour, nuit; MeshTerrasse t[2]; std::map<unsigned, Mesh> textes; };
+    struct Morceau { Mesh pal, vitre, jour, nuit, croix; MeshTerrasse t[2]; std::map<unsigned, Mesh> textes; };   // WFS-590 : croix
     void cimetiere(Morceau& m) {
-        for (Mesh* x : {&m.pal, &m.vitre, &m.jour, &m.nuit, &m.t[0].pal, &m.t[0].jour, &m.t[0].soir, &m.t[1].pal, &m.t[1].jour, &m.t[1].soir})
+        for (Mesh* x : {&m.pal, &m.vitre, &m.jour, &m.nuit, &m.croix, &m.t[0].pal, &m.t[0].jour, &m.t[0].soir, &m.t[1].pal, &m.t[1].jour, &m.t[1].soir})
             if (x->indexCount) graveyard_.push_back({frame_, *x});
         for (auto& [c, x] : m.textes) if (x.indexCount) graveyard_.push_back({frame_, x});
     }
     // DECOR.shop (life.js) : vitrine, lumière de vitrine, store à rayures, lambrequin, enseigne, terrasse
-    void commerce(Track& t, const Commerce& c, int64_t abs, Geo& pal, Geo& vitre, Geo& nuit, Terrasse terr[2], std::map<unsigned, Geo>& textes) {
+    void commerce(Track& t, const Commerce& c, int64_t abs, Geo& pal, Geo& vitre, Geo& nuit, Geo& croix, Terrasse terr[2], std::map<unsigned, Geo>& textes) {
         const Shop& sh = SHOPS[c.kind];
         const float s = (float)c.side, face = (float)RW + 6.45f, L = c.len;
         const double debut = abs + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
@@ -260,13 +269,21 @@ private:
         for (int k = 0; k < n; k++)
             boite(pal, lateral(pm, s * (face - 0.8f), 3.0f) + pm.f * (-L * 0.46f + w * (k + 0.5f)), pm.r, pm.f, 1.6f, 0.06f, w * 0.98f, k % 2 ? aw1 : aw0);
         boite(pal, lateral(pm, s * (face - 1.62f), 2.78f), pm.r, pm.f, 0.05f, 0.28f, L * 0.92f, aw0);
-        // enseigne : fond de la couleur du commerce, nom en lettres de la couleur du texte (face à la rue)
-        const float sw = std::min(L * 0.7f, 6.5f);
-        boite(pal, lateral(pm, s * (face - 0.14f), 3.35f), pm.r, pm.f, 0.06f, 0.8f, sw, bg);
-        const Texte& T = atlas_.texte(sh.nom);
-        const float th = 0.5f, tw = std::min(sw * 0.92f, th * T.aspect);
-        const vec3 versRue = pm.r * -s;
-        plan(textes[sh.fg], lateral(pm, s * (face - 0.18f), 3.75f), pm.f * -s, {0, 1, 0}, versRue, tw, th * std::min(1.f, tw / (th * T.aspect)), T.u0, T.v0, T.u1, T.v1);
+        {   // WFS-590 (ANO-317, RG-02, RG-03) : enseigne bandeau à plat sur la façade, au-dessus de la devanture et du store (bas à
+            // 3,15 m, caisson de 6,5 m au plus × 0,70 × 0,15 m, majuscules de ≈ 30 cm), et une enseigne drapeau à un bout de la devanture
+            // (bas à 3,20 m, saillie 0,79 m, au-dessus du store) ; pharmacie : croix verte. Avant : une plaque de 6 cm posée 11 cm
+            // devant le mur (forme nue), sans drapeau.
+            const vec3 versRue = pm.r * -s;
+            const mobilier::Repere R = mobilier::repere(lateral(pm, s * face, 0.15f), versRue, pm.f);
+            Bandeau b; b.largeur = std::min(L * 0.7f, 6.5f);
+            const Texte& T = atlas_.texte(sh.nom);
+            const vec2 cadre = palette_.uv(C_ALU), acier = palette_.uv(C_FONTE);
+            enseigneBandeau(pal, pal, textes[sh.fg], R, b, T, cadre, bg);
+            const float bout = (c.seg & 2 ? 1.f : -1.f) * (b.largeur / 2 + 0.45f);   // bout tiré par le segment (graine du plan)
+            const mobilier::Repere Rd = mobilier::repere(R.o + pm.f * bout, versRue, pm.f);
+            if (c.kind == 8) croixPharmacie(pal, croix, Rd, 3.20f, acier, palette_.uv(C_CROIX));
+            else enseigneDrapeau(pal, pal, textes[sh.fg], Rd, 3.20f, atlas_.texte(DRAPEAUX[c.kind]), acier, cadre, bg);
+        }
         if (!sh.terrasse) return;
         const float tLat = s * (face - 2.2f);
         // WFS-369 : mobilier de terrasse modélisé (mobilier_ville.*) : table de bistrot Ø 0,70 m, deux chaises de bistrot face à
@@ -300,7 +317,7 @@ private:
         }
     }
     void construire(Renderer& r, Track& t, int64_t c) {
-        Geo pal, vitre, jour, nuit; std::map<unsigned, Geo> textes;
+        Geo pal, vitre, jour, nuit, croix; std::map<unsigned, Geo> textes;
         Terrasse T[2];   // WFS-369 : mobilier de terrasse, version proche et version allégée
         const int64_t a0 = c * GROUPE, a1 = a0 + GROUPE;
         const int64_t lap = (int64_t)std::floor((double)a0 / len_) * len_;
@@ -308,7 +325,7 @@ private:
             for (int64_t L : {lap, lap + len_}) { const int64_t a = seg + L; if (a >= a0 && a < a1) { abs = a; return true; } }
             return false;
         };
-        if (ville_) for (const Commerce& co : commerces(*map_, len_)) { int64_t a; if (dans(co.seg, a)) commerce(t, co, a, pal, vitre, nuit, T, textes); }
+        if (ville_) for (const Commerce& co : commerces(*map_, len_)) { int64_t a; if (dans(co.seg, a)) commerce(t, co, a, pal, vitre, nuit, croix, T, textes); }
         if (plage_) for (const Serviette& sv : serviettes(*map_, len_)) {   // DECOR.towel : 0,9 × 1,9 m, tournée de rot
             int64_t a; if (!dans((int64_t)sv.s, a)) continue;
             const Repere p = repere(t, a * SEG);
@@ -318,7 +335,7 @@ private:
         }
         Morceau& m = morceaux_[c];
         auto mk = [&](Geo& gg, Mesh& me) { if (!gg.i.empty()) me = r.makeMesh(gg.v, gg.i); };
-        mk(pal, m.pal); mk(vitre, m.vitre); mk(jour, m.jour); mk(nuit, m.nuit);
+        mk(pal, m.pal); mk(vitre, m.vitre); mk(jour, m.jour); mk(nuit, m.nuit); mk(croix, m.croix);
         for (int l = 0; l < 2; l++) { mk(T[l].pal, m.t[l].pal); mk(T[l].jour, m.t[l].jour); mk(T[l].soir, m.t[l].soir); }
         for (auto& [coul, gg] : textes) mk(gg, m.textes[coul]);
     }
@@ -327,7 +344,7 @@ private:
     const MapDef* map_ = nullptr;
     int64_t len_ = 0;
     AtlasTextes atlas_; Palette palette_;
-    Material vitreJour_, vitreNuit_, bougie_;
+    Material vitreJour_, vitreNuit_, bougie_, croixNuit_;
     std::map<int64_t, Morceau> morceaux_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frame_ = 0;
