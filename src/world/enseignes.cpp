@@ -312,6 +312,7 @@ public:
         panneaux_.clear();   // WFS-568 : une nouvelle course ne rajoute pas ses panneaux à ceux de la précédente
         if (!g.map || !g.track) return;
         if (std::strcmp(g.map->id, "ville") && std::strcmp(g.map->id, "plage")) return;   // RG-09 : Ville et Corniche (Grand Prix : WFS-53)
+        if (!ville::CAISSONS_SUR_MATS) return;   // WFS-590 (RG-01) : caissons sur mâts retirés de l'affichage (code gardé, désactivé)
         for (const PanneauRoute& b : panneauxRoute(*g.map, *g.track)) panneaux_.push_back({b.seg, b.side, b.texte});
         for (auto& b : BOARD_TEXTS) atlas_.ajouter(b.texte, b.lettres);   // WFS-568 : lettres de la couleur du commerce
         if (!atlas_.construire(r)) { panneaux_.clear(); return; }

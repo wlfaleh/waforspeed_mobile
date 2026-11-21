@@ -107,7 +107,7 @@ private:
             if (!libre(n)) continue;
             const int texte = (int)fl(D() * 5);   // BOARD_TEXTS
             P_.panneaux.push_back({(int64_t)idx(n), side, texte});
-            collide(n, side * (RW + 1), 0.15f);
+            if (CAISSONS_SUR_MATS) collide(n, side * (RW + 1), 0.15f);   // WFS-590 (RG-01) : pas d'obstacle invisible
         }
     }
 
