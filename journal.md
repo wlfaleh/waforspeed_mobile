@@ -64,3 +64,10 @@ PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-
 ### 2026-11-21 10:53:50 — Archives automatiques (robot archives)
 - Journal : 16 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-19).
 - TACHES.md : 1 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-569).
+
+### 2026-11-21 15:44:07 — WFS-590 attribué à Claude, agent dev3d (01UY1Vv5QX) : Début (po-scrum-master)
+- **Ticket** : WFS-590 (P1, E15 « Décors », ANO-317, KO de WFS-568) : caissons sur mâts retirés de l'affichage (collisions comprises, code gardé désactivé), puis enseignes bandeau et drapeau en façade des commerces (Ville, Corniche), sucette / colonne Morris facultatives en Ville, rien sur la Corniche. Règles : `regles-de-gestion/WFS-590.md`.
+- **Session** : Claude, agent dev3d (01UY1Vv5QX) (session_01UY1Vv5QXpZPb23RjZEJ4hP), nouvelle session `@dev`, aucun ticket avant ; n'est pas la session exclue 01UY1Vv3p8. Branche `feature/waforspeed-590`.
+- **Zone de code** : `src/world/enseignes.cpp`, enseignes de `src/world/ville.cpp`, `src/world/commerces.cpp`, enseignes de `src/world/plage.cpp`, `src/world/mobilier_ville.*`, bancs `carte-*-enseigne-*`.
+- **Plan court** : 1er commit = suppression de l'affichage (RG-00 a / RG-01) ; puis enseignes en façade aux mesures réelles (RG-02 à 06) avec 3 photos réelles libres (RG-08) ; captures ciblées jour / nuit ; avis « VALIDÉ » de l'agent 3D ; PR et lead dev ; 🟡 à valider par l'utilisateur.
+- **Bancs du matin #62 rouges** (endurance et chauffe, tests CPU et licences, realisme-2, complements-c) : rangés dans WFS-589 (P1, `@cicd`, ⏳ Prêt), aucune nouvelle US ; une nouvelle session `@cicd` est nécessaire.

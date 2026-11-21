@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-20 18:05:32 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-21 15:44:07 UTC (po-scrum-master)
+
+> 🪧 **15:44 UTC (2026-11-21)** : **WFS-590** (P1, E15 : caissons sur mâts retirés, enseignes en façade) attribué à Claude, agent dev3d (01UY1Vv5QX), nouvelle session `@dev`, à sa demande ; avis « VALIDÉ » de l'agent 3D obligatoire. Prochains `@dev` : 571 → 573 → 575 → 563. Bancs du matin #62 rouges (endurance et chauffe, tests CPU et licences, realisme-2, complements-c) : rangés dans WFS-589, ⏳ Prêt pour une nouvelle session `@cicd`.
 
 > 🪧 **18:05 UTC (2026-11-20)** : **KO de l'utilisateur sur WFS-568** : ❌ Refusé (ANO-317), WFS-569 annulé ; nouvelle US **WFS-590** (P1, E15 : plus de caissons sur mâts, enseignes en façade des commerces) ⏳ Prêt pour une **nouvelle** session `@dev` (jamais la session 01UY1Vv3p8, dont la ligne est enlevée : session terminée). Prochains `@dev` : **WFS-590** → 571 → 573 → 575 → 563. CI de `main` #1157 et bancs du matin #58 rouges : suivis par WFS-589 (`@cicd`).
 
@@ -92,6 +94,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01UY1Vv5QX) (session_01UY1Vv5QXpZPb23RjZEJ4hP) | WFS-590 | enseignes : caissons sur mâts retirés (Ville, Corniche), vraies enseignes en façade | `feature/waforspeed-590`, pas encore poussée | 🔧 attribué 15:44 UTC (2026-11-21) |
 
 ## Agents de pilotage
 
