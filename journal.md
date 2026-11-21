@@ -7,83 +7,6 @@ fait / fichiers / vérification / limites. **Nouvelles entrées à la fin du fic
 Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé (Claude, session trafic)`.
 > **Archive (règle de l'utilisateur, 2026-11-06)** : ce fichier ne garde que les **2 derniers jours**. Les entrées plus anciennes sont dans `journal/archive/AAAA-MM-JJ.md` (un fichier par jour) ; ne les relire qu'en cas de besoin précis. Le PO déplace chaque jour les entrées de plus de 2 jours.
 
-### 2026-11-19 00:33:51 — WFS-562 : PR #435 ouverte (Claude, agent dev3d (01UY1Vv3kc))
-- Fait : portique de checkpoint refait en vrai modèle (treillis 290 mm du portique de départ réutilisé, 2 poutres, bâche PVC imprimée « CHECKPOINT N » noir sur orange, œillets, tendeurs, 2 projecteurs LED la nuit, ligne de chronométrage peinte en blanc) : plus aucun cyan ni néon (RG-05 bis, RG-05 ter) ; 3 photos des modes faites dans le jeu par le banc `modes-photos` (`assets/ui/modes/*.jpg`, Ville, Golf du joueur : sous le portique / au milieu de 4 concurrents / poursuivie par la police aux gyrophares de nuit) et affichées dans les cartes de « Choisis ton mode » ; voile du fond de 0,62 à 0,22.
-- Mesure RG-07 : luminosité moyenne du fond hors cartes, capture 2400 × 1080 : **25,7 %** (≈ 13 % avec l'ancien voile).
-- Accroches hors zone (annoncées) : `src/render/renderer.*` + `shaders/ui.frag` (affichage d'une photo dans l'interface, binding 1 du jeu de la police), `src/game/game.*` (2 lignes de banc), `portique_depart_modele.*` (`platine` publique), `desktop_main.cpp` (bancs `portique-checkpoint`, `modes-photos`, `modes-ecran`).
-- Vérifié : compilation complète, 155 tests CPU réussis (nouveau `test_portique_checkpoint`), captures avant / après dans `qa/pr/WFS-562/`. Aucun téléchargement.
-- Suite : avis de l'agent 3D (RG-08), puis lead dev.
-
-### 2026-11-19 00:55:41 — WFS-562 : PR #435 refusée par le lead dev (lead-dev)
-- Revue du commit 23d3e721 : toutes les captures ouvertes, tout le diff lu, compilation et `tests_cpu.sh` refaits (155 réussis), avis de l'agent 3D « VALIDÉ avec réserves » lu. Rendu conforme (photos, portique sans cyan, fond à 35 % au lieu de 20 %).
-- Points à corriger : (1) section « Tests CPU » et `tests-cpu.log` absents (règle du 2026-11-11) ; (2) `apres-parcours-mode-3-cartes` périmée (anciennes photos) ; (3) `Renderer::shutdown` : remettre `atlasVue_` et `photosVue_` à zéro ; (4) accroche du rendu d'environ 30 lignes : accord écrit du PO dans `regles-de-gestion/WFS-562.md`.
-- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/435
-
-### 2026-11-19 00:56:32 — WFS-562 : accord du PO pour l'accroche du rendu hors zone (po-scrum-master)
-- Demande de Claude, agent dev3d (01UY1Vv3kc), PR #435, point 4 du lead dev : accroche d'environ 30 lignes dans `src/render/renderer.h/.cpp` et 6 lignes dans `shaders/ui.frag` pour afficher les photos des modes (RG-03 : l'interface n'avait qu'un atlas de police).
-- Décision : **accordé**, limité à ces fichiers et fonctions (`uiSetPhotos`, `uiPhoto`, branche « photo » du shader), sans autre changement du rendu ; point 3 du lead dev (`Renderer::shutdown`) à corriger. Écrit dans la section « Suivi » de `regles-de-gestion/WFS-562.md`.
-
-### 2026-11-19 01:35:28 — WFS-562 : PR #435 corrigée après la revue du lead dev (Claude, agent dev3d (01UY1Vv3kc))
-- Points du lead dev : journal des tests CPU (`qa/pr/WFS-562/tests-cpu.log`, 155 réussis) et section « Tests CPU » ; capture `parcours-mode-3-cartes` refaite ; `Renderer::shutdown` remet `atlasVue_` et `photosVue_` à zéro ; accroche du rendu couverte par l'accord du PO (97672604).
-- Avant : avis de l'agent 3D « VALIDÉ avec réserves » (23d3e721) après correction des photos Checkpoint et Poursuite, de la bâche (orange de sécurité, lisible la nuit) et du lest.
-- Limite : le conteneur a redémarré pendant les tests ; suite complète relancée après la synchronisation avec `main` (14634dad).
-
-### 2026-11-19 01:43:50 — WFS-562 fusionné par le lead dev (lead-dev)
-- 2e revue du commit 5fe8cbd0 : les 4 points du refus sont corrigés (section « Tests CPU » et `tests-cpu.log`, capture `apres-parcours-mode-3-cartes` refaite, `atlasVue_` et `photosVue_` remis à zéro dans `Renderer::shutdown`, accord du PO pour l'accroche du rendu). Compilation et `tests_cpu.sh` refaits : 155 réussis. Photos et portique inchangés depuis l'avis « VALIDÉ » de l'agent 3D.
-- « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash : 2620196d. Statut 🟡 À valider (utilisateur), ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
-
-### 2026-11-19 01:44:19 — WFS-562 fusionné (PR #435, 2620196d) : session terminée (Claude, agent dev3d (01UY1Vv3kc))
-- Fusion en squash par le lead dev à la 2e revue ; ticket 🟡 À valider (utilisateur) sur son téléphone. Réserves (agent 3D, `qa/Check.md`) : bâche un peu lumineuse la nuit, ligne sur un passage piéton (Ville, CP 1), Course à 5 à faire voir au juriste (formes, plaque).
-- Réponse écrite à l'utilisateur dans `tache utilisateur.md` (demande « il faut évoluer les checkpoint »).
-- Un seul sujet par session : je m'arrête, aucun autre ticket demandé.
-
-### 2026-11-19 02:29:36 — Statuts automatiques, CI main #1155 (robot statuts)
-- Run rouge (push, commit 2620196), aucun statut changé. Job(s) en échec : banc-essai (texte).
-- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
-
-### 2026-11-19 11:09:33 — Statuts automatiques, bancs du matin #54 (robot statuts)
-- Run rouge (schedule, commit 3d216d7), aucun statut changé. Job(s) en échec : tests CPU et licences, endurance et chauffe, banc (complements-c), banc (ecrans-2400), banc (realisme-2), rapports du réalisme (fusion des deux parties), publication-captures.
-- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
-
-### 2026-11-19 11:28:27 — Archives automatiques (robot archives)
-- Journal : 8 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-17).
-- TACHES.md : 1 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-566).
-
-### 2026-11-19 19:09:44 — WFS-567 attribué à Claude, agent dev3d (01UY1Vv5BA) (po-scrum-master)
-- Demande d'une nouvelle session `@dev` (session_01UY1Vv5BAe81SAYYdNAVWTi, aucun ticket avant) : **WFS-567** (P1, E8 HUD de course, 2e de l'ordre `@dev` du 2026-11-18 20:44 ; WFS-562 déjà fusionné), correction ANO-315 + ANO-290.
-- Zone autorisée : `src/ui/toasts.cpp`, `src/ui/hud.cpp` ; textes des messages dans `src/game/poursuite.cpp` et `src/game/trace_cartes_systeme.cpp` seulement pour leur affichage. Interdit : `src/world/portique.cpp` (fait par WFS-562), menus et autres couleurs de l'interface.
-- Critères : plus de cyan dans les messages de course, texte clair sur fond sombre, en haut sous le HUD, jamais dans la zone centrale de la route, 2 messages au plus à la fois, aucun message retiré (`regles-de-gestion/WFS-567.md`). Après fusion : 🟡 À valider (utilisateur).
-- Branche `feature/waforspeed-567`, premier commit poussé tout de suite ; captures ciblées avant / après (jour et nuit), PR, appel du `lead-dev`, arrêt de la session après la fusion.
-
-### 2026-11-19 20:36:44 — WFS-567 : PR #436 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv5BA))
-- Fait : messages de course refaits (ANO-315, ANO-290) : plus de cyan, texte clair sur fond sombre translucide avec filet de couleur (orange gain, rouge danger, blanc info), en haut sous le HUD (en Poursuite : à gauche sous le chrono), 2 au plus, quasi-contacts regroupés (« QUASI-CONTACT ×3 +750 ») ; bandeau des surprises et compte d'arrestation de la Poursuite passés dans les mêmes messages ; conseil de départ dans le même style, sous l'encart SCORE / POLICE, entier en 1280x720 et en 20:9 ; titres des surprises ≤ 18 caractères (FR / EN).
-- Fichiers : `src/ui/toasts.h`, `toasts.cpp`, `messages_banc.cpp` (nouveau, banc `WFS_BANC=messages`), `src/game/poursuite.h`, `poursuite_system.cpp` (dessin 2D seulement), `trace_cartes_systeme.cpp` (1 ligne), `src/world/portique_depart.cpp` (dessin de la consigne seulement), `src/platform/desktop_main.cpp` (accroche ≤ 2 lignes), `assets/textes/fr.txt`, `en.txt`, `tests/test_messages.cpp`, `CMakeLists.txt`.
-- Zone : la consigne de départ est dessinée par `src/world/portique_depart.cpp` (WFS-559) et le bandeau des surprises par `poursuite_system.cpp` (pas `hud.cpp` / `poursuite.cpp` comme écrit dans la zone) : seul leur dessin 2D change ; `src/world/portique.cpp` (WFS-562) non touché.
-- Vérifié : 156 tests CPU réussis (dont `test_messages`) ; parcours complet `textes-course` FR et EN : 0 écart, 0 échec du garde-fou ; captures avant / après (8 en 1280x720 + 4 en 2400x1080, jour et nuit) dans `qa/pr/WFS-567/`.
-- Limites : pas vu sur téléphone (🟡 après fusion) ; « COMBO ×N » séparé fondu dans le titre regroupé.
-
-
-### 2026-11-19 20:47:39 — WFS-567 : PR #436 refusée par le lead dev (lead-dev)
-- Revue du commit `da79a574` : 12 paires de captures ouvertes (jour, nuit, 20:9). Plus de cyan, 2 messages au plus, en haut et hors de la route ; conseil de départ entier en 1280x720 et en 20:9 (ANO-290 corrigé). Diff lu en entier, branche construite, `tests_cpu.sh` = 156 réussis.
-- **Un seul défaut, bloquant par la règle du 2026-11-11** : pas de section « Tests CPU » dans la PR ni de `qa/pr/WFS-567/tests-cpu.log`. Aucune nouvelle capture d'écran demandée. Revue postée en commentaire (même compte GitHub). Statut ↩️ Retour lead dev (PR #436).
-
-### 2026-11-19 20:57:27 — WFS-567 : retour du lead dev corrigé (Claude, agent dev3d (01UY1Vv5BA))
-- Défaut unique (tests CPU absents de la PR) corrigé dans dec0e550 : branche synchronisée (11a0ab9e), `tests_cpu.sh` : 156 réussis, journal `qa/pr/WFS-567/tests-cpu.log`, section « Tests CPU » dans `pr.md` et la description. Réponse sous la revue ; PR #436 en 🔁, lead dev rappelé.
-- Remarque : la revue précédente avait laissé l'arbre de travail du développeur sur `main` (branche du ticket intacte) : tests relancés sur la bonne branche.
-
-### 2026-11-19 20:59:00 — WFS-567 fusionné par le lead dev (lead-dev)
-- 2e revue de la PR #436 (commit dec0e550) : le seul défaut de la 1re revue (tests CPU absents) est corrigé : section « Tests CPU » dans la PR et `qa/pr/WFS-567/pr.md`, journal complet `qa/pr/WFS-567/tests-cpu.log` (156 réussis, `test_messages` compris). Réponses « Bien reçu » et « corrigé dans dec0e550 » présentes. Depuis da79a574, aucun code ni écran ne change (fichiers de suivi seulement).
-- « ✅ Approuvé par le lead dev » posté en commentaire de revue (GitHub refuse l'approbation : même compte), puis fusion en squash : **e9a9901a**.
-- TACHES : WFS-567 🟡 À valider (utilisateur) (fusionné #436) ; ligne #436 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
-
-### 2026-11-19 20:59:34 — WFS-567 : fin, session terminée (Claude, agent dev3d (01UY1Vv5BA))
-- PR #436 fusionnée en squash par le lead dev (e9a9901a) après 2 revues (1er refus : tests CPU absents de la PR, corrigé dans dec0e550). Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` par le lead dev.
-- Réponse à l'utilisateur sous sa demande (ANO-315) dans `tache utilisateur.md`. Ligne de `track-agent.md` en ⏹️ session terminée : un seul ticket par session, aucun autre ticket demandé.
-
-### 2026-11-19 21:40:22 — Statuts automatiques, CI main #1156 (robot statuts)
-- Run rouge (push, commit e9a9901), aucun statut changé. Job(s) en échec : banc-essai (texte).
-- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
-
 ### 2026-11-20 00:17:22 — WFS-568 attribué à Claude, agent dev3d (01UY1Vv3p8) (po-scrum-master)
 - Demande d'une nouvelle session `@dev` (session_01UY1Vv3p8auTZYZDh8Q5G5N, aucun ticket avant). Ordre `@dev` du bandeau 🎮 : 562 et 567 fusionnés (🟡), donc **WFS-568** (P1, E15, ANO-316 : enseignes du décor réalistes, plus de néon cyan, Ville et Corniche) est le 1er ⏳ Prêt.
 - Zone : `src/world/enseignes.cpp`, enseignes des lieux de `src/world/ville.cpp` (l. ≈ 1325-1332) et leurs actifs. Règles : `regles-de-gestion/WFS-568.md` (RG-01 à RG-08, captures demandées). Avis « Avis agent 3D : VALIDÉ » obligatoire avant fusion (E15). Skills en plus : `expert-realisme-3d` (lecture), `expert-cartes` si un paquet `.wfcarte` change (tâche compagne WFS-569). Après fusion : 🟡 À valider (utilisateur).
@@ -137,3 +60,7 @@ PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-
 ### 2026-11-21 10:15:58 — Statuts automatiques, bancs du matin #62 (robot statuts)
 - Run rouge (schedule, commit 2ade8f9), aucun statut changé. Job(s) en échec : endurance et chauffe, tests CPU et licences, banc (realisme-2), banc (complements-c).
 - Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
+
+### 2026-11-21 10:53:50 — Archives automatiques (robot archives)
+- Journal : 16 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-19).
+- TACHES.md : 1 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-569).
