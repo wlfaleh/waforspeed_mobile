@@ -94,7 +94,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv5QX) (session_01UY1Vv5QXpZPb23RjZEJ4hP) | WFS-590 | enseignes : caissons sur mâts retirés (Ville, Corniche), vraies enseignes en façade | `feature/waforspeed-590`, poussée | 🔁 PR #438 corrigée 17:04 UTC (2026-11-21) : avis agent 3D puis lead dev |
+| Claude, agent dev3d (01UY1Vv5QX) (session_01UY1Vv5QXpZPb23RjZEJ4hP) | WFS-590 | enseignes : caissons sur mâts retirés (Ville, Corniche), vraies enseignes en façade | `feature/waforspeed-590`, poussée | 🟣 WFS-590 fusionné par le lead dev (17:14 UTC, 2026-11-21, squash 5311bfe6) : session à arrêter |
 
 ## Agents de pilotage
 
