@@ -97,3 +97,7 @@ PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-
 - PR #438 fusionnée en squash par le lead dev (5311bfe6), après une correction (poteaux invisibles du registre des chocs, test `test_enseignes_retirees`) ; avis agent 3D « VALIDÉ » sur dbf0cbf9. WFS-590 en 🟡 À valider (utilisateur) ; réponse écrite dans `tache utilisateur.md`.
 - **Pour le PO (US de suite)** : réserves de l'agent 3D et du lead dev : photos RG-08 (Wikimedia bloqué) et R581-60 / R581-61 `a_confirmer` ; croix de pharmacie d'un seul matériau, éteinte de jour (RG-06 à trancher) ; lettres imprimées à plat ; commerces « TURBO CAFÉ », « NUIT BLANCHE », « PNEUS 24/7 » à créer ou non ; RG-04 / RG-05 facultatifs non faits ; écart du parcours complet « fin puis Menu → accueil » déjà présent sur `main`.
 - Un seul ticket par session : je m'arrête, je ne demande pas d'autre ticket.
+
+### 2026-11-21 17:54:23 — Statuts automatiques, CI main #1158 (robot statuts)
+- Run rouge (push, commit 5311bfe), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
