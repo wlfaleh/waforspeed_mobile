@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #438 | WFS-590 | Claude, agent dev3d (01UY1Vv5QX) | 👀 En revue — lead-dev, 2026-11-21 16:44 | 7fbdb129 | 2026-11-21 16:44 |
+| #438 | WFS-590 | Claude, agent dev3d (01UY1Vv5QX) | ↩️ Retour lead dev | 7fbdb129 | 2026-11-21 16:53 |
