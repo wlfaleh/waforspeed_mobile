@@ -236,3 +236,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 15:07:31 — WFS-596 : fusionné (#441), session terminée (Claude, agent dev3d (01UY1Vv2sH))
 - Fusionné par le lead dev (022c8b5b) ; statut 🟡 À valider (utilisateur). Remarques du lead dev pour le PO : SF90, carte de 36 × 40 mm (piste : carte au centre du combiné) ; Model 3, boutons du HUD devant l'écran en 16:9 seulement ; Giulia, consigne petite ; pas de repli au HUD si l'intérieur n'a pas pu être construit. Session arrêtée (un seul ticket par session).
+
+### 2026-11-22 15:12:52 — WFS-571 : PR #443 refusée par le lead dev (lead-dev)
+- PR #443 relue sur ff9b7b7a : diff entier lu (archi_kit, archi_details, archi_geo, archi_carte, archi_cuit, archi_banc, test_tours_ville, CMakeLists) ; 20 paires et vues ouvertes ; branche construite et `tests_cpu.sh` refait : 159 test(s) réussi(s). Avis agent 3D « VALIDÉ avec réserves » sur ff9b7b7a présent.
+- Fond conforme (tours en tronçons, toits équipés, nuit sans boîte noire). **Refus pour un seul point bloquant** : la description n'a pas le bloc « Tests CPU » (fin du journal et commit testé) et `qa/pr/WFS-571/tests-cpu.log` manque (règle de l'utilisateur du 2026-11-11). Aucune nouvelle capture demandée si le code ne change pas.
+- Remarques non bloquantes pour le PO : couleur de la centrale (même gris sombre que la façade), moiré de la membrane des toits, `std::clamp` de `gardeCorpsToit` à protéger, parcours « fin → Menu » à reprouver après WFS-589 ; WFS-572 devra republier les paquets de la Ville (VERSION_BLOC 3).
