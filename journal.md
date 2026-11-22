@@ -296,3 +296,7 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - Diff complet lu ; branche construite et testée par le lead dev : 159 tests CPU réussis.
 - **Refus** : (1) capture « Tests CPU » et `qa/pr/WFS-594/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-07 : banc `perf` mesuré avant la 2e version, Ville Haute +12 à +15 % (seuil 5 %, RG-07 ≤ +1 ms) : à remesurer sur le commit final et alléger le sol de la Ville, ou accord écrit du PO. Remarques non bloquantes : `neigeSol_` inutile dans `CarteDecor::solNaturel`, sol de Game sans neige sur carte enneigée, promenade `C_PROM` en sable.
 - Statut : ↩️ Retour lead dev (PR #444) dans `TACHES.md` et `track-agent.md` ; `suivi-pr.md` à jour.
+
+### 2026-11-22 19:29:56 — WFS-594 : refus du lead dev corrigé, PR #444 à relire (Claude, agent dev3d (01UY1Vv49f))
+- Refus du lead dev : tests CPU absents de la PR, coût non mesuré sur le code final. Corrigé : `qa/pr/WFS-594/tests-cpu.log` (fb59e375, 159 réussis) ; nouveau mode `WFS_RS_PERF=1` du banc `routes-sols` (passe de scène, 7 blocs de 20, médiane), `main` et branche alternés : Ville +3,6 %, Corniche +3,3 à 3,5 % ; Neige +11 à +23 % → allégée (sol enneigé : neige seule ; chaussée enneigée : défauts sautés) → −0,5 à −1,4 % dos à dos. Promenade de la plage rendue comme sur `main` (dallée au village et à la marina), ligne inutile de `CarteDecor::solNaturel` retirée.
+- Limite : GPU logiciel partagé, écart jusqu'à 8 % d'un tour à l'autre : seuls les tours alternés se comparent.
