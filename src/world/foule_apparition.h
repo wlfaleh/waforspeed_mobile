@@ -112,6 +112,18 @@ inline void choisirPlaces(std::vector<Candidat>& c, std::vector<int>& ordre, int
 // par la Ville) ; les familles se forment ensuite parmi les marcheurs gardés (même part d'enfants)
 constexpr int VILLE_GARDES_SUR_10 = 3;
 inline bool garderVille(int n) { return n >= 0 && ((n + 1) * VILLE_GARDES_SUR_10) / 10 > (n * VILLE_GARDES_SUR_10) / 10; }
+// WFS-593 (ordre de l'utilisateur du 2026-11-22 : « seulement 10 % des personnes dans les cartes ») : un seul réglage pour
+// toutes les cartes et toutes les catégories (marcheurs, promeneurs, passants, clients des terrasses, personnes sur la plage,
+// baigneurs, spectateurs des tribunes) : on garde 10 % de ce que gardait main au 2026-11-22, arrondi au supérieur, par
+// catégorie. Tirage régulier dans l'ordre de chaque liste (rangée le long du tour) : la n-ième est gardée si
+// ⌈(n+1)·p/100⌉ > ⌈n·p/100⌉ (la 1re toujours, puis une sur 10), ce qui répartit les personnes gardées sur toute la liste.
+// Les conducteurs (voitures, deux-roues) ne sont pas concernés.
+constexpr int PERSONNES_GARDEES_SUR_100 = 10;
+inline int partGardee(int total) { return total <= 0 ? 0 : (total * PERSONNES_GARDEES_SUR_100 + 99) / 100; }
+inline bool garderPart(int n) { return n >= 0 && partGardee(n + 1) > partGardee(n); }
+// promeneurs avec chien de la Ville : pietons.cpp en garde un sur deux (WFS-222, tirage impair), puis 10 % (WFS-593) ; la Ville
+// ne dessine que le chien des promeneurs gardés (pas de chien en laisse sans son maître)
+inline bool promeneurGarde(int i) { return i >= 0 && i % 2 == 1 && garderPart(i / 2); }
 // marcheurs de la Ville (décision du PO) : n places à pas réguliers sur le tour (longueur L, positions s rangées croissantes, dans
 // [0, L[) ; decale : un demi-pas plus loin (l'autre côté de la rue), pour alterner les côtés ; pour chaque place, le candidat le plus
 // proche (sur le tour, en boucle) pas encore pris ; rend les indices choisis (au plus n, au plus la taille de la liste)

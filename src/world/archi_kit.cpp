@@ -127,6 +127,7 @@ Plan facadeSecondaire(const Plan& p, float largeur, int face) {
     q.largeur = std::max(largeur, 1.f);
     q.hRdc = p.hRdc; q.hEtage = p.hEtage; q.etages = p.etages; q.corniche = p.corniche;
     q.rdc = Rdc::Logement; q.etage = Etage::Fenetres; q.toit = p.toit; q.edicules = p.edicules;
+    q.surSocle = p.surSocle;   // WFS-571 : tronçon haut d'une tour : ni porte de service ni socle sous le sol
     decouper(q, S.travee, S.travee.tirer(R));
     // fenêtres d'étage de la rue (première baie d'étage) ; porte-fenêtre sur rue → fenêtre à allège de 0,9 m sur cour
     float fenL = S.fenL.min, fenH = S.fenH.min, allege = std::max(S.allege.min, 0.9f);
@@ -138,7 +139,7 @@ Plan facadeSecondaire(const Plan& p, float largeur, int face) {
     fenL = std::min(fenL, q.travee - TRUMEAU);
     fenH = std::min(fenH, q.hEtage - LINTEAU - allege);
     if (fenL < 0.5f || fenH < 0.6f || q.largeur < fenL + 2 * RIVE) return q;   // mur trop étroit : aveugle
-    const int porte = face == 1 && q.travees >= 3 ? q.travees / 2 : -1;   // porte de service sur cour
+    const int porte = face == 1 && q.travees >= 3 && !q.surSocle ? q.travees / 2 : -1;   // porte de service sur cour
     const float porteL = std::min(S.porteL.min, q.travee - TRUMEAU), porteH = std::min(S.porteH.min, q.hRdc - LINTEAU);
     for (int n = 0; n <= q.etages; n++)
         for (int t = 0; t < q.travees; t++) {
@@ -153,13 +154,66 @@ Plan facadeSecondaire(const Plan& p, float largeur, int face) {
     return q;
 }
 
+namespace {
+// WFS-571 : niveaux n0 à n1 et travées t0 à t1 d'un plan, dans le repère du tronçon (x depuis le bord gauche de la travée t0
+// moins la rive, y depuis le plancher du niveau n0) ; les baies gardent leur numéro de travée (graine de la pièce de nuit)
+Plan tranche(const Plan& p, int n0, int n1, int t0, int t1) {
+    Plan q = p;
+    q.baies.clear(); q.couvert = {};
+    if (n0 > 0) { q.surSocle = true; q.hRdc = p.hEtage; }
+    q.etages = n1 - n0;
+    q.corniche = n1 == p.etages ? p.corniche : 0.f;   // corniche au sommet de la tour seulement
+    q.edicules = n1 == p.etages && p.edicules;        // édicule et machinerie sur le dernier toit
+    q.travees = t1 - t0 + 1;
+    q.largeur = q.travees * p.travee + 2 * p.rive;
+    const float dx = (float)t0 * p.travee, y0 = p.niveauY(n0);
+    for (Baie b : p.baies)
+        if (b.niveau >= n0 && b.niveau <= n1 && b.travee >= t0 && b.travee <= t1) { b.niveau -= n0; b.y -= y0; b.x -= dx; q.baies.push_back(b); }
+    return q;
+}
+}  // namespace
+
+std::vector<Troncon> troncons(const Plan& p, float D) {
+    std::vector<Troncon> t;
+    if (p.style != Style::Moderne || p.toit != Toit::Terrasse || p.etages < 3 || D < 8.f) { t.push_back({p, 0, 0, 0, D}); return t; }
+    Mulberry32 R(p.graine * 0x85ebca6bu + 0x5714u);
+    const float r1 = std::round((1.5f + (float)R.next()) * 20.f) / 20.f;   // retrait du fût : 1,5 à 2,5 m (au 5 cm)
+    const float r2 = std::round((2.0f + (float)R.next()) * 20.f) / 20.f;   // retrait de l'attique : 2 à 3 m
+    const int socle = p.etages >= 7 ? 2 : 1;                               // dernier niveau du socle (rez-de-chaussée + 1 ou 2 étages)
+    const int attique = p.etages >= 6 ? 2 : 1;                             // nombre de niveaux de l'attique
+    const bool cotes = p.travees >= 5;                                     // attique plus étroit d'une travée de chaque côté
+    int v = (int)(p.graine % 3u);                                          // silhouette (graines voisines : 22 d'écart → jamais la même)
+    if (v == 2 && (p.etages < socle + attique + 2 || D - r1 - r2 < 6.f)) v = 0;
+    if (v == 0 && (p.etages < socle + 2 || D - r1 < 6.f)) v = 1;
+    if (v == 1 && D - r2 < 6.f) { t.push_back({p, 0, 0, 0, D}); return t; }
+    const int tA0 = cotes ? 1 : 0, tA1 = cotes ? p.travees - 2 : p.travees - 1;
+    auto ajouter = [&](int n0, int n1, int t0, int t1, float retrait) {
+        t.push_back({tranche(p, n0, n1, t0, t1), (float)t0 * p.travee, p.niveauY(n0), retrait, D - retrait});
+    };
+    if (v == 0) { ajouter(0, socle, 0, p.travees - 1, 0); ajouter(socle + 1, p.etages, 0, p.travees - 1, r1); }
+    else if (v == 1) { ajouter(0, p.etages - attique, 0, p.travees - 1, 0); ajouter(p.etages - attique + 1, p.etages, tA0, tA1, r2); }
+    else {
+        ajouter(0, socle, 0, p.travees - 1, 0);
+        ajouter(socle + 1, p.etages - attique, 0, p.travees - 1, r1);
+        ajouter(p.etages - attique + 1, p.etages, tA0, tA1, r1 + r2);
+    }
+    // chaque tronçon sait quelle partie de son toit le tronçon du dessus couvre (acrotère coupé : aucun mur confondu)
+    for (size_t k = 0; k + 1 < t.size(); k++) {
+        const Troncon &a = t[k], &b = t[k + 1];
+        t[k].plan.couvert = {true, b.dx - a.dx, b.dx - a.dx + b.plan.largeur, -(b.retrait - a.retrait)};
+    }
+    return t;
+}
+
 int verifier(const Plan& p, const char** erreur) {
     const ReglesStyle& S = regles(p.style);
     int e = 0;
     auto faute = [&](const char* m) { if (e++ == 0 && erreur) *erreur = m; };
-    if (!H_RDC.contient(p.hRdc)) faute("hauteur du rez-de-chaussée hors de 3,5-4,5 m (RG-01)");
+    // WFS-571 : tronçon haut d'une tour : son niveau 0 est un étage courant, et il ne porte qu'une partie des étages du style
+    if (p.surSocle ? std::fabs(p.hRdc - p.hEtage) > 1e-4f : !H_RDC.contient(p.hRdc)) faute("hauteur du rez-de-chaussée hors de 3,5-4,5 m (RG-01)");
     if (!H_ETAGE.contient(p.hEtage)) faute("hauteur d'étage hors de 2,7-3,2 m (RG-01)");
-    if (p.etages < S.etagesMin || p.etages > S.etagesMax) faute("nombre d'étages hors des règles du style");
+    const bool troncon = p.surSocle || p.couvert.actif;   // WFS-571 : socle ou fût d'une tour (une partie de ses étages)
+    if (troncon ? p.etages < 0 || p.etages > S.etagesMax : p.etages < S.etagesMin || p.etages > S.etagesMax) faute("nombre d'étages hors des règles du style");
     if (p.travees < 1 || std::fabs(p.travee * p.travees + 2 * p.rive - p.largeur) > 1e-3f) faute("travées et rives qui ne couvrent pas la façade");
     if (p.largeur >= S.travee.min && !S.travee.contient(p.travee)) faute("largeur de travée hors de la plage du style");
     for (size_t i = 0; i < p.baies.size(); i++) {

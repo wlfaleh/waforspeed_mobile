@@ -91,8 +91,6 @@ void aerateur(Geo& cadre, Geo& lames, const mat4& M, float w, float h, bool rond
     }
 }
 
-// orientation d'un écran tourné vers l'œil (normale +z vers le conducteur), avec un lacet donné
-mat4 versOeil(vec3 p, float lacet) { return translate(p) * rotateY(lacet) * rotateX(std::atan2(p.y, -p.z)); }
 
 // normal map du grain du cuir (256 × 256, répétable) : bosses de cellules irrégulières (Worley simplifié) ; RGBA linéaire
 std::vector<uint8_t> grainCuir(int N) {
@@ -237,7 +235,7 @@ enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHE
              // de l'habitacle ni lumière d'ambiance de nuit de l'habitacle)
              M_RETRO0, M_RETRO1, M_RETRO2, M_COQUE_EXT, M_BRAS_EXT, M_N };
 // écrans dynamiques
-enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
+enum : int { D_ACTIF, D_FOND, D_ALERTE, D_N };   // WFS-596 : D_ROUTE et D_FLECHE (ancienne carte simplifiée) retirés
 constexpr size_t DYN_SOMMETS = 4096;
 
 // ---------- dessin 2D dans le plan d'un écran (repère local : x à droite, y en haut, m ; z = décollement)
@@ -677,7 +675,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         dv_[k].clear(); di_[k].clear();
     }
     auto emis = [&](unsigned c, float f) { Material m; m.color = {0, 0, 0, 1}; m.rough = 0.2f; m.emissive = lin(c) * f; return r.makeMaterial(deuxFaces(m), nullptr, nullptr, nullptr); };
-    const unsigned cols[D_N] = {d.combineActif, 0x2c3440, d.combineAlerte, 0xc8d0da, 0xff6a00};
+    const unsigned cols[D_N] = {d.combineActif, 0x2c3440, d.combineAlerte};
     for (int k = 0; k < D_N; k++) { dynMat_[k] = emis(cols[k], 1.0f); dynNuit_[k] = emis(cols[k], 0.45f); }   // nuit : moins lumineux, jamais éblouissant
     { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {16, 0, 16}; cleMat_ = r.makeMaterial(deuxFaces(c), nullptr, nullptr, nullptr); }   // banc (WFS-235, RG-05)
     // WFS-349 (RG-03) : clé douce (émission 1,5 au lieu de 16) : la clé de WFS-235 sature les pixels de bord, et la lueur
@@ -694,7 +692,9 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, const retro::Carr
         boite(g, translate({cx_, (d.pareBriseY + bas) * 0.5f, za - 0.03f}), 2 * faceVitre(demi_), d.pareBriseY - bas, 0.002f);   // devant le tablier
         gabarit_ = r.makeMesh(g.v, g.i);
     }
-    WFS_LOG("cockpit (WFS-197) : intérieur %s construit : %zu pièces, %.2f Mo", d.car, pieces_.size(), octets_ / 1048576.0);
+    carte_ = placeCarte(d);   // WFS-596 : une fois (SF90 : recherche de la partie du combiné vue à travers le volant)
+    WFS_LOG("cockpit (WFS-197) : intérieur %s construit : %zu pièces, %.2f Mo ; carte GPS %.0f × %.0f mm", d.car, pieces_.size(), octets_ / 1048576.0,
+            carte_.w * 1000, carte_.h * 1000);
     return true;
 }
 
@@ -896,36 +896,9 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     }
 }
 
-void Interieur::tailleCarte(float& w, float& h) const {
-    if (!def_) { w = h = 0; return; }
-    if (def_->combine == Combine::Aucun) { w = def_->ecranW * 0.62f; h = def_->ecranH * 0.90f; return; }   // WFS-201 : Model 3
-    if (def_->ecranW > 0) { w = def_->ecranW; h = def_->ecranH; return; }
-    w = def_->combineW / 3 * 0.92f; h = def_->combineH * 0.86f;   // SF90 : tiers droit du combiné
-}
+CarteEcranVue& carteEcranVue() { static CarteEcranVue c; return c; }
 
-void Interieur::dessinerCarte(Renderer& r, const mat4& cam, const std::vector<vec2>& route, vec2, double, bool nuit) {
-    const InterieurDef& d = *def_;
-    for (int k : {D_ROUTE, D_FLECHE}) { dv_[k].clear(); di_[k].clear(); }
-    Plan2D Ro{&dv_[D_ROUTE], &di_[D_ROUTE], 0.0012f}, Fl{&dv_[D_FLECHE], &di_[D_FLECHE], 0.0016f};
-    float W, H; tailleCarte(W, H);
-    // `route` : segments déjà dans le repère de l'écran (paires de points, de −W/2 à W/2 et de −H/2 à H/2, découpés)
-    for (size_t k = 0; k + 1 < route.size(); k += 2) Ro.segment(route[k], route[k + 1], H * 0.035f);
-    // flèche du joueur : pointe vers le haut (devant), à CARTE_JOUEUR_Y de la hauteur
-    const float y = -H / 2 + H * CARTE_JOUEUR_Y, s = H * 0.07f;
-    Fl.quad({-s * 0.6f, y - s * 0.55f}, {0, y - s * 0.25f}, {s * 0.6f, y - s * 0.55f}, {0, y + s * 0.65f});
-    (void)W;
-    const mat4 M = d.combine == Combine::Aucun   // WFS-201 : Model 3 : partie droite de l'écran central
-                       ? cam * versOeil(d.ecranPos, d.ecranLacet) * translate({d.ecranW * 0.5f - W * 0.5f - 0.008f, 0, 0.0004f})
-                 : d.ecranW > 0 ? cam * versOeil(d.ecranPos, d.ecranLacet)
-                                : cam * versOeil(d.combinePos, 0) * translate({d.combineW / 3, 0, 0.0004f});   // SF90 : tiers droit du combiné
-    for (int k : {D_ROUTE, D_FLECHE}) {
-        if (di_[k].empty()) continue;
-        r.updateMesh(dyn_[k], dv_[k], di_[k]);
-        r.draw(dyn_[k], mat(nuit ? dynNuit_[k] : dynMat_[k]), M); appels_++;
-    }
-}
-
-void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, const std::vector<vec2>& route, vec2 joueur, double cap) {
+void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e) {
     if (!def_) return;
     const InterieurDef& d = *def_;
     appels_ = 0;
@@ -978,7 +951,13 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
         }
     }
     dessinerCombine(r, cam, e.v);
-    dessinerCarte(r, cam, route, joueur, cap, e.v.nuit);
+    {   // WFS-596 (RG-01) : la carte GPS de la planche est celle du HUD, dessinée ensuite par la mini-carte à la place de la carte
+        // simplifiée d'avant (route et flèche de WFS-197) : ici, seulement sa place à cette image
+        CarteEcranVue& c = carteEcranVue();
+        const PlaceCarte& p = carte_;
+        coinsCarte(p, cam, c.coins);
+        c.w = p.w; c.h = p.h; c.nuit = e.v.nuit; c.vu = true;
+    }
     if (g_interieurCle && g_gabaritCeinture && gabarit_.indexCount) r.draw(gabarit_, cleDouce_, cam);   // WFS-349 : banc seulement (non compté)
     r.horsRetro = false;
 }

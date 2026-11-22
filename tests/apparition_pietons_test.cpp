@@ -105,6 +105,47 @@ int main() {
         cas("WFS-317 : liste plus courte que voulu ou vide : jamais plus que la liste",
             repartirSurTour({1, 2, 3}, 10, 9, true).size() == 3 && repartirSurTour({}, 10, 5, false).empty() && repartirSurTour({1}, 10, 0, false).empty());
     }
+    {   // WFS-593 (RG-01, RG-02, RG-07) : 10 % de chaque catégorie, arrondi au supérieur, répartis régulièrement dans la liste
+        bool comptes = true, premier = true; int trouMax = 0;
+        for (int N = 0; N <= 3000; N++) {
+            int g = 0, trou = 0;
+            for (int n = 0; n < N; n++) { if (garderPart(n)) { g++; trou = 0; } else trouMax = std::max(trouMax, ++trou); }
+            comptes = comptes && g == (N + 9) / 10 && g == partGardee(N);
+        }
+        premier = garderPart(0) && !garderPart(-1) && partGardee(0) == 0 && partGardee(-5) == 0;
+        cas("WFS-593 : sur N personnes, ⌈N / 10⌉ gardées (N = 0 à 3 000), la 1re toujours", comptes && premier && PERSONNES_GARDEES_SUR_100 == 10);
+        cas("WFS-593 : une sur 10, jamais plus de 9 omises de suite (réparties sur toute la liste)", trouMax == 9);
+        // comptes de main au 2026-11-22 par carte et par catégorie (journal du chargement des bancs) : 10 % ± 1 par catégorie
+        struct Cat { const char* nom; int avant; };
+        constexpr int SPECTATEURS_MAIN = 381;   // tribunes du Grand Prix, qualité Haute (journal « Circuit (WFS-199) » de main)
+        const Cat cats[] = {{"ville marcheurs", 32}, {"ville promeneurs", 5}, {"ville passants", 1}, {"ville terrasses", 207},
+                            {"plage marcheurs", 110}, {"plage serviettes", 67}, {"plage baigneurs", 43}, {"plage fêtes", 32},
+                            {"campagne marcheurs", 37}, {"circuit marcheurs", 72}, {"circuit spectateurs", SPECTATEURS_MAIN}};
+        bool dixPourCent = true;
+        for (const Cat& c : cats) {
+            int g = 0; for (int n = 0; n < c.avant; n++) g += garderPart(n);
+            const double voulu = c.avant * 0.10;
+            dixPourCent = dixPourCent && std::fabs(g - voulu) <= 1.0 && (c.avant == 0 || g >= 1);
+            if (std::fabs(g - voulu) > 1.0) std::printf("  %s : %d → %d (voulu %.1f)\n", c.nom, c.avant, g, voulu);
+        }
+        cas("WFS-593 : chaque catégorie de chaque carte garde 10 % ± 1 personne (au moins 1 si elle en avait)", dixPourCent);
+        // promeneurs avec chien : pietons.cpp garde le tirage impair (WFS-222) puis 10 % de ceux-là ; la Ville dessine le même chien
+        bool memes = true; int nPromeneurs = 0;
+        for (int i = 0; i < 400; i++) {
+            const bool pieton = (i % 2 == 1) && garderPart(i / 2);
+            memes = memes && pieton == promeneurGarde(i);
+            nPromeneurs += promeneurGarde(i);
+        }
+        cas("WFS-593 : promeneurs : le chien n'est dessiné que pour un maître gardé (20 sur 400)", memes && nPromeneurs == 20 && !promeneurGarde(-1));
+        // marcheurs : 10 % placés à pas réguliers sur tout le tour, aussi hors de la Ville (candidats serrés au début, clairsemés ensuite)
+        std::vector<double> s; for (int i = 0; i < 300; i++) s.push_back(i * 3.0); for (int i = 0; i < 60; i++) s.push_back(900 + i * 85.0);
+        const double L = 6000; const int voulu = partGardee(120);
+        const std::vector<size_t> a = repartirSurTour(s, L, voulu / 2, false), b = repartirSurTour(s, L, voulu - voulu / 2, true);
+        std::vector<double> p; for (size_t i : a) p.push_back(s[i]); for (size_t i : b) p.push_back(s[i]);
+        std::sort(p.begin(), p.end()); double ecartMax = 0;
+        for (size_t i = 0; i < p.size(); i++) ecartMax = std::max(ecartMax, (i + 1 < p.size() ? p[i + 1] : p[0] + L) - p[i]);
+        cas("WFS-593 : 12 marcheurs (10 % de 120) répartis sur un tour de 6 000 m, aucun écart > 2 pas (1 000 m)", p.size() == 12 && ecartMax <= 1000);
+    }
     std::printf("apparition : %s (%d échec(s))\n", echecs ? "ÉCHEC" : "OK", echecs);
     return echecs ? 1 : 0;
 }

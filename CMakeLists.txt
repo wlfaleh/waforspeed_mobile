@@ -107,6 +107,7 @@ else()
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
   add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
   add_executable(test_version_chargement tests/test_version_chargement.cpp)   # WFS-279 : version de l'écran de chargement
+  add_executable(test_fond_chargement tests/test_fond_chargement.cpp)   # WFS-597 : image de fond de l'écran de chargement
   add_executable(test_minicarte tests/test_minicarte.cpp)   # WFS-173 : place et projection de la mini-carte
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/profil.cpp src/game/track.cpp src/game/player.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé) ; WFS-189 : player.cpp (courses simulées)
   add_executable(test_course5_ordinateurs tests/test_course5_ordinateurs.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/sauvegarde.cpp src/game/personnalisation.cpp src/game/boutique.cpp src/game/profil.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-327 : adversaires sur une vitesse de virage possible, course disputée
@@ -229,6 +230,7 @@ else()
   add_executable(test_mobilier_ville tests/test_mobilier_ville.cpp src/world/mobilier_ville.cpp)   # WFS-369 : mobilier urbain de la Ville (mesures, vide des grilles, aucune forme nue, faces)
   add_executable(test_archi_geo tests/archi_geo.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp src/world/archi_details.cpp src/world/archi_ouvertures.cpp)   # WFS-161 (ST-1) : géométrie du kit (trous, sens des triangles, M-01, LOD) ; WFS-402 : ouvertures
   target_compile_definitions(test_archi_geo PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_tours_ville tests/test_tours_ville.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp src/world/archi_details.cpp src/world/archi_ouvertures.cpp)   # WFS-571 (ANO-280) : tours en tronçons, toits équipés
   add_executable(test_archi_lieux tests/test_archi_lieux.cpp src/world/archi_lieux.cpp src/world/archi_kit.cpp src/world/archi_geo.cpp src/world/archi_details.cpp src/world/archi_ouvertures.cpp src/world/decor_campagne_eglise.cpp src/world/decor_campagne_modeles.cpp src/world/marina_bateaux.cpp)   # WFS-410 : façades percées des lieux hors kit, menuiseries réelles, arcs en plein cintre, église de la Campagne
   add_executable(test_fluidite_reference tests/test_fluidite_reference.cpp)   # WFS-293 (RG-10) : l'indicateur à 10-20 img/s voit les sauts
   add_executable(test_fidelite_lumiere_precalcule tests/fidelite_lumiere_precalcule.cpp src/render/eclairage_precalcule.cpp src/core/jobs.cpp)   # WFS-269 : occlusion du décor fixe précalculée

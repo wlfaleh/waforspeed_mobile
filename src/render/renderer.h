@@ -1,7 +1,9 @@
 // WaForSpeed — moteur de rendu : passe de scène HDR (MSAA), passe finale (tonemapping + interface).
 #pragma once
+#include <algorithm>   // WFS-596 : uiDepuis (std::min)
 #include <chrono>
 #include <cstddef>
+#include <span>   // WFS-596 : uiDepuis
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -202,6 +204,10 @@ public:
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
     void uiQuad(const UiVertex q[4]);   // WFS-65 : quadrilatère à couleurs par sommet (dégradés), u = v = −1
+    // WFS-596 (accroche) : sommets de l'interface posés à cette image (6 par quadrilatère : a, b, c, a, c, d) et ceux posés depuis
+    // `debut`, modifiables (la mini-carte de la vue Cockpit les projette sur l'écran central de la planche)
+    size_t uiSommets() const { return ui_vtx_.size(); }
+    std::span<UiVertex> uiDepuis(size_t debut) { const size_t d = std::min(debut, ui_vtx_.size()); return {ui_vtx_.data() + d, ui_vtx_.size() - d}; }
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
     void uiSetFontAtlas(const Image& atlas);
     // WFS-562 (accroche, RG-03) : planche de photos de l'interface (binding 1 du jeu de la police, lu par ui.frag) ; Image{} :

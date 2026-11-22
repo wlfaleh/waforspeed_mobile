@@ -1,0 +1,18 @@
+== avant (main 699b39e9)
+[info] Circuit (WFS-199) : 2 tribune(s), 146 spectateurs (personnages du jeu, aucune boîte), qualité Basse
+[info] Circuit (WFS-199) : 2 tribune(s), 381 spectateurs (personnages du jeu, aucune boîte)
+[info] Piétons (WFS-222) : 110 à pied (promeneurs 0, marcheurs 110, passants 0 ; 110 omis sur ordre de l'utilisateur), 142 assis ou baigneurs
+[info] Piétons (WFS-222) : 37 à pied (promeneurs 0, marcheurs 37, passants 0 ; 38 omis sur ordre de l'utilisateur), 0 assis ou baigneurs
+[info] Piétons (WFS-222) : 38 à pied (promeneurs 5, marcheurs 32, passants 1 ; 772 omis sur ordre de l'utilisateur), 207 assis ou baigneurs
+[info] Piétons (WFS-222) : 72 à pied (promeneurs 0, marcheurs 72, passants 0 ; 73 omis sur ordre de l'utilisateur), 0 assis ou baigneurs
+[info] Piétons : 245 personnes (ville)
+[info] Piétons : 252 personnes (plage)
+[info] Piétons : 37 personnes (campagne)
+[info] Piétons : 72 personnes (circuit)
+== après (branche)
+[info] Circuit (WFS-199) : 2 tribune(s), 16 spectateurs (personnages du jeu, aucune boîte), qualité Basse
+[info] Circuit (WFS-199) : 2 tribune(s), 39 spectateurs (personnages du jeu, aucune boîte)
+[info] Piétons (WFS-593) : campagne : 37 → 4 personnes (10 % gardées) : marcheurs 37 → 4, promeneurs 0 → 0, passants 0 → 0, terrasses 0 → 0, serviettes 0 → 0, baigneurs 0 → 0, fêtes 0 → 0
+[info] Piétons (WFS-593) : circuit : 72 → 8 personnes (10 % gardées) : marcheurs 72 → 8, promeneurs 0 → 0, passants 0 → 0, terrasses 0 → 0, serviettes 0 → 0, baigneurs 0 → 0, fêtes 0 → 0
+[info] Piétons (WFS-593) : plage : 252 → 27 personnes (10 % gardées) : marcheurs 110 → 11, promeneurs 0 → 0, passants 0 → 0, terrasses 0 → 0, serviettes 67 → 7, baigneurs 43 → 5, fêtes 32 → 4
+[info] Piétons (WFS-593) : ville : 245 → 27 personnes (10 % gardées) : marcheurs 32 → 4, promeneurs 5 → 1, passants 1 → 1, terrasses 207 → 21, serviettes 0 → 0, baigneurs 0 → 0, fêtes 0 → 0
