@@ -132,12 +132,17 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
         const float touffeH = mix(0.5, rnoise(w * 7.3 + 9.0), f14);
         const float hHerbe = (brin - 0.5) * 0.02 + (touffeH - 0.5) * 0.01;
         bas *= 0.72 + 0.56 * (brin * 0.7 + touffeH * 0.3);
-        // terre et talus : gravillons et cailloux (4 à 8 cm) plus clairs, en relief
-        const vec2 cg = cellulesSol(w * 14.0 + 3.7);
-        const float caillou = smoothstep(0.08, 0.25, cg.x) * step(0.55, cg.y) * f14;
-        const vec3 talusFin = mix(talus, mix(roche, vec3(0.42, 0.40, 0.36), cg.y), caillou * 0.7);
-        const float hTerre = caillou * 0.012 + (mix(0.5, rnoise(w * 23.0), f40) - 0.5) * 0.006;
-        const float hRoche = (mix(0.5, rnoise(w * 11.0 + 1.0), f14) * 0.6 + mix(0.5, rnoise(w * 31.0), f40) * 0.4 - 0.5) * 0.025;
+        // terre et talus : gravillons et cailloux (4 à 8 cm) plus clairs, en relief ; calculés seulement sur un talus ou de la roche
+        // (le pré plat de la Ville n'en a pas : pas de cellules ni de bruits pour rien)
+        vec3 talusFin = talus;
+        float hTerre = 0.0, hRoche = 0.0;
+        if (tTerre > 0.01) {
+            const vec2 cg = cellulesSol(w * 14.0 + 3.7);
+            const float caillou = smoothstep(0.08, 0.25, cg.x) * step(0.55, cg.y) * f14;
+            talusFin = mix(talus, mix(roche, vec3(0.42, 0.40, 0.36), cg.y), caillou * 0.7);
+            hTerre = caillou * 0.012 + (mix(0.5, rnoise(w * 23.0), f40) - 0.5) * 0.006;
+        }
+        if (tRoche > 0.01) hRoche = (mix(0.5, rnoise(w * 11.0 + 1.0), f14) * 0.6 + mix(0.5, rnoise(w * 31.0), f40) * 0.4 - 0.5) * 0.025;
         base.rgb = mix(mix(bas, talusFin, tTerre), roc, tRoche);
         h = mix(mix(hHerbe, hTerre, tTerre), hRoche, tRoche);
     } else base.rgb = mix(mix(bas, talus, tTerre), roc, tRoche);
