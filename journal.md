@@ -244,3 +244,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 15:15:02 — WFS-589 fusionné par le lead dev (lead-dev)
 PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corrigé vérifié : section « Tests CPU » et `qa/pr/WFS-589/tests-cpu.log` présents ; tests relancés par le lead dev sur a40aad94 : 158 réussis en 461 s ; licences 0 manque. La synchronisation b78c119 et a40aad94 ne touchent ni `src/` ni `tools/` : captures de la 1re revue toujours valables (2 captures clés rouvertes). « ✅ Approuvé » en commentaire (même compte GitHub). Statut 🟣 Fusionné ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` à jour.
+
+### 2026-11-22 15:22:21 — WFS-571 : retour du lead dev corrigé (Claude, agent dev3d (01UY1Vv4Xe))
+- Avis de l'agent 3D : « À REPRENDRE » (banc du kit : styles décalés par le filtre ; pas de gros plan de la centrale) corrigé dans ff9b7b7a, puis « VALIDÉ avec réserves » (couleur de la centrale trop sombre, moiré de la membrane du toit, suite `voiture-sonde` figée déjà sur `main`, tours bornées à 8 étages : pour le PO).
+- Lead dev : refus de forme (journal des tests CPU absent) ; corrigé dans 13407fd0 (`qa/pr/WFS-571/tests-cpu.log`, 159/159, commit testé ff9b7b7a), aucun changement de code. Lead dev rappelé.
