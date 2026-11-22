@@ -18,6 +18,8 @@
 #include "textes_banc.h"   // WFS-505 : banc « textes » (journal des textes de cet écran)
 #include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau du bouton de l'écran d'erreur
+#include "../modes_photos.h"   // WFS-597 : même emplacement de photo de l'interface que les images des modes
+#include "../../../third_party/stb/stb_image.h"   // WFS-597 : décodage du fond (implémentation dans src/render/model_loader.cpp)
 
 namespace wfs {
 namespace ecrans {
@@ -130,6 +132,50 @@ static int etapeEnCours(float p) {
     return e;
 }
 
+// ---------------------------------------------------------------- WFS-597 : image de fond (image 2 de l'utilisateur, telle quelle)
+// assets/ui/chargement/fond.jpg : 2400 × 1080, copiée de regles-de-gestion/maquettes/WFS-597/utilisateur-2-boulevard-pluie.png
+// (mise à la taille et compressée, aucune retouche). Elle occupe l'emplacement « photos » de l'interface (binding 1 de ui.frag,
+// WFS-562) pendant le chargement et son fondu ; les photos des modes reprennent cet emplacement à l'ouverture de leur écran.
+// Absente ou illisible : le fond d'avant reste (RG-06), une ligne au journal, jamais de plantage.
+namespace {
+Image g_fond{};
+bool g_fondEssaye = false;
+}
+
+bool fondPret() { return g_fond.view != VK_NULL_HANDLE; }
+
+// appelé hors d'une image en cours (début du chargement) : uiSetPhotos réécrit le jeu de descripteurs de l'interface
+static void chargerFond(Renderer& r) {
+    if (fondPret() || g_fondEssaye) return;
+    g_fondEssaye = true;   // un seul essai par chargement affiché : pas de relecture à chaque étape si le fichier manque
+    const double t0 = nowSeconds();
+    std::vector<uint8_t> jpg;
+    if (!readAsset(FICHIER_FOND_CHEMIN, jpg)) { WFS_WARN("chargement (WFS-597) : %s introuvable, fond d'avant gardé", FICHIER_FOND_CHEMIN); return; }
+    int w = 0, h = 0, n = 0;
+    uint8_t* px = stbi_load_from_memory(jpg.data(), (int)jpg.size(), &w, &h, &n, 4);
+    if (!px || w != FOND_LARGEUR || h != FOND_HAUTEUR) {
+        if (px) stbi_image_free(px);
+        WFS_WARN("chargement (WFS-597) : %s illisible ou pas en %d × %d, fond d'avant gardé", FICHIER_FOND_CHEMIN, FOND_LARGEUR, FOND_HAUTEUR);
+        return;
+    }
+    // les photos des modes, si elles sont chargées (2e partie), rendent l'emplacement : elles reviennent à l'ouverture de leur écran
+    if (modes_photos::pretes()) modes_photos::liberer(r);
+    g_fond = r.vk().uploadTexture(px, (uint32_t)w, (uint32_t)h, false);   // valeurs sRGB recopiées telles quelles (comme les modes)
+    stbi_image_free(px);
+    if (!fondPret()) { WFS_WARN("chargement (WFS-597) : fond refusé par la carte graphique, fond d'avant gardé"); return; }
+    r.uiSetPhotos(g_fond);
+    WFS_LOG("chargement (WFS-597) : fond %d × %d chargé en %s s (%.1f Mo)", w, h, ui::decimal(nowSeconds() - t0, 3).c_str(), w * h * 4 / 1048576.0);
+}
+
+// après le fondu ou à l'arrêt du moteur ; hors d'une image en cours. L'emplacement n'est vidé que s'il est encore à nous.
+static void libererFond(Renderer& r) {
+    g_fondEssaye = false;
+    if (!fondPret()) return;
+    if (!modes_photos::pretes()) r.uiSetPhotos(Image{}); else r.vk().waitIdle();
+    r.vk().destroy(g_fond);
+    g_fond = Image{};
+}
+
 // WFS-557 (maquettes 08 et 08b ; arbitrage du PO du 2026-11-16 : maquette à 100 %). Unité k = H / 720 (maquette 1600 × 720).
 // Sur-titre, logo « WA FOR / SPEED » en italique (FOR au trait), fenêtre de verre 687 × 197 : étape en Inter (rouge si échec),
 // gros pourcentage à droite, barre arrondie au dégradé de la marque (vers le rouge si échec), 4 étapes (Moteur, Modèles 3D,
@@ -138,20 +184,29 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     const textes::Journal journal;   // WFS-505 : textes notés au banc « textes »
     const float k = H / 720.f;
     p = clampv(p, 0, 1);
-    r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran
-    // WFS-146 (RG-10, ANO-39) : reflets d'asphalte (centre à l'opacité du web, bord transparent)
-    auto reflet = [&](float cx, float cy, float rx, float ry, const vec4& c) {
-        const int N = 48;
-        for (int i = 0; i < N; i++) {
-            const float a0 = 6.2831853f * i / N, a1 = 6.2831853f * (i + 1) / N;
-            const UiVertex q[4] = {{cx, cy, -1, -1, c.x, c.y, c.z, c.w}, {cx, cy, -1, -1, c.x, c.y, c.z, c.w},
-                                   {cx + rx * std::cos(a1), cy + ry * std::sin(a1), -1, -1, c.x, c.y, c.z, 0},
-                                   {cx + rx * std::cos(a0), cy + ry * std::sin(a0), -1, -1, c.x, c.y, c.z, 0}};
-            r.uiQuad(q);
-        }
-    };
-    reflet(W * 0.5f, H * 1.1f, W * 1.2f, H * 0.6f, hex(ACCENT, 0.08f * op));
-    reflet(W * 0.85f, H * 1.0f, W * 0.8f, H * 0.5f, hex(ACCENT2, 0.05f * op));
+    r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran (reste visible si l'image de fond manque, WFS-597 RG-06)
+    if (fondPret()) {   // WFS-597 : image de l'utilisateur, telle quelle (ni voile ni reflet par-dessus)
+        const auto uv = uvFond(W, H);
+        const float du = 0.5f / FOND_LARGEUR, dv = 0.5f / FOND_HAUTEUR;   // demi-texel : aucun bord ramené de l'autre côté
+        const vec2 q[4] = {{0, 0}, {W, 0}, {W, H}, {0, H}};
+        const vec2 t[4] = {{uv[0] + du, uv[1] + dv}, {uv[2] - du, uv[1] + dv}, {uv[2] - du, uv[3] - dv}, {uv[0] + du, uv[3] - dv}};
+        const vec4 c[4] = {{1, 1, 1, op}, {1, 1, 1, op}, {1, 1, 1, op}, {1, 1, 1, op}};
+        r.uiPhoto(q, t, c);
+    } else {
+        // WFS-146 (RG-10, ANO-39) : reflets d'asphalte (centre à l'opacité du web, bord transparent)
+        auto reflet = [&](float cx, float cy, float rx, float ry, const vec4& c) {
+            const int N = 48;
+            for (int i = 0; i < N; i++) {
+                const float a0 = 6.2831853f * i / N, a1 = 6.2831853f * (i + 1) / N;
+                const UiVertex q[4] = {{cx, cy, -1, -1, c.x, c.y, c.z, c.w}, {cx, cy, -1, -1, c.x, c.y, c.z, c.w},
+                                       {cx + rx * std::cos(a1), cy + ry * std::sin(a1), -1, -1, c.x, c.y, c.z, 0},
+                                       {cx + rx * std::cos(a0), cy + ry * std::sin(a0), -1, -1, c.x, c.y, c.z, 0}};
+                r.uiQuad(q);
+            }
+        };
+        reflet(W * 0.5f, H * 1.1f, W * 1.2f, H * 0.6f, hex(ACCENT, 0.08f * op));
+        reflet(W * 0.85f, H * 1.0f, W * 0.8f, H * 0.5f, hex(ACCENT2, 0.05f * op));
+    }
     const bool police = ui::fontReady();
     const float x = 70 * k;
     if (police) {
@@ -282,6 +337,7 @@ void Chargement::debut(Renderer& r, double depuis) {
     // première image tout de suite (fond + barre), puis police (≈ 0,1 à 0,9 s) et image complète à 0 %
     if (!ui::fontReady()) image(r, p_, libelle_, false);
     const double premiere = nowSeconds() - depuis;
+    chargerFond(r);   // WFS-597 (RG-06) : après la 1re image, avant l'écran complet
     ui::chargerPolice(r);
     image(r, p_, libelle_, false);
     WFS_LOG("chargement : première image %s s après l'initialisation Vulkan, écran complet (police) %s s",
@@ -364,9 +420,13 @@ float opaciteFondu(double temps) {
 class FonduChargement : public System {
 public:
     const char* name() const override { return "fondu du chargement"; }
+    // WFS-597 : l'image de fond est rendue après le fondu, ou à l'arrêt du moteur hors chargement. Comme les photos des modes
+    // (WFS-562, modes_photos::charger dans drawUi) : l'interface n'est enregistrée qu'à endFrame, l'emplacement peut changer ici.
+    void shutdown(Renderer& r) override { if (!chargement().actif() && !chargement().enErreur()) libererFond(r); }
     void drawUi(Renderer& r, const GameView& g) override {
         const float a = opaciteFondu(g.time);
         if (a > 0) dessinerChargement(r, g.uiWidth, g.uiHeight, 1, chargement().libelle(), false, a);
+        else if (!g_fonduArme && fondPret() && !chargement().actif() && !chargement().enErreur()) libererFond(r);   // WFS-597 : fondu fini
     }
 };
 
