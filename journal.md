@@ -120,3 +120,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 12:39:23 — WFS-597 simplifié : l'image de l'utilisateur telle quelle (po-scrum-master)
 - Ordre de l'utilisateur : « pas besoin de reproduire, c'est une image de fond, il la prend et la met directement ». RG-05 : l'image `utilisateur-2-boulevard-pluie.png` mise en fond telle quelle (taille et compression seulement) ; rendu 3D, RG-08 à 11 et avis `@3d` retirés.
+
+### 2026-11-22 12:41:26 — WFS-597 en tête de la liste `@dev` (ordre de l'utilisateur) (po-scrum-master)
+- WFS-597 passe P1 et 1er de la liste `@dev`, avant WFS-593, 594 et 596.
