@@ -59,3 +59,10 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 11:06:16 — Archives automatiques (robot archives)
 - Journal : 12 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-20).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-22 11:45:33 — WFS-589 attribué à agent expert ci cd (01UY1Vv43t) (po-scrum-master)
+- Début : **WFS-589** (P1, E7, [TECHNIQUE]) attribué à agent expert ci cd (01UY1Vv43t) (session_01UY1Vv43tZmAYr8FEMaKo7S), nouvelle session `@cicd` (aucun ticket avant), à sa demande (« fix les problèmes de ci »).
+- Constat : CI de `main` rouge depuis #1155 (WFS-562, PR #435) jusqu'à #1158, job « banc-essai (texte) » : `ui/modes/checkpoint.jpg`, `course5.jpg`, `poursuite.jpg` sans crédit (absence vérifiée par le PO dans `tools/qa/verifier_licences.py`, c52261e). Bancs du matin #67 rouges : tests CPU et licences (même cause), complements-c et chauffe (parcours « fin → Menu »), realisme-2.
+- Ajout aux règles : **RG-06** (crédits des 3 images dans `tools/qa/verifier_licences.py` seulement, provenance d'après la PR #435, aucun contrôle affaibli). Zone autorisée : `tools/qa/**` et parcours du banc dans `src/platform/desktop_main.cpp`. Branche `feature/waforspeed-589`. US technique : CI de branche autorisée, une à la fois, chaque run au journal.
+- Session de WFS-590 (01UY1Vv5QX) terminée : ligne enlevée de `track-agent.md`.
+

@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-21 15:44:07 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-22 11:45:33 UTC (po-scrum-master)
+
+> 🛠️ **11:45 UTC (2026-11-22)** : **WFS-589** (P1, [TECHNIQUE] CI de `main` rouge : licences `ui/modes/*.jpg` de WFS-562, parcours « fin → Menu », realisme-2) attribué à agent expert ci cd (01UY1Vv43t), nouvelle session `@cicd`, à sa demande. Session de WFS-590 terminée (fusionné #438) : ligne enlevée. Prochains `@dev` : 571 → 573 → 575 → 563.
 
 > 🪧 **15:44 UTC (2026-11-21)** : **WFS-590** (P1, E15 : caissons sur mâts retirés, enseignes en façade) attribué à Claude, agent dev3d (01UY1Vv5QX), nouvelle session `@dev`, à sa demande ; avis « VALIDÉ » de l'agent 3D obligatoire. Prochains `@dev` : 571 → 573 → 575 → 563. Bancs du matin #62 rouges (endurance et chauffe, tests CPU et licences, realisme-2, complements-c) : rangés dans WFS-589, ⏳ Prêt pour une nouvelle session `@cicd`.
 
@@ -94,7 +96,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv5QX) (session_01UY1Vv5QXpZPb23RjZEJ4hP) | WFS-590 | enseignes : caissons sur mâts retirés (Ville, Corniche), vraies enseignes en façade | `feature/waforspeed-590`, poussée | ⏹️ session terminée (WFS-590 fusionné, #438, 5311bfe6) |
+| agent expert ci cd (01UY1Vv43t) (session_01UY1Vv43tZmAYr8FEMaKo7S) | WFS-589 | CI de `main` rouge : crédits des images `ui/modes`, parcours « fin → Menu » du banc, realisme-2 | `feature/waforspeed-589`, à créer | 🔧 En cours (attribué 2026-11-22 11:45 UTC) |
 
 ## Agents de pilotage
 
