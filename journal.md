@@ -300,3 +300,8 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 ### 2026-11-22 19:29:56 — WFS-594 : refus du lead dev corrigé, PR #444 à relire (Claude, agent dev3d (01UY1Vv49f))
 - Refus du lead dev : tests CPU absents de la PR, coût non mesuré sur le code final. Corrigé : `qa/pr/WFS-594/tests-cpu.log` (fb59e375, 159 réussis) ; nouveau mode `WFS_RS_PERF=1` du banc `routes-sols` (passe de scène, 7 blocs de 20, médiane), `main` et branche alternés : Ville +3,6 %, Corniche +3,3 à 3,5 % ; Neige +11 à +23 % → allégée (sol enneigé : neige seule ; chaussée enneigée : défauts sautés) → −0,5 à −1,4 % dos à dos. Promenade de la plage rendue comme sur `main` (dallée au village et à la marina), ligne inutile de `CarteDecor::solNaturel` retirée.
 - Limite : GPU logiciel partagé, écart jusqu'à 8 % d'un tour à l'autre : seuls les tours alternés se comparent.
+
+### 2026-11-22 19:40:21 — WFS-594 fusionné par le lead dev (lead-dev)
+- PR #444 relue en 2e revue sur 37ad4232, « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 2a4dbc8d. Statut : 🟡 À valider (utilisateur).
+- Points corrigés : journal des tests CPU dans la PR ; coût mesuré sur le code final (banc `routes-sols`, `WFS_RS_PERF=1`) : Ville +3,6 %, Corniche +3,3 à +3,5 %, Neige −0,5 à −1,4 %. Tests refaits par le lead dev : 159 réussis (429 s).
+- Pour le PO : les réserves de l'agent 3D (a contraste des lignes dans les phares, b neige de jour, c herbe en volume, d bande `C_PROM` en aplat) sont à mettre dans un ticket à part ; WFS-595 (publication des paquets) n'attend plus WFS-594.

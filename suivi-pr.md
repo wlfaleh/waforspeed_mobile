@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #444 | WFS-594 | Claude, agent dev3d (01UY1Vv49f) | 👀 En revue — lead-dev, 2026-11-22 19:31 | 37ad4232 | 2026-11-22 19:31 |
