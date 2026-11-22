@@ -1366,7 +1366,8 @@ public:
         for (const ville::Promeneur& m : P.promeneurs) promS_.push_back(m.s);
         { Geo g; carte::box(g, {0, 0, 0}, {1, 0, 0}, {0, 0, 1}, 0.012f, 0.012f, 1.f, uvc(U_LAISSE)); laisse_ = r.makeMesh(g.v, g.i, false); }   // laisse : 1 m le long de +Z
         for (const ville::Lieu& l : P.lieux) WFS_LOG("Ville (WFS-176) : lieu %d au segment %lld, côté %d, %.0f m", (int)l.t, (long long)l.seg, l.side, l.len);
-        WFS_LOG("Ville (WFS-176) : %zu lieu(x), %zu groupe(s) de pigeons, %zu chien(s)%s", P.lieux.size(), vols_.size(), promS_.size(),
+        int chiens = 0; for (size_t i = 0; i < promS_.size(); i++) chiens += apparition::promeneurGarde((int)i);   // WFS-593 : chiens dessinés
+        WFS_LOG("Ville (WFS-176) : %zu lieu(x), %zu groupe(s) de pigeons, %d chien(s) sur %zu promeneur(s)%s", P.lieux.size(), vols_.size(), chiens, promS_.size(),
                 chien_[0].empty() ? " (modèles absents : chiens non dessinés)" : "");
         (void)t;
     }

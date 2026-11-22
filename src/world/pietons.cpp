@@ -188,7 +188,7 @@ public:
         ville_ = !std::strcmp(id, "ville"); plage_ = !std::strcmp(id, "plage");
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
         if (!ville_ && !plage_ && !campagne_ && !circuit_) return;
-        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { if (!garder() || !garder593(CAT_PROMENEURS)) continue; Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville) ; WFS-317 : tous gardés (le chien est dessiné par la Ville)
+        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { if (!garder() || !garder593(CAT_PROMENEURS)) continue; Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville) ; un sur deux (WFS-222) puis 10 % (WFS-593) : même règle que apparition::promeneurGarde, qui choisit les chiens dessinés par la Ville
         piste_ = g.track;   // WFS-179
         const size_t nProm = gens_.size();
         rangListe_ = tirage_;   // WFS-593 : promeneurs tirés (gardés ou non), comme avant
@@ -509,6 +509,7 @@ private:
     // WFS-222 (RG-07, ordre de l'utilisateur du 2026-11-07) : au moins 50 % de personnes à pied en moins, sur toutes les cartes :
     // une sur deux des listes d'origine (promeneurs, marcheurs, passants), dans l'ordre des tirages ; les clients attablés,
     // les personnes sur les serviettes et les baigneurs ne sont pas concernés
+    // WFS-593 : apparition::promeneurGarde (chiens de la Ville) reprend cette règle (tirage impair) : changer les deux ensemble
     bool garder() { const bool g = (tirage_++ % 2) == 1; if (!g) omis_++; return g; }
     // WFS-317 (RG-03) : Ville : 3 sur 10 des clients des terrasses et des passants (apparition::garderVille, foule_apparition.h), compteur
     // propre à chaque liste ; marcheurs : repartirVille ; autres cartes : tous
