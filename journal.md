@@ -215,3 +215,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 14:41:47 — WFS-593 : PR #442 refusée par le lead dev (lead-dev)
 - Commit relu : 8e383f6b. Diff lu en entier, branche construite et testée (158 tests CPU réussis), 16 paires de captures ouvertes : le code et l'image répondent à la demande (10 % des personnes, réparties sur le tour, aucune régression vue).
 - Refus pour preuves manquantes : (1) capture « Tests CPU » et `qa/pr/WFS-593/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-06 : lignes brutes du journal du chargement à coller dans la PR ; (3) RG-07 : résultat de la validation Vulkan des bancs non indiqué. Aucune nouvelle capture d'écran demandée. Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-22 14:44:11 — Statuts automatiques, CI main #1159 (robot statuts)
+- Run rouge (push, commit 528ed3b), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
