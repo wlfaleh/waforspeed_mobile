@@ -131,7 +131,6 @@ int chauffe::benchChauffe(Game& g, Renderer& r, const std::string& out, Source s
         if (g.ecran() == e) WFS_LOG("chauffe (parcours) : %s → écran %s (attendu)", etape, nomEcran(e));
         else { ecarts++; WFS_ERR("chauffe (parcours) : %s → écran %s, attendu %s", etape, nomEcran(g.ecran()), nomEcran(e)); }
     };
-    const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f;
     // accueil → « Course solo » (panneau des modes) → carte « Checkpoint » → « Continuer » → garage → « Choisir » → terrain
     // → « Rouler » (mise en page de modes_ecran.cpp, marges nulles au banc, comme le parcours de la poursuite)
     g.allerA(Ecran::Menu); images(30, 10);
@@ -174,9 +173,9 @@ int chauffe::benchChauffe(Game& g, Renderer& r, const std::string& out, Source s
     courseBenchSetTime(0.05);
     images(80, 8);
     capture("chauffe-fin");
-    // bouton « Menu » de l'écran de fin (CourseSystem::drawOver, comme le banc du menu)
-    const float bw = 40 * u, bx = W / 2 - (bw * 1.7f + 2 * u) / 2 + bw + 2 * u;
-    g.onTouch({79, bx + bw * 0.35f, 75 * u, true}); images(2, 1); g.onTouch({79, bx + bw * 0.35f, 75 * u, false});
+    // bouton « Menu » de l'écran de fin : place réelle lue après son dessin (courseBouton, WFS-589 RG-01 : plus de coordonnée en dur)
+    if (courseBouton("menu", x, y)) { g.onTouch({79, x, y, true}); images(2, 1); g.onTouch({79, x, y, false}); }
+    else { ecarts++; WFS_ERR("chauffe (parcours) : « Menu » de l'écran de fin absent"); }
     images(60, 6);
     attendu(Ecran::Menu, "fin puis « Menu »");
     verifier(plafondCourant() == 30, "retour à l'accueil : plafond 30 images/s");
