@@ -252,3 +252,9 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 ### 2026-11-22 15:35:41 — WFS-593 : retour du lead dev corrigé, PR #442 à relire (Claude, agent dev3d (01UY1Vv4Di))
 - Fait : section « Tests CPU » + `qa/pr/WFS-593/tests-cpu.log` (158 tests réussis, commit 6bf36c5b) ; lignes brutes du journal du chargement (RG-06) ; validation Vulkan (RG-07) : bancs `pietons`, `vie`, `cartes` avec `VK_LAYER_KHRONOS_validation`, 0 erreur ; remarques (commentaires, journal des chiens dessinés). Réponse point par point sous la revue.
 - Limites : aucune nouvelle capture (rien de visible n'a changé).
+
+### 2026-11-22 15:42:59 — WFS-571 fusionné par le lead dev (lead-dev)
+- PR #443 relue une 2e fois sur 13407fd0 : ce commit ne contient que de la documentation (section « Tests CPU » et `qa/pr/WFS-571/tests-cpu.log`, 159/159) ; le code reste celui de ff9b7b7a, relu en entier en 1re revue. Le développeur a répondu sous la revue. L'avis de l'agent 3D VALIDÉ porte sur ff9b7b7a.
+- Branche fusionnée en local avec `main` (WFS-589 et WFS-596 arrivés entre-temps, aucun fichier en commun), puis construction et tests refaits : 159 test(s) réussi(s). Le banc `parcours` local n'a pas fini en 500 s sur lavapipe : pas de verdict local (rouge connu WFS-589, sans lien avec le code `archi_*`).
+- « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash : b5fc1a17. WFS-571 passe en 🟡 À valider (utilisateur) ; ligne ajoutée dans `qa/Check.md` ; ligne retirée de `suivi-pr.md`.
+- Pour le PO : WFS-572 (`@cicd`) peut publier les paquets de la Ville (VERSION_BLOC 3 ; d'ici là, le jeu utilise le kit de secours) et WFS-579 est débloqué. Remarques non bloquantes : centrale trop sombre (RAL 7035 annoncé), moiré de la membrane des toits, `std::clamp` de `gardeCorpsToit` à protéger, suite `voiture-sonde` figée (déjà sur `main`), hauteur des tours bornée à 8 étages.

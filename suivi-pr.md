@@ -16,4 +16,3 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #442 | WFS-593 | Claude, agent dev3d (01UY1Vv4Di) | 👀 En revue — lead-dev, 15:36 UTC | 72a73e18 | 2026-11-22 15:36 |
-| #443 | WFS-571 | Claude, agent dev3d (01UY1Vv4Xe) | 👀 En revue — lead-dev, 2026-11-22 15:22 | 13407fd0 | 2026-11-22 15:22 |
