@@ -50,6 +50,10 @@ int tuileImage(const Plan& p, const Baie& b);
 // construit le bâtiment d'un plan, de profondeur donnée, au niveau de détail lod (0, 1 ou 2)
 void construire(const Plan& p, float profondeur, int lod, Batiment& out, Baies mode = Baies::Interrupteur);
 
+// WFS-571 : tous les tronçons du plan (archi::troncons : socle, fût, attique d'une tour ; le plan seul sinon), chacun à sa place,
+// dans le repère du plan d'origine (bancs et tests ; la carte pose chaque tronçon comme un bâtiment, archi_carte.cpp)
+void construireTroncons(const Plan& p, float profondeur, int lod, Batiment& out, Baies mode = Baies::Interrupteur);
+
 // WFS-416 (RG-03) : nombre de bâtiments construits (appels de construire) depuis le lancement : le jeu avec un paquet cuit n'en
 // fait aucun pendant la course (test et banc « batiments »)
 size_t constructions();

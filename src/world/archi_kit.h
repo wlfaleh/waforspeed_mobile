@@ -67,6 +67,12 @@ struct Plan {
     Toit toit = Toit::Terrasse;
     bool edicules = false;      // toiture-terrasse : édicules techniques (cage d'escalier, machinerie)
     bool secondaire = false;    // WFS-455 : façade arrière ou latérale (facadeSecondaire) : ni balcon filant ni traits de la rue
+    // WFS-571 (ANO-280) : tronçon d'une tour posé sur le tronçon du dessous (troncons) : le niveau 0 est un étage courant (ni
+    // rez-de-chaussée, ni socle sous le sol, ni soubassement, ni porte de service)
+    bool surSocle = false;
+    // WFS-571 : partie de la toiture-terrasse couverte par le tronçon du dessus (repère de ce tronçon) : x de x0 à x1, z de −profondeur
+    // à zAvant (le tronçon du dessus garde le même nu arrière) ; l'acrotère et ses couvertines n'y sont pas posés (pas de murs confondus)
+    struct Couvert { bool actif = false; float x0 = 0, x1 = 0, zAvant = 0; } couvert;
     std::vector<Baie> baies;
     float hauteur() const { return hRdc + etages * hEtage + corniche; }   // hauteur jusqu'au haut de la corniche
     float niveauY(int n) const { return n == 0 ? 0.f : hRdc + (n - 1) * hEtage; }   // plancher du niveau n
@@ -95,6 +101,19 @@ Plan assembler(Style s, float largeur, float hauteurVoulue, uint32_t graine);
 // rez-de-chaussée. Les travées sont tirées dans la plage du style avec une graine propre (face 1 arrière, 2 gauche, 3 droite).
 // Plan sans aucune baie si la largeur est trop petite pour une fenêtre (mur aveugle : vrai mur mitoyen étroit).
 Plan facadeSecondaire(const Plan& p, float largeur, int face);
+
+// WFS-571 (ANO-280, RG-03) : vrai volume de tour, au lieu d'un prisme du sol au toit. Une tour (style moderne, au moins 3 étages,
+// 8 m de profondeur) est découpée en tronçons empilés, chacun un bâtiment du kit : socle (rez-de-chaussée et 1er étage, voire 2e),
+// fût en retrait de la rue (1,5 à 2,5 m), attique des derniers étages en retrait (2 à 3 m) et plus étroit d'une travée de chaque côté.
+// Trois silhouettes selon la graine (socle + fût ; corps + attique ; socle + fût + attique) : deux tours voisines d'un même côté
+// (graines distantes de 22) n'ont jamais la même. Mêmes niveaux, mêmes fenêtres et même hauteur totale que le plan d'origine ; nu
+// arrière commun. Tout autre plan rend un seul tronçon : le plan tel quel.
+struct Troncon {
+    Plan plan;
+    float dx = 0, dy = 0, retrait = 0;   // place du tronçon dans le repère du plan d'origine : x le long de la façade, y, retrait vers −z
+    float profondeur = 0;
+};
+std::vector<Troncon> troncons(const Plan& p, float profondeur);
 
 // contrôles d'un plan (utilisés par le test et par l'assemblage en mode vérification) : renvoie le nombre d'erreurs
 // et écrit la première dans erreur (si non nul)

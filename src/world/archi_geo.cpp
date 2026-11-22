@@ -147,7 +147,7 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out, Baies mode)
 void facade(const Plan& p, int lod, Batiment& out, Baies mode) {
     Maillage& mur = out.part[MUR];
     const float haut = p.hRdc + p.etages * p.hEtage;   // haut du dernier niveau (la corniche est au-dessus)
-    rectZ(mur, 0, p.largeur, -SOCLE, 0, 0, 1);         // socle
+    if (!p.surSocle) rectZ(mur, 0, p.largeur, -SOCLE, 0, 0, 1);   // socle (WFS-571 : pas sous un tronçon de tour, posé sur le toit du dessous)
     for (int n = 0; n <= p.etages; n++) {
         const float yb = p.niveauY(n), yt = yb + p.niveauH(n);
         if (lod >= 2) { rectZ(mur, 0, p.largeur, yb, yt, 0, 1); continue; }
@@ -166,11 +166,17 @@ void facade(const Plan& p, int lod, Batiment& out, Baies mode) {
     }
     rectZ(mur, 0, p.largeur, haut, p.hauteur(), 0, 1);   // bande sous la corniche
     if (mode != Baies::Aucune) for (const Baie& b : p.baies) ouverture(p, b, lod, out, mode);
+    if (lod >= 2) return;
+    // nez de dalle : la dalle d'étage apparaît en bandeau sur toute la façade. WFS-571 (RG-05) : gardé au niveau 1 (jusqu'à 300 m),
+    // sinon la tour vue de l'avenue redevient une façade lisse (12 triangles par étage)
+    if (p.style == Style::Moderne && !p.secondaire)
+        for (int n = p.surSocle ? 0 : 1; n <= p.etages; n++) {
+            const float yb = p.niveauY(n);
+            pave(out.part[ENCADREMENT], 0, p.largeur, yb - (n == 0 ? 0.f : BANDEAU / 2), yb + BANDEAU / 2, 0, BANDEAU_SAILLIE);
+        }
     if (lod >= 1) return;
     for (int n = 1; n <= p.etages; n++) {   // ST-2 : traits portés par les planchers
         const float yb = p.niveauY(n);
-        if (p.style == Style::Moderne)   // nez de dalle : la dalle d'étage apparaît en bandeau sur toute la façade
-            pave(out.part[ENCADREMENT], 0, p.largeur, yb - BANDEAU / 2, yb + BANDEAU / 2, 0, BANDEAU_SAILLIE);
         if (balconFilant(p, n)) {   // classique : balcon filant d'une rive à l'autre, garde-corps de 1,00 m
             const float a = 0.1f, b = p.largeur - 0.1f;
             pave(out.part[ENCADREMENT], a, b, yb - BALCON_EP, yb, 0, FILANT_PROF);
@@ -291,6 +297,21 @@ void construire(const Plan& p, float D, int lod, Batiment& out, Baies mode) {
         details::corniche(out.part[ENCADREMENT], L, D, H, p.corniche, s);   // WFS-370 (accroche) : moulurée
     }
     toiture(p, D, std::clamp(lod, 0, 2), out);
+}
+
+void construireTroncons(const Plan& p, float D, int lod, Batiment& out, Baies mode) {
+    for (Maillage& m : out.part) { m.v.clear(); m.i.clear(); }
+    for (const Troncon& t : troncons(p, D)) {
+        Batiment b;
+        construire(t.plan, t.profondeur, lod, b, mode);
+        const vec3 d{t.dx, t.dy, -t.retrait};
+        for (int k = 0; k < NB_PARTS; k++) {
+            Maillage& dst = out.part[k];
+            const uint32_t base = (uint32_t)dst.v.size();
+            for (Sommet v : b.part[k].v) { v.p = v.p + d; dst.v.push_back(v); }
+            for (uint32_t i : b.part[k].i) dst.i.push_back(base + i);
+        }
+    }
 }
 
 double aireFacade(const Maillage& mur, float yMax) {

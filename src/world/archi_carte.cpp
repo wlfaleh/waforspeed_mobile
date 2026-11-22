@@ -414,7 +414,9 @@ void mettreDeCote() { g_garde.swap(g_bats); std::swap(g_gardeCuit, g_cuit); vide
 void remettre() { g_bats.swap(g_garde); std::swap(g_cuit, g_gardeCuit); g_garde.clear(); g_gardeCuit = Cuit{}; }
 
 void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profondeur, float hauteur, Style style, uint32_t graine) {
-    g_bats.push_back({seg, origine, x, z, profondeur, assembler(style, largeur, hauteur, graine)});
+    // WFS-571 (ANO-280) : une tour est posée en tronçons (socle, fût, attique) : chacun est un bâtiment du kit, à sa place
+    for (Troncon& t : troncons(assembler(style, largeur, hauteur, graine), profondeur))
+        g_bats.push_back({seg, origine + x * t.dx + vec3{0, t.dy, 0} - z * t.retrait, x, z, t.profondeur, std::move(t.plan)});
 }
 
 const std::vector<cuit::Bati>& poses() { return g_bats; }

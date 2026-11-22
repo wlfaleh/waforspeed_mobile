@@ -240,51 +240,217 @@ void mansart(const Plan& p, float D, int lod, Batiment& out) {
     }
 }
 
+namespace {
+// WFS-571 (ANO-280, RG-04) : mesures des équipements de toiture (valeurs courantes de conception, sans mesure publiée accessible) :
+// - édicule de cage d'escalier 3,2 × 2,8 m, 2,6 m de haut, dalle en débord de 15 cm ; porte métallique 0,90 × 2,10 m à huisserie
+//   de 50 mm ; grille de ventilation à lames de 0,8 × 0,8 m ;
+// - centrale de traitement d'air de toiture (petit tertiaire, 5 000 à 10 000 m³/h) : caisson 3,6 × 1,5 × 1,7 m posé sur deux
+//   rails d'acier de 12 cm, panneaux double peau (joints tous les 0,9 m), prise d'air à lames, deux ventilateurs d'extraction
+//   en dessus (virole à 8 pans de 0,76 m, grille) ;
+// - garde-corps de toiture-terrasse (NF E85-015 / NF P01-012) : main courante à 1,10 m du toit, lisse intermédiaire à 0,6 m,
+//   montants tous les 2 m (tube carré 40 mm), fixés côté intérieur de l'acrotère.
+constexpr float ACRO = 0.5f, ACRO_EP = 0.2f;   // acrotère (archi_geo.cpp)
+constexpr float GCT_H = 1.10f, GCT_LISSE = 0.6f, GCT_TUBE = 0.04f, GCT_PAS = 2.0f;
+
+// appelle f(x0, x1, z0, z1) pour chaque morceau de la pièce [x0, x1] × [z0, z1] posé hors de la partie du toit couverte par le
+// tronçon du dessus (archi::Plan::couvert) ; long : la pièce suit x (sinon z)
+template <class F> void horsCouvert(const Plan& p, float D, float x0, float x1, float z0, float z1, bool long_, F f) {
+    const Plan::Couvert& c = p.couvert;
+    const bool recouvre = c.actif && x1 > c.x0 + 1e-4f && x0 < c.x1 - 1e-4f && z1 > -D + 1e-4f && z0 < c.zAvant - 1e-4f;
+    if (!recouvre) { f(x0, x1, z0, z1); return; }
+    if (long_) { if (c.x0 > x0 + 1e-4f) f(x0, c.x0, z0, z1); if (c.x1 < x1 - 1e-4f) f(c.x1, x1, z0, z1); }
+    else { if (c.zAvant < z1 - 1e-4f) f(x0, x1, c.zAvant, z1); }
+}
+
+// porte métallique d'un local technique, plan z = zf (normale +z), axe cx, seuil y0 : huisserie de 50 mm en saillie, vantail en
+// retrait de 2 cm, linteau métallique ; poignée au niveau 0
+void porteTechnique(Batiment& out, float cx, float y0, float zf, int lod) {
+    Maillage& met = out.part[METAL];
+    constexpr float L = 0.9f, H = 2.1f, E = 0.05f;
+    // vantail de tôle laquée gris clair (pièce ENCADREMENT, mat ; CHASSIS est réservé aux menuiseries), huisserie et linteau d'acier sombre
+    face(out.part[ENCADREMENT], {cx - L / 2, y0, zf - 0.02f}, {cx + L / 2, y0, zf - 0.02f}, {cx + L / 2, y0 + H, zf - 0.02f}, {cx - L / 2, y0 + H, zf - 0.02f}, {0, 0, 1});
+    if (lod >= 2) return;
+    pave(met, cx - L / 2 - E, cx - L / 2, y0, y0 + H + E, zf - 0.02f, zf + 0.03f, 1 | 4 | 8 | 16);       // montant gauche
+    pave(met, cx + L / 2, cx + L / 2 + E, y0, y0 + H + E, zf - 0.02f, zf + 0.03f, 1 | 4 | 8 | 16);       // montant droit
+    pave(met, cx - L / 2, cx + L / 2, y0 + H, y0 + H + E, zf - 0.02f, zf + 0.03f, 1 | 16 | 32);         // traverse haute
+    pave(met, cx - L / 2 - 0.1f, cx + L / 2 + 0.1f, y0 + H + 0.1f, y0 + H + 0.16f, zf, zf + 0.06f, 1 | 4 | 8 | 16 | 32);   // linteau
+    if (lod == 0) {
+        pave(met, cx + L / 2 - 0.16f, cx + L / 2 - 0.1f, y0 + 1.0f, y0 + 1.04f, zf - 0.02f, zf + 0.04f, 1 | 4 | 8 | 16 | 32);
+        pave(met, cx + L / 2 - 0.16f, cx + L / 2 - 0.02f, y0 + 1.0f, y0 + 1.02f, zf + 0.04f, zf + 0.06f, 1 | 4 | 8 | 16 | 32);
+    }
+}
+
+// grille de ventilation à lames dans le plan x = xf (normale sens·x), centrée sur (yc, zc), l × h
+void grilleLames(Maillage& met, float xf, float sens, float yc, float zc, float l, float h, int lod) {
+    const float s = sens > 0 ? 1.f : -1.f, e = 0.04f;
+    const float xa = s > 0 ? xf : xf - 0.06f, xb = s > 0 ? xf + 0.06f : xf;
+    const int bord = s > 0 ? 8 : 4;
+    pave(met, xa, xb, yc - h / 2, yc - h / 2 + e, zc - l / 2, zc + l / 2, bord | 1 | 2 | 16 | 32);   // cadre
+    pave(met, xa, xb, yc + h / 2 - e, yc + h / 2, zc - l / 2, zc + l / 2, bord | 1 | 2 | 16 | 32);
+    pave(met, xa, xb, yc - h / 2, yc + h / 2, zc - l / 2, zc - l / 2 + e, bord | 1 | 2);
+    pave(met, xa, xb, yc - h / 2, yc + h / 2, zc + l / 2 - e, zc + l / 2, bord | 1 | 2);
+    // fond sombre derrière les lames (gaine), puis lames inclinées à 45° vers le bas (pluie)
+    face(met, {xf + s * 0.002f, yc - h / 2, zc - l / 2}, {xf + s * 0.002f, yc - h / 2, zc + l / 2}, {xf + s * 0.002f, yc + h / 2, zc + l / 2},
+         {xf + s * 0.002f, yc + h / 2, zc - l / 2}, {s, 0, 0});
+    if (lod >= 2) return;
+    const int n = std::max(2, (int)std::floor((h - 2 * e) / 0.1f));
+    for (int k = 0; k < n; k++) {
+        const float yb = yc - h / 2 + e + (h - 2 * e) * (k + 0.15f) / n;
+        face(met, {xf + s * 0.005f, yb + 0.07f, zc - l / 2 + e}, {xf + s * 0.005f, yb + 0.07f, zc + l / 2 - e}, {xf + s * 0.055f, yb, zc + l / 2 - e},
+             {xf + s * 0.055f, yb, zc - l / 2 + e}, {s, 1, 0});
+    }
+}
+
+// ventilateur d'extraction posé sur le caisson : virole à 8 pans (rayon r, haut h), rebord en haut, grille de protection en croix
+void ventilateur(Batiment& out, vec3 c, float r, float h, int lod) {
+    constexpr int N = 8;
+    Maillage& met = out.part[METAL];
+    auto anneau = [&](float ya, float yb, float ra) {
+        for (int k = 0; k < N; k++) {
+            const float a0 = 2 * PI * (k + 0.5f) / N, a1 = 2 * PI * (k + 1.5f) / N, am = (a0 + a1) / 2;
+            face(met, {c.x + std::cos(a0) * ra, ya, c.z + std::sin(a0) * ra}, {c.x + std::cos(a1) * ra, ya, c.z + std::sin(a1) * ra},
+                 {c.x + std::cos(a1) * ra, yb, c.z + std::sin(a1) * ra}, {c.x + std::cos(a0) * ra, yb, c.z + std::sin(a0) * ra}, {std::cos(am), 0, std::sin(am)});
+        }
+    };
+    anneau(c.y, c.y + h, r);
+    anneau(c.y + h - 0.04f, c.y + h, r + 0.03f);   // rebord roulé
+    for (int k = 0; k < N; k++) {                  // dessus du rebord, puis fond sombre (moteur et pales, vus à travers la grille)
+        const float a0 = 2 * PI * (k + 0.5f) / N, a1 = 2 * PI * (k + 1.5f) / N, y = c.y + h;
+        face(met, {c.x + std::cos(a0) * r, y, c.z + std::sin(a0) * r}, {c.x + std::cos(a1) * r, y, c.z + std::sin(a1) * r},
+             {c.x + std::cos(a1) * (r + 0.03f), y, c.z + std::sin(a1) * (r + 0.03f)}, {c.x + std::cos(a0) * (r + 0.03f), y, c.z + std::sin(a0) * (r + 0.03f)}, {0, 1, 0});
+        tri(met, {c.x, y - 0.12f, c.z}, {c.x + std::cos(a0) * r, y - 0.12f, c.z + std::sin(a0) * r}, {c.x + std::cos(a1) * r, y - 0.12f, c.z + std::sin(a1) * r}, {0, 1, 0});
+    }
+    if (lod >= 1) return;
+    const float y = c.y + h + 0.01f;   // grille : 5 fils de 8 mm dans chaque sens (couverture partielle, pièce FIN)
+    for (int k = -2; k <= 2; k++) {
+        const float o = r * 0.85f * k / 2.5f, w = std::sqrt(std::max(0.f, r * r - o * o)) * 0.95f;
+        pave(out.part[FIN], c.x + o - 0.004f, c.x + o + 0.004f, y, y + 0.008f, c.z - w, c.z + w, 16 | 1 | 2);
+        pave(out.part[FIN], c.x - w, c.x + w, y + 0.008f, y + 0.016f, c.z + o - 0.004f, c.z + o + 0.004f, 16 | 4 | 8);
+    }
+}
+
+// centrale de traitement d'air de toiture, centre au sol (cx, H, cz), longueur selon x
+void centraleAir(Batiment& out, float cx, float H, float cz, int lod) {
+    constexpr float LX = 1.8f, LZ = 0.75f, RAIL = 0.12f, HC = 1.7f;
+    Maillage& met = out.part[METAL];
+    Maillage& peau = out.part[ENCADREMENT];   // tôle laquée gris clair (RAL 7035) : matériau mat gris de l'encadrement (CHASSIS est réservé aux menuiseries, WFS-415)
+    const float y0 = H + RAIL, y1 = y0 + HC;
+    for (float z : {cz - LZ + 0.2f, cz + LZ - 0.2f}) {   // rails (profilés en I de 120 mm) sur plots de caoutchouc
+        pave(met, cx - LX - 0.2f, cx + LX + 0.2f, H + 0.02f, y0, z - 0.03f, z + 0.03f, 1 | 2 | 4 | 8);
+        pave(met, cx - LX - 0.2f, cx + LX + 0.2f, y0 - 0.012f, y0, z - 0.06f, z + 0.06f, 1 | 2 | 4 | 8 | 16 | 32);
+        if (lod == 0) for (float x : {cx - LX, cx, cx + LX}) pave(met, x - 0.08f, x + 0.08f, H, H + 0.02f, z - 0.08f, z + 0.08f, 1 | 2 | 4 | 8 | 16);
+    }
+    pave(peau, cx - LX, cx + LX, y0, y1, cz - LZ, cz + LZ, 1 | 2 | 8 | 32);           // caisson (le bout −x porte la prise d'air)
+    pave(peau, cx - LX, cx - LX + 0.02f, y0, y1, cz - LZ, cz + LZ, 4);
+    pave(met, cx - LX - 0.04f, cx + LX + 0.04f, y1, y1 + 0.05f, cz - LZ - 0.04f, cz + LZ + 0.04f);   // couvercle en débord (goutte d'eau)
+    pave(met, cx - LX - 0.02f, cx + LX + 0.02f, y0, y0 + 0.1f, cz - LZ - 0.02f, cz + LZ + 0.02f, 1 | 2 | 4 | 8 | 16);   // socle-châssis
+    grilleLames(met, cx - LX, -1, (y0 + y1) / 2 + 0.05f, cz, 2 * LZ - 0.3f, HC - 0.5f, lod);   // prise d'air neuf
+    if (lod <= 1) {
+        // cornières des 4 arêtes verticales, joints des panneaux double peau tous les 0,9 m sur les grandes faces
+        for (float x : {cx - LX, cx + LX}) for (float z : {cz - LZ, cz + LZ})
+            pave(met, x - 0.025f, x + 0.025f, y0 + 0.1f, y1, z - 0.025f, z + 0.025f, 1 | 2 | 4 | 8);
+        for (float x = cx - LX + 0.9f; x < cx + LX - 0.3f; x += 0.9f) {
+            pave(met, x - 0.015f, x + 0.015f, y0 + 0.1f, y1, cz + LZ, cz + LZ + 0.012f, 1 | 4 | 8);
+            pave(met, x - 0.015f, x + 0.015f, y0 + 0.1f, y1, cz - LZ - 0.012f, cz - LZ, 2 | 4 | 8);
+        }
+        for (float x : {cx + 0.2f, cx + 1.1f}) ventilateur(out, {x, y1 + 0.05f, cz}, 0.38f, 0.32f, lod);
+    }
+    if (lod == 0)   // poignées de visite (portes d'accès aux filtres) sur la face avant
+        for (float x : {cx - 0.9f, cx + 0.45f}) pave(met, x - 0.02f, x + 0.02f, y0 + 0.7f, y0 + 1.0f, cz + LZ, cz + LZ + 0.05f, 1 | 4 | 8 | 16 | 32);
+}
+
+// garde-corps de toiture le long d'une pièce d'acrotère [x0, x1] × [z0, z1] (côté intérieur), long : selon x
+// (niveau 1 : seulement les faces vues de dehors et de dessus, les chants de 4 cm ne se voient pas au-delà de 20 m)
+void gardeCorpsToit(Maillage& met, float H, float x0, float x1, float z0, float z1, bool long_, float zInt, int lod) {
+    const float t = GCT_TUBE / 2, yh = H + GCT_H, yl = H + GCT_LISSE;
+    if (long_) {
+        const float z = zInt;
+        pave(met, x0, x1, yh - GCT_TUBE, yh, z - t, z + t, lod ? 1 | 2 | 16 : 1 | 2 | 16 | 32);
+        pave(met, x0, x1, yl - 0.03f, yl, z - t * 0.75f, z + t * 0.75f, lod ? 1 | 2 : 1 | 2 | 16 | 32);
+        const int n = std::max(1, (int)std::ceil((x1 - x0) / GCT_PAS));
+        for (int k = 0; k <= n; k++) { const float x = std::clamp(x0 + (x1 - x0) * k / n, x0 + t, x1 - t); pave(met, x - t, x + t, H + ACRO, yh - GCT_TUBE, z - t, z + t, lod ? 1 | 2 : 1 | 2 | 4 | 8); }
+    } else {
+        const float x = zInt;
+        pave(met, x - t, x + t, yh - GCT_TUBE, yh, z0, z1, lod ? 4 | 8 | 16 : 4 | 8 | 16 | 32);
+        pave(met, x - t * 0.75f, x + t * 0.75f, yl - 0.03f, yl, z0, z1, lod ? 4 | 8 : 4 | 8 | 16 | 32);
+        const int n = std::max(1, (int)std::ceil((z1 - z0) / GCT_PAS));
+        for (int k = 0; k <= n; k++) { const float z = std::clamp(z0 + (z1 - z0) * k / n, z0 + t, z1 - t); pave(met, x - t, x + t, H + ACRO, yh - GCT_TUBE, z - t, z + t, lod ? 4 | 8 : 1 | 2 | 4 | 8); }
+    }
+}
+}  // namespace
+
 void terrasse(const Plan& p, float D, int lod, Batiment& out) {
-    constexpr float ACRO = 0.5f, ACRO_EP = 0.2f;   // acrotère (archi_geo.cpp)
     const float H = p.hauteur(), L = p.largeur;
     Maillage& toit = out.part[TOIT];
     Maillage& mur = out.part[MUR];
+    Maillage& met = out.part[METAL];
     face(toit, {0, H, 0}, {L, H, 0}, {L, H, -D}, {0, H, -D}, {0, 1, 0});
-    pave(mur, 0, L, H, H + ACRO, -ACRO_EP, 0, 63 & ~32);
-    pave(mur, 0, L, H, H + ACRO, -D, -D + ACRO_EP, 63 & ~32);
-    pave(mur, 0, ACRO_EP, H, H + ACRO, -D, 0, 63 & ~32);
-    pave(mur, L - ACRO_EP, L, H, H + ACRO, -D, 0, 63 & ~32);
-    // WFS-455 (ANO-254) : l'édicule se voit aussi de loin (volume et dalle à tous les niveaux ; porte et ventilation de près)
+    // acrotère : rives avant et arrière sur toute la largeur, côtés entre elles ; WFS-571 : rien sous le tronçon du dessus (mur confondu)
+    const float c = COUVERTINE, y = H + ACRO, e = ACRO_EP;
+    // garde-corps de toiture (WFS-571, RG-04) : tours (style moderne), toits accessibles (terrasses des retraits, toit technique)
+    const bool garde = p.style == Style::Moderne && lod <= 1;
+    horsCouvert(p, D, 0, L, -e, 0, true, [&](float a, float b, float, float) {   // rive avant
+        pave(mur, a, b, H, y, -e, 0, 63 & ~32);
+        if (lod <= 1) pave(met, a - (a < 1e-4f ? c : 0.f), b + (b > L - 1e-4f ? c : 0.f), y, y + 0.02f, -e - c, c);
+        if (garde) gardeCorpsToit(met, H, a + e, b - e, 0, 0, true, -e - 0.06f, lod);
+    });
+    horsCouvert(p, D, 0, L, -D, -D + e, true, [&](float a, float b, float, float) {   // rive arrière
+        pave(mur, a, b, H, y, -D, -D + e, 63 & ~32);
+        if (lod <= 1) pave(met, a - (a < 1e-4f ? c : 0.f), b + (b > L - 1e-4f ? c : 0.f), y, y + 0.02f, -D - c, -D + e + c);
+        if (garde) gardeCorpsToit(met, H, a + e, b - e, 0, 0, true, -D + e + 0.06f, lod);
+    });
+    for (int cote = 0; cote < 2; cote++) {   // rives gauche et droite, entre les rives avant et arrière
+        const float x0 = cote ? L - e : 0, x1 = x0 + e;
+        horsCouvert(p, D, x0, x1, -D + e, -e, false, [&](float a, float b, float z0, float z1) {
+            pave(mur, a, b, H, y, z0, z1, 63 & ~32);
+            if (lod <= 1) pave(met, a - c, b + c, y, y + 0.02f, z0 + (z0 < -D + e + 1e-4f ? c : 0.f), z1 - (z1 > -e - 1e-4f ? c : 0.f));
+            if (garde) gardeCorpsToit(met, H, 0, 0, z0 + 0.06f, z1 - 0.06f, false, cote ? L - e - 0.06f : e + 0.06f, lod);
+        });
+    }
+    // WFS-455 (ANO-254) : l'édicule se voit aussi de loin. WFS-571 (ANO-280, RG-04) : plus de « cube » aux niveaux 1 et 2 : murs,
+    // dalle en débord avec couvertine, porte métallique à huisserie et linteau, grille de ventilation, à chaque niveau de détail
     const bool edicule = p.edicules && L > 6 && D > 6;
     const float cx = L * 0.5f, cz = -D * 0.6f, x0 = cx - 1.6f, x1 = cx + 1.6f, z0 = cz - 1.4f, z1 = cz + 1.4f, yh = H + 2.6f;
-    if (edicule && lod >= 1) {
+    if (edicule) {
         pave(mur, x0, x1, H, yh, z0, z1, 63 & ~(16 | 32));
         pave(out.part[ENCADREMENT], x0 - 0.15f, x1 + 0.15f, yh, yh + 0.2f, z0 - 0.15f, z1 + 0.15f);
-        face(out.part[MENUISERIE], {cx - 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 2.15f, z1 + 0.005f},
-             {cx - 0.45f, H + 2.15f, z1 + 0.005f}, {0, 0, 1});
+        const float ya = yh + 0.2f;   // dessus de la dalle
+        if (lod <= 1) {   // couvertine sur la rive de la dalle (bande de 25 cm), dalle de béton visible au milieu
+            const float a0 = x0 - 0.18f, a1 = x1 + 0.18f, b0 = z0 - 0.18f, b1 = z1 + 0.18f, w = 0.25f;
+            pave(met, a0, a1, ya, ya + 0.02f, b1 - w, b1, 63 & ~32); pave(met, a0, a1, ya, ya + 0.02f, b0, b0 + w, 63 & ~32);
+            pave(met, a0, a0 + w, ya, ya + 0.02f, b0 + w, b1 - w, 63 & ~32); pave(met, a1 - w, a1, ya, ya + 0.02f, b0 + w, b1 - w, 63 & ~32);
+        }
+        {   // lanterneau de désenfumage de la cage d'escalier (1 m², obligatoire) : costière de béton, capot vitré à deux pentes
+            const float lx = cx - 0.55f, lx1 = cx + 0.55f, lz = cz - 0.55f, lz1 = cz + 0.55f, yc = ya + 0.3f;
+            pave(out.part[ENCADREMENT], lx, lx1, ya, yc, lz, lz1, 63 & ~32);
+            Maillage& cap = out.part[ENCADREMENT];   // polycarbonate opale (gris clair mat), cadre d'aluminium
+            face(cap, {lx, yc, lz1}, {lx1, yc, lz1}, {lx1, yc + 0.25f, cz}, {lx, yc + 0.25f, cz}, {0, 1, 1});
+            face(cap, {lx1, yc, lz}, {lx, yc, lz}, {lx, yc + 0.25f, cz}, {lx1, yc + 0.25f, cz}, {0, 1, -1});
+            tri(cap, {lx, yc, lz}, {lx, yc, lz1}, {lx, yc + 0.25f, cz}, {-1, 0, 0});
+            tri(cap, {lx1, yc, lz1}, {lx1, yc, lz}, {lx1, yc + 0.25f, cz}, {1, 0, 0});
+            if (lod <= 1) pave(met, lx - 0.02f, lx1 + 0.02f, yc + 0.23f, yc + 0.27f, cz - 0.03f, cz + 0.03f, 63 & ~32);   // faîtière
+        }
+        porteTechnique(out, cx, H + 0.05f, z1 + 0.025f, lod);   // vantail 5 mm devant le mur, huisserie en saillie
+        if (p.graine & 2u) grilleLames(met, x1, 1, H + 1.86f, cz, 0.8f, 0.8f, lod); else grilleLames(met, x0, -1, H + 1.86f, cz, 0.8f, 0.8f, lod);   // côté selon le bâtiment
     }
-    if (lod >= 2) return;
-    Maillage& met = out.part[METAL];   // couvertines (tôle pliée) sur les 4 côtés
-    const float c = COUVERTINE, y = H + ACRO;
-    pave(met, -c, L + c, y, y + 0.02f, -ACRO_EP - c, c);
-    pave(met, -c, L + c, y, y + 0.02f, -D - c, -D + ACRO_EP + c);
-    pave(met, -c, ACRO_EP + c, y, y + 0.02f, -D + ACRO_EP, -ACRO_EP);
-    pave(met, L - ACRO_EP - c, L + c, y, y + 0.02f, -D + ACRO_EP, -ACRO_EP);
-    if (!(edicule && lod == 0)) return;
-    // édicule (cage d'escalier et machinerie) : 3,2 × 2,8 m, 2,6 m ; dalle en débord, porte métallique, grille de ventilation
-    pave(mur, x0, x1, H, yh, z0, z1, 63 & ~(16 | 32));
-    pave(out.part[ENCADREMENT], x0 - 0.15f, x1 + 0.15f, yh, yh + 0.2f, z0 - 0.15f, z1 + 0.15f);
-    face(out.part[MENUISERIE], {cx - 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 0.05f, z1 + 0.005f}, {cx + 0.45f, H + 2.15f, z1 + 0.005f},
-         {cx - 0.45f, H + 2.15f, z1 + 0.005f}, {0, 0, 1});
-    pave(met, cx - 0.5f, cx + 0.5f, H + 2.15f, H + 2.2f, z1, z1 + 0.04f);                       // linteau métallique
-    pave(met, cx + 0.33f, cx + 0.39f, H + 1.0f, H + 1.06f, z1 + 0.005f, z1 + 0.05f);            // poignée
-    for (int k = 0; k < 6; k++) {                                                                 // lames de la ventilation
-        const float yb = H + 1.5f + k * 0.12f;
-        face(met, {x1 + 0.005f, yb, cz - 0.4f}, {x1 + 0.005f, yb, cz + 0.4f}, {x1 + 0.07f, yb + 0.09f, cz + 0.4f}, {x1 + 0.07f, yb + 0.09f, cz - 0.4f}, {1, 1, 0});
+    // WFS-571 (RG-04) : centrale de traitement d'air sur le dernier toit d'un immeuble de bureaux ou d'activité (moderne, industriel),
+    // derrière l'édicule si la profondeur le permet, sinon devant, décalée de la porte ; 1 m au moins de l'acrotère et de l'édicule
+    if (edicule && (p.style == Style::Moderne || p.style == Style::Industriel) && L >= 2 * (e + 1.f + 2.0f)) {
+        constexpr float DX = 2.0f, DZ = 0.75f;   // demi-encombrement de la centrale avec ses rails
+        float ax = cx, az = 0; bool ok = false;
+        if (const float lo = -D + e + 1.f + DZ, hi = z0 - 1.f - DZ; lo <= hi) { az = (lo + hi) / 2; ok = true; }
+        else if (const float lo2 = z1 + 1.f + DZ, hi2 = -e - 1.f - DZ; lo2 <= hi2) {
+            const float s = (p.graine & 1u) ? 1.f : -1.f, dx = L / 2 - e - 1.f - DX;
+            if (dx >= 0.45f + 0.3f) { az = (lo2 + hi2) / 2; ax = cx + s * dx; ok = true; }   // porte (0,90 m) dégagée
+        }
+        if (ok) centraleAir(out, ax, H, az, lod);
     }
-    pave(met, x1, x1 + 0.08f, H + 1.45f, H + 2.27f, cz - 0.44f, cz + 0.44f, 1 | 2 | 16 | 32);   // cadre de la grille
 }
 
 void facade(const Plan& p, Batiment& out) {
     const float L = p.largeur;
     Maillage& pierre = out.part[ENCADREMENT];
-    if (p.style == Style::Classique || p.style == Style::Moderne) {   // soubassement : 0,6 m, saillie 3 cm, coupé par les baies basses
+    if ((p.style == Style::Classique || p.style == Style::Moderne) && !p.surSocle) {   // soubassement : 0,6 m, saillie 3 cm, coupé par les baies basses (WFS-571 : pas en hauteur)
         constexpr float HS = 0.6f, S = 0.03f;
         std::vector<std::pair<float, float>> trous;
         for (const Baie& b : p.baies) if (b.niveau == 0 && b.y < HS) trous.push_back({b.x - b.l / 2, b.x + b.l / 2});

@@ -30,7 +30,7 @@ constexpr int64_t SEGMENT = 40;                                      // début d
 struct EtatArchi {
     bool actif = false;
     int lod = 0;
-    int vue = 0;   // 0 : de près, depuis la chaussée ; 1 : de loin ; 2 : de dessus ; 3 : face au style « style » ; 4, 5 : gros plan porte, fenêtre (WFS-402)
+    int vue = 0;   // 0 : de près, depuis la chaussée ; 1 : de loin ; 2 : de dessus ; 3 : face au style « style » ; 4, 5 : gros plan porte, fenêtre (WFS-402) ; 6, 7 : toit de la tour moderne de 3/4 au-dessus, tour vue du trottoir d'en face (WFS-571)
     int style = 0;
 } g_archi;
 
@@ -99,7 +99,7 @@ public:
             centre_[s] = o + x * (LARGEUR[s] / 2);   // milieu de la façade, au sol
             along += LARGEUR[s] + ECART;
             for (int l = 0; l < 3; l++) {
-                archi::Batiment b; archi::construire(plans_[s], PROF, l, b);
+                archi::Batiment b; archi::construireTroncons(plans_[s], PROF, l, b);   // WFS-571 : la tour moderne en tronçons, comme dans la Ville
                 size_t tri = 0;
                 for (int k = 0; k < archi::NB_PARTS; k++) {
                     std::vector<Vertex> v; v.reserve(b.part[k].v.size());
@@ -124,7 +124,7 @@ public:
         if (g_archi.vue == 0) { oeil = carte::lateral(carte::poseAt(t, milieu - (int64_t)(30 / SEG_M)), -(float)RW + 1.f, 1.7f); cible = carte::lateral(pm, (float)RW + RECUL, 8.f); }
         else if (g_archi.vue == 1) oeil = carte::lateral(carte::poseAt(t, milieu - (int64_t)(70 / SEG_M)), -4.f, 6.f);
         else if (g_archi.vue == 2) oeil = carte::lateral(pm, -30.f, 55.f);
-        else if (g_archi.vue >= 4) {   // WFS-402 : gros plan de la porte d'entrée (4) ou d'une fenêtre d'étage (5) du style, de 3/4
+        else if (g_archi.vue == 4 || g_archi.vue == 5) {   // WFS-402 : gros plan de la porte d'entrée (4) ou d'une fenêtre d'étage (5) du style, de 3/4
             const int s = std::clamp(g_archi.style, 0, NB - 1);
             const mat4& w = monde_[s];
             const vec3 X{w.at(0, 0), w.at(1, 0), w.at(2, 0)}, Z{w.at(0, 2), w.at(1, 2), w.at(2, 2)}, O{w.at(0, 3), w.at(1, 3), w.at(2, 3)};
@@ -143,6 +143,13 @@ public:
             oeil = g_archi.vue == 4 ? P + Z * 2.4f - X * 1.2f + vec3{0, 2.5f - (b.y + b.h * 0.5f), 0}
                                     : P + Z * 3.0f - X * 1.4f + vec3{0, -0.6f, 0};
         }
+        else if (g_archi.vue >= 6) {   // WFS-571 : tour moderne (tronçons) : toit de 3/4 en surplomb (6), ou du trottoir d'en face, en contre-plongée (7)
+            const int s = (int)archi::Style::Moderne;
+            const vec3 n = vec3{monde_[s].at(0, 2), 0, monde_[s].at(2, 2)}, X{monde_[s].at(0, 0), 0, monde_[s].at(2, 0)};
+            const float h = plans_[s].hauteur();
+            if (g_archi.vue == 6) { cible = centre_[s] - n * (PROF * 0.5f) + vec3{0, h - 1.f, 0}; oeil = cible + n * 16.f - X * 9.f + vec3{0, 11.f, 0}; }
+            else { cible = centre_[s] + vec3{0, h * 0.62f, 0}; oeil = centre_[s] + n * 22.f - X * 8.f + vec3{0, 1.7f, 0}; }
+        }
         else {   // face au style : depuis le bord opposé de la chaussée, à hauteur d'yeux, cadré sur toute la façade
             const int s = std::clamp(g_archi.style, 0, NB - 1);
             const vec3 n = vec3{monde_[s].at(0, 2), 0, monde_[s].at(2, 2)};   // normale de la façade (vers la route)
@@ -151,7 +158,7 @@ public:
             oeil = centre_[s] + n * std::max(16.f, h * 1.15f) + vec3{0, 1.7f, 0};
         }
         fp.view = lookAt(oeil, cible, {0, 1, 0});
-        fp.proj = perspectiveVk((g_archi.vue == 0 ? 60.f : g_archi.vue >= 4 ? 50.f : 55.f) * PI / 180.f, g.uiWidth / std::max(1.f, g.uiHeight), 0.1f);
+        fp.proj = perspectiveVk((g_archi.vue == 0 || g_archi.vue == 7 ? 60.f : g_archi.vue >= 4 ? 50.f : 55.f) * PI / 180.f, g.uiWidth / std::max(1.f, g.uiHeight), 0.1f);
         fp.camPos = oeil;
     }
 
@@ -201,6 +208,10 @@ void benchArchi(Game& g, Renderer& r, const std::string& out) {
     for (int s = 0; s < NB; s++) { portes[s] = std::string("archi-porte-") + archi::regles((archi::Style)s).nom; caps.push_back({portes[s].c_str(), "jour", 4, 0}); }
     for (int s = 0; s < NB; s++) { fenetres[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom; caps.push_back({fenetres[s].c_str(), "jour", 5, 0}); }
     for (int s = 0; s < NB; s++) { portesNuit[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({portesNuit[s].c_str(), "nuit", 5, 0}); }
+    // WFS-571 : tour moderne en tronçons, toit (édicule, centrale de traitement d'air, garde-corps) de près, à 120-300 m (niveau 1), de nuit
+    for (const Cap& c : {Cap{"archi-tour-toit", "jour", 6, 0}, Cap{"archi-tour-toit-lod1", "jour", 6, 1}, Cap{"archi-tour-toit-lod2", "jour", 6, 2},
+                         Cap{"archi-tour-rue", "jour", 7, 0}, Cap{"archi-tour-rue-nuit", "nuit", 7, 0}}) caps.push_back(c);
+    if (const char* f = std::getenv("WFS_ARCHI_FILTRE")) std::erase_if(caps, [f](const Cap& c) { return !std::strstr(c.nom, f); });   // essai local
     int k = 0;
     for (const Cap& c : caps) {
         if (c.vue >= 3) g_archi.style = (k++) % NB;
