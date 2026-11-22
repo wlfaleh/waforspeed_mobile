@@ -24,10 +24,6 @@
   - Les objets 3D ne peuvent pas cacher la carte (elle est dessinée avec l'interface) ; c'est vérifié par le test de la jante pour toutes les voitures jouables.
   - **Paquets `.wfcarte`** : rien de cuit, rien à publier.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-https://claude.ai/code/session_01UY1Vv2sHodzrS5FyXVX9uR
-
 ## Captures pour le lead dev (13 paires + 12 zooms)
 
 Dossier : [`qa/pr/WFS-596`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-596/qa/pr/WFS-596) — `WFS_BANC=carte-cockpit WFS_TAILLE=1280x720 build/wfs_bench`.
@@ -61,3 +57,7 @@ Captures « avant » : `main` = `b097807d` (le même banc `carte-cockpit` ajout�
 | `carte-cockpit-sf90-poursuite-jour` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-596/qa/pr/WFS-596/avant-carte-cockpit-sf90-poursuite-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-596/qa/pr/WFS-596/apres-carte-cockpit-sf90-poursuite-jour.jpg?raw=true) |
 | `carte-cockpit-sf90-poursuite-jour` (zoom ×3 de l'écran) | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-596/qa/pr/WFS-596/avant-zoom-carte-cockpit-sf90-poursuite-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-596/qa/pr/WFS-596/apres-zoom-carte-cockpit-sf90-poursuite-jour.jpg?raw=true) |
 | `carte-cockpit-vue-arriere-jour` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-596/qa/pr/WFS-596/avant-carte-cockpit-vue-arriere-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-596/qa/pr/WFS-596/apres-carte-cockpit-vue-arriere-jour.jpg?raw=true) |
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01UY1Vv2sHodzrS5FyXVX9uR
