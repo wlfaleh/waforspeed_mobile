@@ -181,31 +181,33 @@ public:
     const char* name() const override { return "pietons"; }
 
     void init(Renderer& r, const GameView& g) override {
-        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0; omisVille_ = 0; for (int& t : tirageVille_) t = 0; etat_.clear(); tPrec_ = 0; premiere_ = true;
+        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0; omisVille_ = 0; for (int& t : tirageVille_) t = 0; for (int k = 0; k < CAT_NB; k++) avant_[k] = apres_[k] = 0; etat_.clear(); tPrec_ = 0; premiere_ = true;
         if (!g.map || !g.track) return;
         const char* id = g.map->id;
         tenue::carte() = id;   // WFS-210 : tenue des conducteurs selon la carte
         ville_ = !std::strcmp(id, "ville"); plage_ = !std::strcmp(id, "plage");
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
         if (!ville_ && !plage_ && !campagne_ && !circuit_) return;
-        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { if (!garder()) continue; Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville) ; WFS-317 : tous gardés (le chien est dessiné par la Ville)
+        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { if (!garder() || !garder593(CAT_PROMENEURS)) continue; Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville) ; un sur deux (WFS-222) puis 10 % (WFS-593) : même règle que apparition::promeneurGarde, qui choisit les chiens dessinés par la Ville
         piste_ = g.track;   // WFS-179
         const size_t nProm = gens_.size();
-        rangListe_ = (int)gens_.size() + omis_; budgetVille_ = 0; candVille_.clear(); longueurTour_ = g.track->segmentCount();   // WFS-317 : rang dans la liste d'origine de life.js
+        rangListe_ = tirage_;   // WFS-593 : promeneurs tirés (gardés ou non), comme avant
+        budgetVille_ = 0; candVille_.clear(); longueurTour_ = g.track->segmentCount();   // WFS-317 : rang dans la liste d'origine de life.js
         peupler(*g.map, (int64_t)g.track->segmentCount());
-        if (ville_) repartirVille();   // WFS-317 (RG-03)
+        repartirMarcheurs();   // WFS-317 (RG-03) ; WFS-593 : toutes les cartes
         const size_t nMarche = gens_.size();
         {   // WFS-71 : clients des terrasses (placeShop), assis sur les serviettes (beachLife), baigneurs debout dans l'eau
             const int64_t L = (int64_t)g.track->segmentCount(); Personne P; P.assis = P.yawFixe = true;
-            for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { if (!garderVille(VILLE_TERRASSES)) continue; P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
-            for (const vie::Serviette& v : vie::serviettes(*g.map, L)) { P.s = v.s + 0.4; P.lat = v.lat; P.pose = 2; P.y = vie::hauteurSable(v.lat) + 0.03; P.yawRel = 1.5708f + v.rot; gens_.push_back(P); }
-            P.assis = false; for (const vie::Baigneur& b : vie::baigneurs(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 3; P.y = -2.25; P.yawRel = b.yaw; gens_.push_back(P); }
-            for (const vie::Baigneur& b : plage::gens(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 4; P.y = vie::hauteurSable(b.lat) + 0.02; P.yawRel = b.yaw; gens_.push_back(P); }   // WFS-180 : foule des fêtes, joueurs
+            for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { if (!garderVille(VILLE_TERRASSES) || !garder593(CAT_TERRASSES)) continue; P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
+            for (const vie::Serviette& v : vie::serviettes(*g.map, L)) { if (!garder593(CAT_SERVIETTES)) continue; P.s = v.s + 0.4; P.lat = v.lat; P.pose = 2; P.y = vie::hauteurSable(v.lat) + 0.03; P.yawRel = 1.5708f + v.rot; gens_.push_back(P); }
+            P.assis = false; for (const vie::Baigneur& b : vie::baigneurs(*g.map, L)) { if (!garder593(CAT_BAIGNEURS)) continue; P.s = b.s; P.lat = b.lat; P.pose = 3; P.y = -2.25; P.yawRel = b.yaw; gens_.push_back(P); }
+            for (const vie::Baigneur& b : plage::gens(*g.map, L)) { if (!garder593(CAT_FETES)) continue; P.s = b.s; P.lat = b.lat; P.pose = 4; P.y = vie::hauteurSable(b.lat) + 0.02; P.yawRel = b.yaw; gens_.push_back(P); }   // WFS-180 : foule des fêtes, joueurs
         }
         const size_t nDecor = gens_.size();
         if (ville_) for (const ville::Passant& c : ville::passants(*g.map, *g.track)) {   // WFS-137 (RG-02) : piétons des passages zébrés
-            if (!garder() || !garderVille(VILLE_PASSANTS)) continue;   // WFS-222 (RG-07) ; WFS-317 (RG-03)
+            if (!garder() || !garderVille(VILLE_PASSANTS) || !garder593(CAT_PASSANTS)) continue;   // WFS-222 (RG-07) ; WFS-317 (RG-03) ; WFS-593
             Personne P; P.s = c.s; P.lat = c.lat; P.v = c.v; P.dir = c.dir; P.feu = c.feu; P.pose = 5; P.yawFixe = true; P.y = 0.15; gens_.push_back(P); }
+        journal593(id);   // WFS-593 (RG-06) : comptes avant / après par catégorie
         if (gens_.empty()) return;
         if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0], true) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1], true)) {   // WFS-446 (RG-03) : refus de mémoire → même secours
             WFS_ERR("Piétons indisponibles (assets/people) : aucun piéton affiché");   // pas de silhouettes de repli
@@ -476,19 +478,20 @@ private:
     void ajouter(double s, double lat, int pose, Mulberry32& A, double v = 0, double latMin = 0, double latMax = 0) {
         // plafond du jeu web compté sur la liste d'origine (WFS-222) ; WFS-317 (RG-03) : en Ville, la liste entière du tour est tirée
         // (aucun plafond) et le plafond ne sert qu'à compter combien la Ville en gardait (repartirVille)
-        const int rang = rangListe_++;
-        if (!ville_ && (int)gens_.size() + omis_ >= PEOPLE_MAX) return;
+        const int rang = rangListe_++;   // WFS-593 : toutes les cartes comme la Ville : liste entière tirée, plafond compté seulement
         Personne P; P.s = s; P.lat = lat; P.pose = pose; P.latMin = latMin; P.latMax = latMax;   // WFS-233 : bande du trottoir
         P.dir = A.next() < 0.5 ? -1 : 1; P.v = v > 0 ? v : 1.1 + A.next() * 0.6; P.ph = A.next() * 6.28;
         if (!garder()) return;   // WFS-222 (RG-07) : tirages inchangés (mêmes places pour ceux qui restent)
-        if (ville_) { candVille_.push_back(P); if (rang < PEOPLE_MAX) budgetVille_++; return; }
-        gens_.push_back(P);
+        candVille_.push_back(P); if (rang < PEOPLE_MAX) budgetVille_++;
     }
     // WFS-317 (RG-03, décision de l'utilisateur et du PO du 2026-11-08) : Ville : 3 marcheurs sur 10 de ce que gardait le plafond
     // de life.js (tous serrés dans le 1er km du tour), répartis sur tout le tour : moitié de chaque côté, au plus près de places à pas
     // réguliers (apparition::repartirSurTour), côtés décalés d'un demi-pas (un marcheur tous les ≈ 200 m environ, en alternant les côtés) ; nombre et coût inchangés
-    void repartirVille() {
-        const int voulu = (budgetVille_ * apparition::VILLE_GARDES_SUR_10 + 9) / 10;
+    // WFS-593 : sur toutes les cartes, 10 % de ce que main gardait (Ville : 3 sur 10 du plafond ; autres cartes : tout ce que
+    // gardait le plafond de life.js), répartis de la même façon sur tout le tour (avant : serrés au début du tour hors Ville)
+    void repartirMarcheurs() {
+        const int avant = ville_ ? (budgetVille_ * apparition::VILLE_GARDES_SUR_10 + 9) / 10 : budgetVille_;
+        const int voulu = apparition::partGardee(avant);
         const double L = (double)longueurTour_;
         int pris = 0;
         for (int c = 0; c < 2; c++) {
@@ -499,12 +502,14 @@ private:
             for (const Personne* P : cote) pos.push_back(std::fmod(P->s, L));
             for (size_t i : apparition::repartirSurTour(pos, L, c == 0 ? voulu / 2 : voulu - voulu / 2, c == 1)) { gens_.push_back(*cote[i]); pris++; }
         }
-        omisVille_ += (int)candVille_.size() - pris;
+        if (ville_) omisVille_ += (int)candVille_.size() - pris;
+        avant_[CAT_MARCHEURS] = avant; apres_[CAT_MARCHEURS] = pris;
         candVille_.clear(); candVille_.shrink_to_fit();
     }
     // WFS-222 (RG-07, ordre de l'utilisateur du 2026-11-07) : au moins 50 % de personnes à pied en moins, sur toutes les cartes :
     // une sur deux des listes d'origine (promeneurs, marcheurs, passants), dans l'ordre des tirages ; les clients attablés,
     // les personnes sur les serviettes et les baigneurs ne sont pas concernés
+    // WFS-593 : apparition::promeneurGarde (chiens de la Ville) reprend cette règle (tirage impair) : changer les deux ensemble
     bool garder() { const bool g = (tirage_++ % 2) == 1; if (!g) omis_++; return g; }
     // WFS-317 (RG-03) : Ville : 3 sur 10 des clients des terrasses et des passants (apparition::garderVille, foule_apparition.h), compteur
     // propre à chaque liste ; marcheurs : repartirVille ; autres cartes : tous
@@ -514,6 +519,19 @@ private:
         const bool g = apparition::garderVille(tirageVille_[liste]++);
         if (!g) omisVille_++;
         return g;
+    }
+    // WFS-593 (RG-01, RG-02) : 10 % de chaque catégorie (apparition::garderPart), compteur propre à chaque liste ; avant_ :
+    // personnes que main posait, apres_ : personnes posées
+    enum Categorie { CAT_MARCHEURS, CAT_PROMENEURS, CAT_PASSANTS, CAT_TERRASSES, CAT_SERVIETTES, CAT_BAIGNEURS, CAT_FETES, CAT_NB };
+    bool garder593(int c) { const bool g = apparition::garderPart(avant_[c]++); apres_[c] += g; return g; }
+    void journal593(const char* id) const {
+        static const char* const NOMS[CAT_NB] = {"marcheurs", "promeneurs", "passants", "terrasses", "serviettes", "baigneurs", "fêtes"};
+        char t[400]; int n = 0, av = 0, ap = 0;
+        for (int k = 0; k < CAT_NB; k++) {
+            av += avant_[k]; ap += apres_[k];
+            if (n < (int)sizeof t - 40) n += std::snprintf(t + n, sizeof t - (size_t)n, "%s%s %d → %d", k ? ", " : "", NOMS[k], avant_[k], apres_[k]);
+        }
+        WFS_LOG("Piétons (WFS-593) : %s : %d → %d personnes (%d %% gardées) : %s", id, av, ap, apparition::PERSONNES_GARDEES_SUR_100, t);
     }
 
     // populatePeople (life.js), même graine mulberry32(seed × 13 + 5) et mêmes tirages
@@ -721,6 +739,7 @@ private:
     int omis_ = 0, tirage_ = 0;   // WFS-222 (RG-07)
     double tPrec_ = 0;
     int tirageVille_[VILLE_NB] = {}, omisVille_ = 0, rangListe_ = 0, budgetVille_ = 0;   // WFS-317 (RG-03)
+    int avant_[CAT_NB] = {}, apres_[CAT_NB] = {};   // WFS-593
     int64_t longueurTour_ = 1;   // WFS-317 : tour en tronçons (repartirVille)
     std::vector<Personne> candVille_;   // WFS-317 (RG-03) : marcheurs de tout le tour avant répartition (chargement seulement)
     bool actif_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;

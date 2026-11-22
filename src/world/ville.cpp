@@ -20,6 +20,7 @@
 #include <map>
 #include <vector>
 #include "../core/jobs.h"
+#include "foule_apparition.h"   // WFS-593 (accroche) : promeneurs gardés
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/course.h"
@@ -1365,7 +1366,8 @@ public:
         for (const ville::Promeneur& m : P.promeneurs) promS_.push_back(m.s);
         { Geo g; carte::box(g, {0, 0, 0}, {1, 0, 0}, {0, 0, 1}, 0.012f, 0.012f, 1.f, uvc(U_LAISSE)); laisse_ = r.makeMesh(g.v, g.i, false); }   // laisse : 1 m le long de +Z
         for (const ville::Lieu& l : P.lieux) WFS_LOG("Ville (WFS-176) : lieu %d au segment %lld, côté %d, %.0f m", (int)l.t, (long long)l.seg, l.side, l.len);
-        WFS_LOG("Ville (WFS-176) : %zu lieu(x), %zu groupe(s) de pigeons, %zu chien(s)%s", P.lieux.size(), vols_.size(), promS_.size(),
+        int chiens = 0; for (size_t i = 0; i < promS_.size(); i++) chiens += apparition::promeneurGarde((int)i);   // WFS-593 : chiens dessinés
+        WFS_LOG("Ville (WFS-176) : %zu lieu(x), %zu groupe(s) de pigeons, %d chien(s) sur %zu promeneur(s)%s", P.lieux.size(), vols_.size(), chiens, promS_.size(),
                 chien_[0].empty() ? " (modèles absents : chiens non dessinés)" : "");
         (void)t;
     }
@@ -1642,6 +1644,7 @@ public:
         }
         // chiens : 1,3 m devant leur promeneur, côté façades ; pas de marche réglé sur la distance (cycle de 0,9 m)
         if (!chien_[0].empty()) for (size_t i = 0; i < promS_.size(); i++) {
+            if (!apparition::promeneurGarde((int)i)) continue;   // WFS-593 (accroche) : pas de chien sans son maître (pietons.cpp)
             const ville::Promeneur& m = plan_->promeneurs[i];
             double rel = promS_[i] - std::fmod(std::fmod((double)aP, (double)L) + L, (double)L);
             if (rel > L / 2.0) rel -= L; if (rel < -L / 2.0) rel += L;
