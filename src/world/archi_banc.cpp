@@ -209,8 +209,8 @@ void benchArchi(Game& g, Renderer& r, const std::string& out) {
     for (int s = 0; s < NB; s++) { fenetres[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom; caps.push_back({fenetres[s].c_str(), "jour", 5, 0}); }
     for (int s = 0; s < NB; s++) { portesNuit[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({portesNuit[s].c_str(), "nuit", 5, 0}); }
     // WFS-571 : tour moderne en tronçons, toit (édicule, centrale de traitement d'air, garde-corps) de près, à 120-300 m (niveau 1), de nuit
-    for (const Cap& c : {Cap{"archi-tour-toit", "jour", 6, 0}, Cap{"archi-tour-toit-lod1", "jour", 6, 1}, Cap{"archi-tour-toit-lod2", "jour", 6, 2},
-                         Cap{"archi-tour-rue", "jour", 7, 0}, Cap{"archi-tour-rue-nuit", "nuit", 7, 0}}) caps.push_back(c);
+    for (const Cap& c : {Cap{"archi-tour-moderne-toit", "jour", 6, 0}, Cap{"archi-tour-moderne-toit-lod1", "jour", 6, 1}, Cap{"archi-tour-moderne-toit-lod2", "jour", 6, 2},
+                         Cap{"archi-tour-moderne-rue", "jour", 7, 0}, Cap{"archi-tour-moderne-rue-nuit", "nuit", 7, 0}}) caps.push_back(c);
     if (const char* f = std::getenv("WFS_ARCHI_FILTRE")) std::erase_if(caps, [f](const Cap& c) { return !std::strstr(c.nom, f); });   // essai local
     int k = 0;
     for (const Cap& c : caps) {
