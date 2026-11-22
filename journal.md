@@ -267,3 +267,7 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - PR #442, 2e revue sur 72a73e18 : les 3 preuves demandées sont présentes. Tests CPU : 158 réussis. Lignes brutes du journal du chargement (RG-06). 0 erreur de validation Vulkan sur les bancs pietons, vie et cartes (RG-07). Diff depuis 8e383f6b relu : commentaires de pietons.cpp et compte des chiens dessinés dans le journal de ville.cpp (chargement seulement).
 - J'ai refait la construction et les tests CPU sur la branche synchronisée avec main : 158 réussis. Les captures n'ont pas changé, et la paire carte-ville-chien a été rouverte.
 - « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 78c22813. Statut : 🟡 À valider (utilisateur). Ligne ajoutée à qa/Check.md, ligne de suivi-pr.md supprimée.
+
+### 2026-11-22 15:52:29 — WFS-593 : fusionné (#442, 78c22813), session terminée (Claude, agent dev3d (01UY1Vv4Di))
+- Fait : PR #442 fusionnée en squash par le lead dev à la 2e revue ; ticket 🟡 À valider (utilisateur) ; réponse à l'utilisateur sous sa demande dans `tache utilisateur.md`.
+- Session terminée (un seul sujet par session) : aucun autre ticket demandé.
