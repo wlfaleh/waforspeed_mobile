@@ -8,6 +8,7 @@
 //   ch.debut(renderer, tVulkan);                                  // première image (police + 0 %)
 //   if (!game.init(renderer, "golf", "ville", ecrans::Chargement::progression)) ch.erreur(); else ch.fin();
 #pragma once
+#include <array>
 #include <functional>
 #include <string>
 
@@ -73,6 +74,17 @@ inline std::string texteVersion(const char* v) {
 // banc d'essai (desktop_main.cpp) : captures chargement-0/1/2, -fondu et -erreur ; racine(false) fait échouer le
 // chargement des fichiers (voiture introuvable), racine(true) le rétablit
 void benchChargement(Game& g, Renderer& r, const std::string& outDir, double depuis, void (*racine)(bool ok));
+// WFS-597 : image de fond de l'écran de chargement (assets/ui/chargement/fond.jpg, image 2 de l'utilisateur telle quelle) ;
+// chargée au début du chargement, rendue après le fondu ; absente : fond d'avant (RG-06)
+constexpr int FOND_LARGEUR = 2400, FOND_HAUTEUR = 1080;
+inline constexpr const char* FICHIER_FOND_CHEMIN = "ui/chargement/fond.jpg";   // dans assets/ (readAsset)
+bool fondPret();
+// zone de l'image (u0, v0, u1, v1) qui couvre un écran W × H sans déformation, centrée (16:9, 20:9, 4:3…)
+inline std::array<float, 4> uvFond(float W, float H) {
+    const float a = (float)FOND_LARGEUR / FOND_HAUTEUR, e = H > 0 && W > 0 ? W / H : a;
+    if (e >= a) { const float v = a / e; return {0, 0.5f - v / 2, 1, 0.5f + v / 2}; }   // écran plus large : haut et bas coupés
+    const float u = e / a; return {0.5f - u / 2, 0, 0.5f + u / 2, 1};                     // écran plus étroit (16:9, 4:3) : côtés coupés
+}
 // fondu en cours : opacité de l'écran de chargement à l'instant `temps` de la scène (0 = fini)
 float opaciteFondu(double temps);
 // WFS-505 (banc « textes ») : centre du bouton de l'écran d'erreur à la dernière image
