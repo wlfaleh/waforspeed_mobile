@@ -362,10 +362,11 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
         float dxr = abs(abs(p.x - cv) - ECARTEMENT_ROUES_M * 0.5);
         usureP += 0.35 * (1.0 - smoothstep(BANDE_ROULEMENT_M * 0.5 - 0.1, BANDE_ROULEMENT_M * 0.5 + 0.1, dxr));
     }
-    float trous = rnoise(p * vec2(31.0, 11.0)) * 0.55 + rnoise(p * vec2(97.0, 61.0)) * 0.45;
+    float netF = 1.0 - smoothstep(0.002, 0.006, pixM);   // détails de ≈ 1 cm : effacés avant d'être plus fins que 4 pixels
+    float trous = rnoise(p * vec2(31.0, 11.0)) * 0.55 + mix(0.5, rnoise(p * vec2(97.0, 61.0)), netF) * 0.45;
     float couvre = mix(1.0 - usureP * 0.6, 1.0 - smoothstep(1.0 - usureP - 0.08, 1.0 - usureP + 0.08, trous), netM);
     float paint = max(edgeL, lane) * clamp(couvre, 0.0, 1.0);
-    vec3 peinture = vec3(MARQUAGE_ALBEDO) * vec3(1.0, 1.0, 0.97) * (0.93 + 0.07 * mix(0.5, noise(p * 60.0), netM))
+    vec3 peinture = vec3(MARQUAGE_ALBEDO) * vec3(1.0, 1.0, 0.97) * (0.93 + 0.07 * mix(0.5, noise(p * 60.0), netF))
                   * mix(1.0, 0.9, smoothstep(0.4, 0.8, rnoise(p * vec2(0.7, 0.15))));   // poussière et gomme par endroits
     base.rgb = mix(asphalt, peinture, paint);
     g_retroMarquage = paint;   // WFS-594 (RG-03) : la nuit, billes de verre de la peinture (eclairage.glsl : retroChaussee)
