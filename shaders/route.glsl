@@ -326,7 +326,8 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
         int carte = carteRoute();
         if (halfW > 1.0 && halfW < 50.0) {
             vec3 u = usureRoute(p, halfW, carte);
-            vec3 df = defautsChaussee(p, halfW, carte, max(length(fwidth(p)), 1e-4));   // WFS-594 (RG-02)
+            // WFS-594 (RG-02) ; chaussée entièrement sous la neige (carte d'hiver hors tunnel) : défauts invisibles, pas calculés (RG-07)
+            vec3 df = neigeRoute() * abriRoute(p.y) > 0.99 ? vec3(1.0, 0.0, 1.0) : defautsChaussee(p, halfW, carte, max(length(fwidth(p)), 1e-4));
             u.x *= df.x; u.y += df.y; u.z *= df.z;
             asphalt *= u.x; roughSec = clamp(roughSec + u.y, 0.0, 1.0);
             if (scan) { N = normalize(mix(normalize(vNrm), N, u.z)); lonN *= u.z; }
@@ -466,7 +467,7 @@ void surfaceTrottoir(inout vec4 base, inout float rough, inout float metal, inou
         Revet rv = lireRevetement(p, modeLecture(), true);
         vec2 mac = macroRevetement(vWorld.xz);
         base.rgb = rv.albedo * mac.x * (0.94 + 0.12 * hash(floor(p / COTE_SCAN)));   // teinte par carreau : pas de motif répété
-        {   // WFS-594 (RG-04) : taches du trottoir : coulures et taches sombres (≈ 0,5 à 2 m), chewing-gums écrasés en Ville (1 à 2 cm)
+        if (neigeRoute() * abriRoute(p.y) < 0.99) {   // WFS-594 (RG-04) : taches du trottoir (sous la neige : rien à calculer) : coulures et taches sombres (≈ 0,5 à 2 m), chewing-gums écrasés en Ville (1 à 2 cm)
             float pixT = max(length(fwidth(p)), 1e-4);
             float tache = smoothstep(0.6, 0.85, rnoise(p * 0.9 + 17.0) * 0.7 + rnoise(p * 3.1) * 0.3);
             base.rgb *= 1.0 - 0.18 * tache;

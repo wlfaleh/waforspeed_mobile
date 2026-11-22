@@ -126,8 +126,7 @@ void toit(Geo& g, vec3 c, vec3 r, vec3 f, float L, float H, float W, vec2 uv) {
 
 // ---------------------------------------------------------------- système
 bool CarteDecor::solNaturel(int col) const {   // WFS-383
-    return neigeSol_ || col == C_VERGE ||   // WFS-594 (accroche) : carte enneigée
-            col == C_DITCH || col == C_FOREST || col == C_FARHILL || (col >= C_FIELD0 && col <= C_VINE_B) || col == C_GRASS || col == C_GRASS2;
+    return col == C_VERGE || col == C_DITCH || col == C_FOREST || col == C_FARHILL || (col >= C_FIELD0 && col <= C_VINE_B) || col == C_GRASS || col == C_GRASS2;
 }
 
 void CarteDecor::init(Renderer& r, const GameView& g) {

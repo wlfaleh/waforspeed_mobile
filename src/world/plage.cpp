@@ -2607,7 +2607,7 @@ public:
                     } else if (sol >= 0) {   // WFS-383 : sol naturel, part de roche de chaque sommet (uv.x)
                         const vec2 ua{partRoche(a, side, x.a), 0}, ub{partRoche(a, side, x.b), 0}, uc{partRoche(a + 1, side, y.b), 0}, ud{partRoche(a + 1, side, y.a), 0};
                         if (side > 0) quadUv(out[sol], A, B, C, Dd, ua, ub, uc, ud); else quadUv(out[sol], A, Dd, C, B, ua, ud, uc, ub);   // face vers le haut
-                    } else { const int pu = (x.col == C_SABLE || x.col == C_MOUILLE || x.col == C_PROM) ? P_SABLE : P_UNI;   // WFS-594 (accroche) : sable (et promenade en sable tassé) texturés
+                    } else { const int pu = (x.col == C_SABLE || x.col == C_MOUILLE) ? P_SABLE : P_UNI;   // WFS-594 (accroche) : sable texturé (la promenade C_PROM, dallée au village et à la marina, garde le sien)
                         if (side > 0) quad(out[pu], A, B, C, Dd, uvSol); else quad(out[pu], A, Dd, C, B, uvSol); }   // face vers le haut
                     u0 += l0; u1 += l1;
                 }

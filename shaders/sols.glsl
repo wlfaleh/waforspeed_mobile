@@ -58,6 +58,21 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
     const float px = length(fwidth(w));
     const float detail = 1.0 - smoothstep(0.15, 0.6, px);
     const int oct = LEGER ? 2 : 4;
+    // WFS-594 (RG-07) : sol enneigé : la neige recouvre tout ; rien d'autre n'est calculé (pré, talus, roche) : coût proche de l'ancienne
+    // bande unie. Neige fraîche au sol : albédo 0,80 à 0,88 (DA-realisme.md), congères (≈ 3 m) et crêtes de vent (1 à 2 cm) en relief doux,
+    // grain fin en couleur seulement ; creux un peu bleutés
+    if (neigeSol) {
+        const float cong = bruitSol(w * 0.35 + 3.0, 2);
+        const float mi = 1.0 - smoothstep(0.03, 0.1, px), f100 = 1.0 - smoothstep(0.0025, 0.008, px);
+        const float vent = (LEGER || mi <= 0.0) ? 0.5 : mix(0.5, rnoise(w * vec2(1.9, 1.3) + 17.0), mi);   // une lecture, seulement à moins de ≈ 30 m
+        const float grain = (LEGER || f100 <= 0.0) ? 0.5 : mix(0.5, rnoise(w * 43.0) * 0.6 + rnoise(w * 103.0) * 0.4, f100);
+        const float crete = vent * vent;
+        vec3 c = mix(vec3(0.80, 0.82, 0.87), vec3(0.87, 0.88, 0.90), smoothstep(0.25, 0.75, cong * 0.6 + crete * 0.4)) * (0.96 + 0.06 * grain);
+        base.rgb = mix(base.rgb, c, 0.97);
+        rough = 0.7; metal = 0.0;
+        if (!LEGER) N = bosseSol(N, cong * 0.12 * detail + crete * 0.015 * mi);
+        return;
+    }
     const float macro = bruitSol(w * 0.04, oct);           // taches de ≈ 25 m
     const float meso = bruitSol(w * 0.29 + 7.0, oct);      // taches de ≈ 3,5 m
     const float fin = mix(0.5, rnoise(w * 2.6), detail);   // grain de ≈ 40 cm
@@ -214,21 +229,5 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
 
     // neige fraîche au sol (cartes d'hiver) : albédo 0,80 à 0,88 (DA-realisme.md : neige fraîche ≈ 0,85), ombre bleutée des creux,
     // congères et croûte de vent (sastrugi, 1 à 4 m), grain de surface ; quelques herbes qui percent en bord de route
-    if (neigeSol) {
-        const float cong = bruitSol(w * 0.35 + 3.0, oct);
-        const float vent = rnoise(w * vec2(1.3, 0.9) + 17.0) * 0.6 + rnoise(w * vec2(3.1, 2.3)) * 0.4;
-        const float grain = mix(0.5, rnoise(w * 43.0) * 0.6 + rnoise(w * 103.0) * 0.4, f100);
-        const float crete = pow(vent, 2.0);                                    // crêtes de vent plus nettes que les creux
-        // relief doux (congères de quelques cm sur 3 m, crêtes de 1 à 2 cm) : sous les phares rasants, un relief plus fort faisait des
-        // stries ; grain fin en couleur seulement (pas de relief au pixel)
-        const float hN = cong * 0.12 * detail + crete * 0.015 * mi;
-        // creux un peu bleutés, bosses plus blanches ; albédo de 0,80 à 0,88 (neige fraîche, DA-realisme.md)
-        vec3 c = mix(vec3(0.80, 0.82, 0.87), vec3(0.87, 0.88, 0.90), smoothstep(0.25, 0.75, cong * 0.6 + crete * 0.4))
-                 * (0.96 + 0.06 * grain);
-        base.rgb = mix(base.rgb, c, 0.97);
-        rough = 0.7;
-        h = hN;
-    }
-
     if (!LEGER) N = bosseSol(N, h);
 }
