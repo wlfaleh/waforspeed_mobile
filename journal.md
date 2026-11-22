@@ -104,3 +104,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 12:12:00 — WFS-597 : 2e série de maquettes, faites avec les images du jeu (po-scrum-master)
 - 1re série refusée par l'utilisateur (« C'est nul tes propositions »). 2e série : captures des bancs du matin (Release `captures-matin` du dépôt, groupes `nuit` et `vitrines`, téléchargées depuis GitHub, aucune licence tierce), recadrées et retouchées ; anciennes maquettes retirées du dossier. RG-05 : image finale = rendu du moteur en 2400 × 1080 natif. ⏳ En attente du choix de l'utilisateur.
+
+### 2026-11-22 12:13:04 — WFS-597 : choix de l'utilisateur, la voiture du menu dans une rue en 3D (po-scrum-master)
+- L'utilisateur : « inspirer le fond de notre voiture du menu, mais dans un plan 3D dans la rue, style réaliste 100 % ». Règles ajoutées (RG-08 à RG-11 : SF-X caméléon et skin bleu ciel de WFS-552, rue de la Ville, trois quarts avant caméra basse, soir / nuit humide, rendu 2400 × 1080 par le banc, 3 variantes + avis `@3d`). **WFS-597 ⏳ Prêt** (P2, `@dev` dev-artiste-3d).
