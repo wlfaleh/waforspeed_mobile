@@ -168,15 +168,15 @@ static int parcoursFinMenu(Game& g, Renderer& r, const std::string& out) {
     images(80);   // boutons de l'écran de fin actifs 0,9 s après la fin
     attendu(activeCourse() && activeCourse()->state == RaceState::Over, "course → écran de fin");
     g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/parcours-fin.png");
-    // « Menu » : à droite de « Rejouer » (CourseSystem::drawOver, WFS-57), avec ou sans la ligne « RECORD » (WFS-101)
-    const float W = (float)r.width(), H = (float)r.height(), u = H / 100, bw = 40 * u, bh = 10 * u;
-    const float mx = W / 2 - (bw + 2 * u + bw * 0.7f) / 2 + bw + 2 * u + bw * 0.35f;
-    for (float plus : {0.f, 28 * H / 720.f}) {
-        if (g.ecran() != Ecran::Course) break;
-        const float my = 10 * u + 60 * u + plus + bh / 2;
+    // « Menu » : place réelle lue sur l'écran de fin après son dessin (courseBouton, WFS-589 RG-01 : plus de coordonnée en dur,
+    // le bouton a bougé avec les écrans R19, WFS-557 / 561)
+    {
         g.render(t);
-        g.onTouch({40, mx, my, true}); image(); g.onTouch({40, mx, my, false}); images(10);
-        WFS_LOG("parcours : écran de fin, appui sur « Menu » à (%.0f, %.0f) → écran %s", mx, my, nomEcran(g.ecran()));
+        float mx = 0, my = 0;
+        if (courseBouton("menu", mx, my)) {
+            g.onTouch({40, mx, my, true}); image(); g.onTouch({40, mx, my, false}); images(10);
+            WFS_LOG("parcours : écran de fin, appui sur « Menu » à (%.0f, %.0f) → écran %s", mx, my, nomEcran(g.ecran()));
+        } else { ecarts++; WFS_ERR("parcours : écran de fin, bouton « Menu » absent (ÉCHEC)"); }
     }
     attendu(g.ecran() == Ecran::Menu, "fin puis « Menu » → accueil");
     images(60);
