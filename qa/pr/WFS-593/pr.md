@@ -20,7 +20,7 @@
 | Campagne (en pause) | 37 → 4 | marcheurs 37 → 4 |
 | Grand Prix (en pause) | 72 → 8 marcheurs ; 381 → 39 spectateurs | (qualité Haute) |
 
-- **Comment c'est vérifié** : 157 tests CPU verts (`tools/qa/tests_cpu.sh build`), dont `test_apparition_pietons` ; bancs `pietons`, `vie`, `cartes` en 1280×720 (lavapipe) avant / après ; parcours complet (banc `parcours`) : voir ci-dessous.
+- **Comment c'est vérifié** : 157 tests CPU verts (`tools/qa/tests_cpu.sh build`), dont `test_apparition_pietons` ; bancs `pietons`, `vie`, `cartes` en 1280×720 (lavapipe) avant / après ; parcours complet (banc `parcours`, 1280×720) : accueil → choix → course → fin passent ; l'étape « fin puis Menu → accueil » échoue **de la même façon sur `main` (699b39e9)** : 2 erreurs identiques sur `main` et sur la branche, aucune autre. C'est le rouge déjà suivi par WFS-589 (`@cicd`, « parcours fin → Menu »), sans lien avec ce ticket.
 - **Paquets `.wfcarte` (RG-08)** : aucune personne n'est cuite dans un paquet (les personnes sont posées au chargement par `pietons.cpp` et `circuit.cpp`) : rien à publier.
 - **Limites et risques connus** : la ligne « Ville (WFS-176) : … 10 chien(s) » du journal compte encore les promeneurs du plan (seul le chien des promeneurs gardés est dessiné). Le placement des marcheurs hors Ville change (répartis sur tout le tour au lieu du 1er km) : c'est voulu par RG-02. Performance : 10 fois moins de personnes à animer et à dessiner, donc égale ou meilleure (non mesuré sur téléphone).
 
