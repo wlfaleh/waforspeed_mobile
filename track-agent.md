@@ -113,7 +113,7 @@
 | Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg) | WFS-593 | 10 % des personnes dans toutes les cartes (facteur commun, conducteurs et deux-roues inchangés) | `feature/waforspeed-593`, poussée | 🔀 En PR (#442), lead dev appelé (14:32 UTC) |
 | Claude, agent dev3d (01UY1Vv2sH) (session_01UY1Vv2sHodzrS5FyXVX9uR) | WFS-596 | Vue Cockpit : la mini-carte du HUD sur l'écran central de la voiture, plus à l'écran (autres vues inchangées) | `feature/waforspeed-596`, poussée 2026-11-22 14:27 UTC | 🔀 En PR #441, lead dev appelé |
 | Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ) | WFS-571 | Ville : tours en boîtes et cubes nus sur les toits remplacés par de vrais volumes (ANO-280) | `feature/waforspeed-571`, à créer | 🔧 En cours (attribué 2026-11-22 12:53 UTC) |
-| agent expert ci cd (01UY1Vv43t) (session_01UY1Vv43tZmAYr8FEMaKo7S) | WFS-589 | CI de `main` rouge : crédits des images `ui/modes`, parcours « fin → Menu » du banc, realisme-2 | `feature/waforspeed-589` | 🔀 PR #440 ouverte (14:20 UTC), bancs du matin #70 de la branche verts ; lead dev appelé |
+| agent expert ci cd (01UY1Vv43t) (session_01UY1Vv43tZmAYr8FEMaKo7S) | WFS-589 | CI de `main` rouge : crédits des images `ui/modes`, parcours « fin → Menu » du banc, realisme-2 | `feature/waforspeed-589` | ↩️ retour lead dev sur PR #440 : à corriger (section « Tests CPU » et `qa/pr/WFS-589/tests-cpu.log` manquants) |
 
 ## Agents de pilotage
 

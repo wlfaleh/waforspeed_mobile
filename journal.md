@@ -206,3 +206,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Accroches annoncées : `src/world/circuit.cpp` (+3 lignes, 10 % des spectateurs des tribunes), `src/world/ville.cpp` (+2 lignes, chien dessiné seulement si son promeneur est gardé).
 - Vérifié : 157 tests CPU réussis (dont 5 cas WFS-593) ; bancs `pietons`, `vie`, `cartes` (16 paires avant / après regardées) ; parcours complet : même écart « fin puis Menu → accueil » que sur main 699b39e9 (WFS-589), aucun autre. Rien de cuit dans les paquets.
 - Limites : non mesuré sur téléphone ; la ligne du journal « Ville (WFS-176) : … chien(s) » compte encore tous les promeneurs du plan.
+
+### 2026-11-22 14:40:15 — WFS-589 : PR #440 refusée par le lead dev, preuve des tests CPU manquante (lead-dev)
+- Revue (commentaire « ↩️ … changements demandés », car GitHub refuse REQUEST_CHANGES avec le même compte) sur 38e431d. **Seul défaut** : pas de section « Tests CPU » ni de `qa/pr/WFS-589/tests-cpu.log` (règle de l'utilisateur du 2026-11-11, skill lead-dev point 9).
+- Tout le reste est vérifié et bon : 7 paires de captures ouvertes (`parcours-retour-menu` : avant = écran de fin, après = accueil ; `reglages-qualite-ultra` : Ultra choisi ; 5 paires identiques au pixel près) ; diff entier lu (`courseBouton("menu")`, bloc de pastilles dans `bench_passes.cpp`, 3 crédits `ui/modes` sans marque de conflit) ; construction locale et **158 tests CPU réussis** sur 38e431d ; licences 0 manque ; bancs du matin #70 de la branche verts (26 jobs).
+- À faire par le développeur : ajouter le journal et la section, répondre sous la revue, rappeler le lead dev. Pas besoin de refaire les captures.
