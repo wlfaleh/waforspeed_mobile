@@ -23,6 +23,10 @@ Agent : Claude, agent dev3d (01UY1Vv1zn)
   - Au rechargement d'une carte (2e partie), la 1re image montre le fond uni d'avant une fraction de seconde, puis l'image (RG-06 : « affichée dès qu'elle est prête par-dessus le fond actuel »).
   - Non vérifié sur un vrai téléphone (pas de téléphone ici) : l'utilisateur valide sur l'APK de `main` (statut 🟡 après la fusion).
 
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la branche synchronisée avec `main` (699b39e9) : **158 test(s) réussi(s) en 466 s**, 0 échec ; journal complet : [`qa/pr/WFS-597/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597/tests-cpu.log). Nouveau : `test_fond_chargement` (cadrage 20:9, 16:9, 4:3 sans déformation ; JPEG 2400 × 1080 ≤ 600 Ko).
+
 ## Captures pour le lead dev (8 après)
 
 Dossier : [`qa/pr/WFS-597`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597) — produit par `tools/qa/captures_pr.sh`.
