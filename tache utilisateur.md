@@ -13,6 +13,9 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Créer un ticket pour passer à seulement 10 % des personnes dans les cartes (2026-11-22 12:00 UTC).
+( PO, 2026-11-22 12:00:28 UTC : c'est créé — **WFS-593** (P1, ⏳ Prêt, 1er de la liste `@dev`). Dans chaque carte, on garde 10 % des personnes d'aujourd'hui (passants, terrasses, plage, poussettes, spectateurs), réparties sur tout le tour ; les conducteurs dans les voitures et les deux-roues ne changent pas. Après la fusion, c'est toi qui valides sur le téléphone (🟡). Règles : `regles-de-gestion/WFS-593.md`. )
+
 - Bloquer aussi les tâches de publicité et de Google Play pour l'instant (2026-11-22 11:52 UTC).
 ( PO, 2026-11-22 11:52:55 UTC : c'est fait. **10 tickets bloqués** (⛔) : WFS-512 (vidéo récompensée, consentement), 514 (×2 par vidéo en fin de course), 515 (essais réels achats et pub), 516 (déclarations Play Console), 319 (AAB Play Store), 320 (sortie publique), 405 (version grand public), 407 (fiche du store), 409 (formulaires Play Console), 509 (fiche en anglais). Ordre permanent noté. Pour débloquer, dis-le simplement. )
 

@@ -84,3 +84,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 11:56:09 — Liste des 30 prochaines tâches écrite dans `TACHES.md` sur `main` (po-scrum-master)
 - Demande de l'utilisateur : « Donne-moi la liste 30 dans main ». Bandeau 📋 en tête de `TACHES.md`, sans les tickets ⛔ (menus et écrans avant la course, pub et Google Play) ; la liste de 11:45 UTC est barrée.
+
+### 2026-11-22 12:00:28 — WFS-593 créé : seulement 10 % des personnes dans les cartes (po-scrum-master)
+- Demande de l'utilisateur : « Crée un ticket pour passer à seulement 10 % des personnes dans les cartes ». **WFS-593** (P1, E11, ⏳ Prêt, nouvelle session `@dev`), 1er de la liste `@dev` ; 341 sort de la liste des 30.
+- Règles : `regles-de-gestion/WFS-593.md` (10 % de `main` par catégorie et par carte, un seul facteur, tirage existant `garder()` réutilisé, rien créé en course, conducteurs et deux-roues inchangés). WFS-576 RG-02 mis à jour (le nombre suit `main`, donc WFS-593).
