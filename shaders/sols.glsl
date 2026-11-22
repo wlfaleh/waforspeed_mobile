@@ -152,7 +152,7 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
         const float pixB = max(fwidth(d), 1e-4);
         const float bande = 1.0 - smoothstep(bord - pixB - 0.05, bord + pixB + 0.05, d);
         if (bande > 0.0) {
-            const vec2 cg = cellulesSol(w * 30.0 + 11.0);                // gravillons de 1,5 à 4 cm (concassé 4/20)
+            const vec2 cg = fin2 > 0.0 ? cellulesSol(w * 30.0 + 11.0) : vec2(0.15, 0.5);   // gravillons de 1,5 à 4 cm (concassé 4/20), de près
             const float gr = smoothstep(0.05, 0.2, cg.x);
             const vec3 terreB = mix(terre, roche, 0.25) * (0.85 + 0.3 * rnoise(w * 9.0));
             const vec3 gravier = mix(vec3(0.24, 0.23, 0.21), vec3(0.36, 0.34, 0.30), cg.y) * mix(0.6, 1.0, gr);
@@ -178,9 +178,11 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
         const float r = ride * (1.0 - pietine * 0.85) * (1.0 - mouille);
         const float g = rnoise(w * 57.0) * 0.6 + rnoise(w * 131.0) * 0.4;
         vec3 c = c0 * (0.92 + 0.12 * mix(0.5, g, fin2)) * (0.96 + 0.08 * mix(0.5, r, detail));
-        const vec2 cd = cellulesSol(w * 9.0 + 41.0);                        // coquillages et débris (1 à 3 cm), rares
-        c = mix(c, vec3(0.62, 0.58, 0.50), smoothstep(0.25, 0.4, cd.x) * step(0.93, cd.y) * fin2 * 0.6);
-        c = mix(c, vec3(0.12, 0.10, 0.07), smoothstep(0.25, 0.4, cd.x) * step(0.985, fract(cd.y * 13.0)) * fin2 * 0.5);
+        if (fin2 > 0.0) {   // coquillages et débris (1 à 3 cm), rares : seulement de près (cellules calculées là seulement)
+            const vec2 cd = cellulesSol(w * 9.0 + 41.0);
+            c = mix(c, vec3(0.62, 0.58, 0.50), smoothstep(0.25, 0.4, cd.x) * step(0.93, cd.y) * fin2 * 0.6);
+            c = mix(c, vec3(0.12, 0.10, 0.07), smoothstep(0.25, 0.4, cd.x) * step(0.985, fract(cd.y * 13.0)) * fin2 * 0.5);
+        }
         base.rgb = c;
         rough = mix(0.92, 0.55, mouille);
         h = (r * 0.012 * detail + g * 0.002 * fin2);

@@ -455,6 +455,16 @@ void surfaceTrottoir(inout vec4 base, inout float rough, inout float metal, inou
         Revet rv = lireRevetement(p, modeLecture(), true);
         vec2 mac = macroRevetement(vWorld.xz);
         base.rgb = rv.albedo * mac.x * (0.94 + 0.12 * hash(floor(p / COTE_SCAN)));   // teinte par carreau : pas de motif répété
+        {   // WFS-594 (RG-04) : taches du trottoir : coulures et taches sombres (≈ 0,5 à 2 m), chewing-gums écrasés en Ville (1 à 2 cm)
+            float pixT = max(length(fwidth(p)), 1e-4);
+            float tache = smoothstep(0.6, 0.85, rnoise(p * 0.9 + 17.0) * 0.7 + rnoise(p * 3.1) * 0.3);
+            base.rgb *= 1.0 - 0.18 * tache;
+            if (carteRoute() == 0 && pixT < 0.02) {
+                vec2 cg = floor(p / 0.35); vec2 hg = hash22(cg + 5.0);
+                float gomme = (1.0 - smoothstep(0.006, 0.009 + pixT, length(p - (cg + 0.2 + 0.6 * hg) * 0.35))) * step(0.86, hg.x);
+                base.rgb = mix(base.rgb, base.rgb * 0.55, gomme * (1.0 - smoothstep(0.01, 0.02, pixT)));
+            }
+        }
         rough = roughToksvig(clamp(rv.rough + mac.y, 0.0, 1.0), rv.lon); metal = 0.0;
         N = perturb(normalize(vNrm), vWorld, p, normalize(rv.n));
         bordureGranit(p, base, rough, N);
