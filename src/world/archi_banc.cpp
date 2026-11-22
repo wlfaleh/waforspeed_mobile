@@ -16,6 +16,7 @@
 #include "../render/eclairage_unites.h"   // ST-3 : couleur d'une lampe à 2850 K
 #include "../render/renderer.h"
 #include "archi_geo.h"
+#include "archi_details.h"   // WFS-571 : place de la centrale de traitement d'air (vue 8)
 #include "decor_carte.h"
 
 namespace wfs {
@@ -30,7 +31,7 @@ constexpr int64_t SEGMENT = 40;                                      // début d
 struct EtatArchi {
     bool actif = false;
     int lod = 0;
-    int vue = 0;   // 0 : de près, depuis la chaussée ; 1 : de loin ; 2 : de dessus ; 3 : face au style « style » ; 4, 5 : gros plan porte, fenêtre (WFS-402) ; 6, 7 : toit de la tour moderne de 3/4 au-dessus, tour vue du trottoir d'en face (WFS-571)
+    int vue = 0;   // 8 : centrale de traitement d'air du toit de la tour, de près (WFS-571) ; 0 : de près, depuis la chaussée ; 1 : de loin ; 2 : de dessus ; 3 : face au style « style » ; 4, 5 : gros plan porte, fenêtre (WFS-402) ; 6, 7 : toit de la tour moderne de 3/4 au-dessus, tour vue du trottoir d'en face (WFS-571)
     int style = 0;
 } g_archi;
 
@@ -59,6 +60,15 @@ public:
         for (int s = 0; s < NB; s++) {
             const archi::Style st = (archi::Style)s;
             plans_[s] = archi::assembler(st, LARGEUR[s], HAUTEUR[s], 7u + (uint32_t)s);
+            if (st == archi::Style::Moderne) {   // WFS-571 : première graine dont le dernier tronçon porte une centrale de traitement d'air (vue 8)
+                for (uint32_t gr = 7u + (uint32_t)s; gr < 7u + (uint32_t)s + 60u; gr++) {
+                    const archi::Plan q = archi::assembler(st, LARGEUR[s], HAUTEUR[s], gr);
+                    const auto t = archi::troncons(q, PROF);
+                    if (vec3 c; t.size() > 1 && archi::details::placeCentraleAir(t.back().plan, t.back().profondeur, c)) {
+                        plans_[s] = q; centrale_ = c + vec3{t.back().dx, t.back().dy, -t.back().retrait}; break;
+                    }
+                }
+            }
             const vec3 murC = st == archi::Style::Industriel ? brique : beton;   // pierre, crépi : provisoire (ST-4)
             {   // ST-4 (repli PROVISOIRE) : appareil procédural (decor.glsl, surfaceFacade), albédo moyen = référentiel (M-03) ;
                 // type : 0 crépi, 1 pierre de taille, 2 brique, 3 moellons, 4 béton
@@ -147,7 +157,12 @@ public:
             const int s = (int)archi::Style::Moderne;
             const vec3 n = vec3{monde_[s].at(0, 2), 0, monde_[s].at(2, 2)}, X{monde_[s].at(0, 0), 0, monde_[s].at(2, 0)};
             const float h = plans_[s].hauteur();
-            if (g_archi.vue == 6) { cible = centre_[s] - n * (PROF * 0.5f) + vec3{0, h - 1.f, 0}; oeil = cible + n * 16.f - X * 9.f + vec3{0, 11.f, 0}; }
+            if (g_archi.vue == 8) {   // centrale de traitement d'air (repère du bâtiment → monde), de 3/4 au-dessus, à 6 m
+                const mat4& w = monde_[s];
+                const vec3 Xw{w.at(0, 0), w.at(1, 0), w.at(2, 0)}, Zw{w.at(0, 2), w.at(1, 2), w.at(2, 2)}, O{w.at(0, 3), w.at(1, 3), w.at(2, 3)};
+                cible = O + Xw * centrale_.x + vec3{0, centrale_.y + 1.0f, 0} + Zw * centrale_.z;
+                oeil = cible + Zw * 4.5f - Xw * 3.0f + vec3{0, 3.0f, 0};
+            } else if (g_archi.vue == 6) { cible = centre_[s] - n * (PROF * 0.5f) + vec3{0, h - 1.f, 0}; oeil = cible + n * 16.f - X * 9.f + vec3{0, 11.f, 0}; }
             else { cible = centre_[s] + vec3{0, h * 0.62f, 0}; oeil = centre_[s] + n * 22.f - X * 8.f + vec3{0, 1.7f, 0}; }
         }
         else {   // face au style : depuis le bord opposé de la chaussée, à hauteur d'yeux, cadré sur toute la façade
@@ -185,6 +200,7 @@ private:
     archi::Plan plans_[NB];
     mat4 monde_[NB]{};
     vec3 centre_[NB]{};
+    vec3 centrale_{};   // WFS-571 : centre au sol de la centrale de traitement d'air de la tour (repère du bâtiment)
     Mesh meshes_[NB][3][archi::NB_PARTS]{};
     Material mats_[NB][archi::NB_PARTS]{};
 };
@@ -194,27 +210,27 @@ WFS_SYSTEM(ArchiBanc, 985)   // banc (900-999)
 
 // captures : archi-pres-jour / -nuit (lod 0), archi-loin-lod0 / -lod1 / -lod2 (même vue, coût comparé), archi-dessus (toitures)
 void benchArchi(Game& g, Renderer& r, const std::string& out) {
-    struct Cap { const char* nom; const char* moment; int vue, lod; };
+    struct Cap { const char* nom; const char* moment; int vue, lod, style = -1; };   // WFS-571 : style porté par la vue (filtre sans décalage)
     static const Cap CAPS[] = {{"archi-pres-jour", "jour", 0, 0}, {"archi-pres-nuit", "nuit", 0, 0}, {"archi-loin-lod0", "jour", 1, 0},
                                {"archi-loin-lod1", "jour", 1, 1}, {"archi-loin-lod2", "jour", 1, 2}, {"archi-dessus", "jour", 2, 0}};
     g_archi.actif = true;
     if (!std::getenv("WFS_OUVERTURES")) archi::choisirOuverturesReelles(true);   // WFS-415 (accroche) : banc de WFS-402 avec l'interrupteur à 1
     std::vector<Cap> caps(std::begin(CAPS), std::end(CAPS));
     static std::string noms[NB];
-    for (int s = 0; s < NB; s++) { noms[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom; caps.push_back({noms[s].c_str(), "jour", 3, 0}); }
+    for (int s = 0; s < NB; s++) { noms[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom; caps.push_back({noms[s].c_str(), "jour", 3, 0, s}); }
     static std::string nuits[NB];
-    for (int s = 0; s < NB; s++) { nuits[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({nuits[s].c_str(), "nuit", 3, 0}); }
+    for (int s = 0; s < NB; s++) { nuits[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({nuits[s].c_str(), "nuit", 3, 0, s}); }
     static std::string portes[NB], fenetres[NB], portesNuit[NB];   // WFS-402 : gros plans des ouvertures de chaque style
-    for (int s = 0; s < NB; s++) { portes[s] = std::string("archi-porte-") + archi::regles((archi::Style)s).nom; caps.push_back({portes[s].c_str(), "jour", 4, 0}); }
-    for (int s = 0; s < NB; s++) { fenetres[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom; caps.push_back({fenetres[s].c_str(), "jour", 5, 0}); }
-    for (int s = 0; s < NB; s++) { portesNuit[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({portesNuit[s].c_str(), "nuit", 5, 0}); }
+    for (int s = 0; s < NB; s++) { portes[s] = std::string("archi-porte-") + archi::regles((archi::Style)s).nom; caps.push_back({portes[s].c_str(), "jour", 4, 0, s}); }
+    for (int s = 0; s < NB; s++) { fenetres[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom; caps.push_back({fenetres[s].c_str(), "jour", 5, 0, s}); }
+    for (int s = 0; s < NB; s++) { portesNuit[s] = std::string("archi-fenetre-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({portesNuit[s].c_str(), "nuit", 5, 0, s}); }
     // WFS-571 : tour moderne en tronçons, toit (édicule, centrale de traitement d'air, garde-corps) de près, à 120-300 m (niveau 1), de nuit
     for (const Cap& c : {Cap{"archi-tour-moderne-toit", "jour", 6, 0}, Cap{"archi-tour-moderne-toit-lod1", "jour", 6, 1}, Cap{"archi-tour-moderne-toit-lod2", "jour", 6, 2},
-                         Cap{"archi-tour-moderne-rue", "jour", 7, 0}, Cap{"archi-tour-moderne-rue-nuit", "nuit", 7, 0}}) caps.push_back(c);
+                         Cap{"archi-tour-moderne-rue", "jour", 7, 0}, Cap{"archi-tour-moderne-rue-nuit", "nuit", 7, 0},
+                         Cap{"archi-tour-moderne-centrale", "jour", 8, 0}, Cap{"archi-tour-moderne-centrale-lod1", "jour", 8, 1}}) caps.push_back(c);
     if (const char* f = std::getenv("WFS_ARCHI_FILTRE")) std::erase_if(caps, [f](const Cap& c) { return !std::strstr(c.nom, f); });   // essai local
-    int k = 0;
     for (const Cap& c : caps) {
-        if (c.vue >= 3) g_archi.style = (k++) % NB;
+        if (c.style >= 0) g_archi.style = c.style;
         setenv("WFS_MOMENT", c.moment, 1);
         setenv("WFS_DEPART", "0", 1);
         g_archi.vue = c.vue; g_archi.lod = c.lod;

@@ -12,6 +12,8 @@ Captures « avant » : `origin/main` = `699b39e965f6c1fd3c8e0b1b5ac34a7f3d313b81
 | `archi-style-moderne-nuit` | ![avant](avant-archi-style-moderne-nuit.jpg) | ![après](apres-archi-style-moderne-nuit.jpg) |
 | `archi-style-moderne` | ![avant](avant-archi-style-moderne.jpg) | ![après](apres-archi-style-moderne.jpg) |
 | `archi-tour-moderne-rue-nuit` | — | ![après](apres-archi-tour-moderne-rue-nuit.jpg) |
+| `archi-tour-moderne-centrale` | — | ![après](apres-archi-tour-moderne-centrale.jpg) |
+| `archi-tour-moderne-centrale-lod1` | — | ![après](apres-archi-tour-moderne-centrale-lod1.jpg) |
 | `archi-tour-moderne-rue` | — | ![après](apres-archi-tour-moderne-rue.jpg) |
 | `archi-tour-moderne-toit-lod1` | — | ![après](apres-archi-tour-moderne-toit-lod1.jpg) |
 | `archi-tour-moderne-toit-lod2` | — | ![après](apres-archi-tour-moderne-toit-lod2.jpg) |

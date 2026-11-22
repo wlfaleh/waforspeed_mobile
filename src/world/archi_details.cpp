@@ -379,6 +379,21 @@ void gardeCorpsToit(Maillage& met, float H, float x0, float x1, float z0, float 
 }
 }  // namespace
 
+// centrale sur le dernier toit d'un immeuble de bureaux ou d'activité (moderne, industriel), derrière l'édicule si la profondeur le
+// permet, sinon devant, décalée de la porte ; 1 m au moins de l'acrotère et de l'édicule (mêmes cotes que l'édicule de terrasse())
+bool placeCentraleAir(const Plan& p, float D, vec3& centre) {
+    const float L = p.largeur, e = ACRO_EP;
+    if (p.toit != Toit::Terrasse || !(p.edicules && L > 6 && D > 6) || !(p.style == Style::Moderne || p.style == Style::Industriel) || L < 2 * (e + 1.f + 2.0f)) return false;
+    constexpr float DX = 2.0f, DZ = 0.75f;   // demi-encombrement de la centrale avec ses rails
+    const float cx = L * 0.5f, cz = -D * 0.6f, z0 = cz - 1.4f, z1 = cz + 1.4f;
+    if (const float lo = -D + e + 1.f + DZ, hi = z0 - 1.f - DZ; lo <= hi) { centre = {cx, p.hauteur(), (lo + hi) / 2}; return true; }
+    if (const float lo = z1 + 1.f + DZ, hi = -e - 1.f - DZ; lo <= hi) {
+        const float s = (p.graine & 1u) ? 1.f : -1.f, dx = L / 2 - e - 1.f - DX;
+        if (dx >= 0.45f + 0.3f) { centre = {cx + s * dx, p.hauteur(), (lo + hi) / 2}; return true; }   // porte (0,90 m) dégagée
+    }
+    return false;
+}
+
 void terrasse(const Plan& p, float D, int lod, Batiment& out) {
     const float H = p.hauteur(), L = p.largeur;
     Maillage& toit = out.part[TOIT];
@@ -433,18 +448,8 @@ void terrasse(const Plan& p, float D, int lod, Batiment& out) {
         porteTechnique(out, cx, H + 0.05f, z1 + 0.025f, lod);   // vantail 5 mm devant le mur, huisserie en saillie
         if (p.graine & 2u) grilleLames(met, x1, 1, H + 1.86f, cz, 0.8f, 0.8f, lod); else grilleLames(met, x0, -1, H + 1.86f, cz, 0.8f, 0.8f, lod);   // côté selon le bâtiment
     }
-    // WFS-571 (RG-04) : centrale de traitement d'air sur le dernier toit d'un immeuble de bureaux ou d'activité (moderne, industriel),
-    // derrière l'édicule si la profondeur le permet, sinon devant, décalée de la porte ; 1 m au moins de l'acrotère et de l'édicule
-    if (edicule && (p.style == Style::Moderne || p.style == Style::Industriel) && L >= 2 * (e + 1.f + 2.0f)) {
-        constexpr float DX = 2.0f, DZ = 0.75f;   // demi-encombrement de la centrale avec ses rails
-        float ax = cx, az = 0; bool ok = false;
-        if (const float lo = -D + e + 1.f + DZ, hi = z0 - 1.f - DZ; lo <= hi) { az = (lo + hi) / 2; ok = true; }
-        else if (const float lo2 = z1 + 1.f + DZ, hi2 = -e - 1.f - DZ; lo2 <= hi2) {
-            const float s = (p.graine & 1u) ? 1.f : -1.f, dx = L / 2 - e - 1.f - DX;
-            if (dx >= 0.45f + 0.3f) { az = (lo2 + hi2) / 2; ax = cx + s * dx; ok = true; }   // porte (0,90 m) dégagée
-        }
-        if (ok) centraleAir(out, ax, H, az, lod);
-    }
+    // WFS-571 (RG-04) : centrale de traitement d'air (placeCentraleAir)
+    if (vec3 c; placeCentraleAir(p, D, c)) centraleAir(out, c.x, H, c.z, lod);
 }
 
 void facade(const Plan& p, Batiment& out) {
