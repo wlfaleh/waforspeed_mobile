@@ -296,17 +296,26 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         const bool propose = z.size() == sansUltra + 1;
         WFS_LOG("réglages (WFS-150) : onglet %s, %zu zones sans Ultra, %zu avec (Haute tenue : %s)", ecrans::ONGLETS[ongletQualite], sansUltra, z.size(), qualite::tenueUltra.tenue ? "oui" : "non");
         // WFS-377 (RG-01) : « Ultra » retrouvé par son rôle, pas par un rang fixe : c'est le choix qui apparaît quand la Haute a tenu.
-        // Rangée = zones de même y et même h ; la seule rangée qui passe de 3 choix (Basse, Moyenne, Haute) à 4 est « Graphismes »,
-        // et Ultra en est le dernier choix (le plus à droite : les choix sont posés de gauche à droite, reglages.cpp)
-        auto rangee = [](const std::vector<manette::Zone>& zs, const manette::Zone& a) {
-            int n = 0; for (const manette::Zone& b : zs) if (!b.retour && std::fabs(b.y - a.y) < 0.5f && std::fabs(b.h - a.h) < 0.5f) n++; return n;
+        // Rangée = zones de même y et même h qui se touchent (pastilles d'un même réglage) ; WFS-589 : depuis les écrans R19
+        // (WFS-557), l'onglet a 2 colonnes et la même ligne porte 2 réglages (Graphismes et Fantôme du record), séparés par un
+        // grand écart : on ne compte que les zones d'un même bloc. La seule rangée qui passe de 3 choix (Basse, Moyenne, Haute)
+        // à 4 est « Graphismes », et Ultra en est le dernier choix (le plus à droite : les choix sont posés de gauche à droite, reglages.cpp)
+        auto bloc = [](const std::vector<manette::Zone>& zs, const manette::Zone& a) {   // zones du même bloc que a, de gauche à droite
+            std::vector<manette::Zone> l;
+            for (const manette::Zone& b : zs) if (!b.retour && std::fabs(b.y - a.y) < 0.5f && std::fabs(b.h - a.h) < 0.5f) l.push_back(b);
+            std::sort(l.begin(), l.end(), [](const manette::Zone& p, const manette::Zone& q) { return p.x < q.x; });
+            size_t i0 = 0, i1 = l.size();
+            for (size_t i = 0; i < l.size(); i++) {
+                if (i > 0 && l[i].x - (l[i - 1].x + l[i - 1].w) > a.h) { if (l[i].x <= a.x) i0 = i; else { i1 = i; break; } }
+            }
+            return std::vector<manette::Zone>(l.begin() + i0, l.begin() + i1);
         };
+        auto rangee = [&](const std::vector<manette::Zone>& zs, const manette::Zone& a) { return (int)bloc(zs, a).size(); };
         int iUltra = -1, rangeesTrouvees = 0;
         if (propose) for (size_t i = 0; i < z.size(); i++) {
             if (z[i].retour || rangee(z, z[i]) != 4 || rangee(zSans, z[i]) != 3) continue;
-            bool dernier = true;   // le plus à droite de sa rangée
-            for (const manette::Zone& b : z) if (!b.retour && std::fabs(b.y - z[i].y) < 0.5f && std::fabs(b.h - z[i].h) < 0.5f && b.x > z[i].x) dernier = false;
-            if (dernier) { iUltra = (int)i; rangeesTrouvees++; }
+            const std::vector<manette::Zone> b = bloc(z, z[i]);
+            if (std::fabs(b.back().x - z[i].x) < 0.5f) { iUltra = (int)i; rangeesTrouvees++; }   // le plus à droite de son bloc
         }
         if (iUltra >= 0 && rangeesTrouvees == 1) {
             WFS_LOG("réglages (WFS-150) : choix « Ultra » trouvé (zone %d sur %zu, rangée Graphismes de 4 choix)", iUltra + 1, z.size());
