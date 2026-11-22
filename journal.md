@@ -310,3 +310,8 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - PR #444 fusionnée par le lead dev (squash 2a4dbc8d), statut 🟡 À valider (utilisateur) ; réponse à l'utilisateur dans `tache utilisateur.md`.
 - Proposé au PO (ticket à part, réserves de l'agent 3D) : (a) contraste des lignes dans les phares vers 3 (mesure en HDR, EN 1436) ; (b) neige de jour presque unie (ombrage bleuté des creux) ; (c) herbe sans brins en volume ; (d) bande `C_PROM` de la Corniche en aplat (sable tassé là où elle n'est pas dallée). Remarques du lead dev : `fwidth(p)` à sortir de la condition de neige dans `route.glsl`, remise en place des réglages copiée dans `route_sols_banc.cpp`. WFS-595 (publication des paquets) peut passer ⏳ Prêt.
 - Fin de session (un seul sujet par session).
+
+### 2026-11-22 19:41:23 — WFS-594 fusionné : WFS-595 prêt, réserves dans WFS-598 (po-scrum-master)
+- WFS-595 (`@cicd`, publication des paquets) passe ⏳ Prêt (WFS-594 fusionné, #444, 2a4dbc8d) ; RG-00 à vérifier d'abord (contenu cuit changé ou non).
+- Créé **WFS-598** (P2, E9 + sols, `@dev` + avis `@3d`, pas la session 01UY1Vv49f) : réserves de l'agent 3D (lignes dans les phares vers un contraste de 3, neige de jour, herbe en volume, bande `C_PROM` de la Corniche en sable tassé) et remarques du lead dev (`fwidth(p)` avant la condition de neige, remise en place des réglages en double dans `route_sols_banc.cpp`). Hors ticket : fosses d'arbres plates (Ville), cylindres nus (Neige) → QA / WFS-369 à 378.
+- Créé **WFS-599** (`@cicd`, publication des paquets après WFS-598, ordre permanent du 2026-11-12), ⏳ En attente.

@@ -17,7 +17,7 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-22 12:53:06 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-22 19:41:23 UTC (po-scrum-master)
 
 > 🏙️ **12:53 UTC (2026-11-22)** : **WFS-571** (P1, E15 Ville, ANO-280 : tours en boîtes et cubes nus des toits remplacés) attribué à Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ), nouvelle session `@dev`, à sa demande (597, 593, 594 et 596 déjà pris : 1er prêt de la liste `@dev`). Prochains `@dev` : 573 → 575 → 444.
 
