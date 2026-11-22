@@ -117,7 +117,7 @@ int main() {
         cas("WFS-593 : une sur 10, jamais plus de 9 omises de suite (réparties sur toute la liste)", trouMax == 9);
         // comptes de main au 2026-11-22 par carte et par catégorie (journal du chargement des bancs) : 10 % ± 1 par catégorie
         struct Cat { const char* nom; int avant; };
-        constexpr int SPECTATEURS_MAIN = 390;   // tribunes du Grand Prix, qualité Haute (journal « Circuit (WFS-199) » de main)
+        constexpr int SPECTATEURS_MAIN = 381;   // tribunes du Grand Prix, qualité Haute (journal « Circuit (WFS-199) » de main)
         const Cat cats[] = {{"ville marcheurs", 32}, {"ville promeneurs", 5}, {"ville passants", 1}, {"ville terrasses", 207},
                             {"plage marcheurs", 110}, {"plage serviettes", 67}, {"plage baigneurs", 43}, {"plage fêtes", 32},
                             {"campagne marcheurs", 37}, {"circuit marcheurs", 72}, {"circuit spectateurs", SPECTATEURS_MAIN}};
