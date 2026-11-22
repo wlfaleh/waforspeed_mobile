@@ -16,6 +16,18 @@ Material materiau(Climat c, bool teinte, bool rocheux) {
     return m;
 }
 
+Material materiau(Climat c, const Options& o) {
+    Material m = materiau(c, o.teinte, o.rocheux);
+    m.cutoff = code(c, o.teinte, o.rocheux, o.sable, o.neige, o.bordRoute, o.gazon);
+    return m;
+}
+
+bool neigeCarte(const char* carte) {
+    if (!carte) return false;
+    const auto d = cartes_v2::donnees(carte);
+    return d && d->saison.neigeChaussee > 0;
+}
+
 void lisserNormales(std::vector<Vertex>& v, std::vector<uint32_t>& idx) {
     if (v.empty() || idx.size() < 3) return;
     // position au centimètre : même normale pour tous les sommets d'un point (aucune arête vive entre deux bandes) ;
@@ -68,6 +80,7 @@ bool climatCarte(const char* carte, Climat& c) {
     if (!std::strcmp(carte, "plage")) { c = Climat::Mediterraneen; return true; }
     if (!std::strcmp(carte, "ville") || !std::strcmp(carte, "campagne") || !std::strcmp(carte, "circuit")) { c = Climat::Tempere; return true; }
     const auto d = cartes_v2::donnees(carte);
+    if (d && (d->climatSol < 1 || d->climatSol > 3) && d->saison.neigeChaussee > 0) { c = Climat::Tempere; return true; }   // WFS-594
     if (!d || d->climatSol < 1 || d->climatSol > 3) return false;
     c = (Climat)d->climatSol;
     return true;

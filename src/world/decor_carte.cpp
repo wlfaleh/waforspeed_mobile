@@ -152,8 +152,8 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
     {   // WFS-383 : sol naturel : couleur de la bande gardée (champs), sauf en automne (couleurs mesurées du climat)
         sols::Climat c = sols::Climat::Tempere;
-        solActif_ = sols::climatCarte(g.map->id, c);
-        mats_[P_TERRE] = r.makeMaterial(sols::materiau(c, c != sols::Climat::Automne), &palTex_, nullptr, nullptr);
+        solActif_ = sols::climatCarte(g.map->id, c); neigeSol_ = sols::neigeCarte(g.map->id);   // WFS-594 (accroche)
+        mats_[P_TERRE] = r.makeMaterial(sols::materiau(c, sols::Options{.teinte = c != sols::Climat::Automne, .neige = neigeSol_}), &palTex_, nullptr, nullptr);   // WFS-594 (accroche) : neige au sol
     }
     // lampes : part propre (neonK du jeu web : 1 la nuit, 0,5 de jour)
     // WFS-225 (RG-01) : lampes allumées la nuit sur toutes les cartes (la campagne les avait éteintes : envFor lamps = false du web)

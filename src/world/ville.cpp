@@ -19,6 +19,7 @@
 #include <cstring>
 #include <map>
 #include <vector>
+#include "sols.h"   // WFS-594 (accroche) : sol de Game (sols.glsl)
 #include "../core/jobs.h"
 #include "foule_apparition.h"   // WFS-593 (accroche) : promeneurs gardés
 #include "../core/log.h"
@@ -787,7 +788,7 @@ public:
           mats_[P_SODIUM] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
         { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, m); }   // asphalte de Game (WFS-205, accroche)
         mats_[P_EAU] = r.makeMaterial(eau::materiau(eau::MODE_SURFACE, false), nullptr, nullptr, nullptr);   // WFS-380 (RG-05) : même eau que la mer
-        { Material m; m.flags = MAT_GROUND; m.rough = 0.95f; mats_[P_SOL] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // = sol de Game
+        mats_[P_SOL] = r.makeMaterial(sols::materiau(sols::Climat::Tempere, sols::Options{.gazon = true}), nullptr, nullptr, nullptr);   // = sol de Game (WFS-594, accroche : sols.glsl, pré texturé ; pas de bande de gravier : la Ville a ses trottoirs)
         // portiques : 3 au plus sur l'autoroute, à 150 m du début puis tous les 420 m (pas dans les 60 m avant le tunnel)
         static const char* const DIR[3][2] = {{"Centre", "Port"}, {"Port", "Aéroport"}, {"Aéroport", "Centre"}};
         if (au_.first >= 0) {

@@ -169,6 +169,14 @@ int main(int argc, char** argv) {
             mesure(std::string("bordure") + (std::strstr(f, "ville") ? "-ville" : "-jeu"), "M-04 hauteur (m)", h, 0.12 * 0.99, 0.15 * 1.01);
         }
         mesure("bordure-granit", "M-04 hauteur du shader (m)", route::BORDURE_H_M, 0.12 * 0.99, 0.15 * 1.01);
+        // WFS-594 (RG-02 à RG-04) : marquages, joints de bordure, pontages : shader = C++, valeurs dans leur plage du réel
+        cas("route.glsl : LARGEUR_MARQUAGE_M, MARQUAGE_ALBEDO, JOINT_BORDURE_M, PONTAGE_ALB identiques au C++ (WFS-594)",
+            std::fabs(constante("LARGEUR_MARQUAGE_M") - route::LARGEUR_MARQUAGE_M) < 1e-4 && std::fabs(constante("MARQUAGE_ALBEDO") - route::MARQUAGE_ALBEDO) < 1e-4
+            && std::fabs(constante("JOINT_BORDURE_M") - route::JOINT_BORDURE_M) < 1e-4 && std::fabs(constante("PONTAGE_ALB") - route::PONTAGE_ALB) < 1e-4);
+        mesure("marquages", "RG-03 largeur des lignes (m, IISR : 12 à 15 cm)", route::LARGEUR_MARQUAGE_M, 0.12 * 0.99, 0.15 * 1.01);
+        mesure("marquages", "RG-03 albédo de la peinture blanche", route::MARQUAGE_ALBEDO, 0.6, 0.75);
+        mesure("bordure", "RG-04 pas des joints de bordure T2 (m)", route::JOINT_BORDURE_M, 0.99, 1.01);
+        mesure("pontages", "RG-02 bitume coulé / enrobé voisin", route::PONTAGE_ALB, 0.45, 0.65);
     }
     const double indice = mesures ? 100.0 * conformes / mesures : 0;
     std::printf("routes : indice de fidélité des revêtements : %.1f %% (%d / %d mesures dans leur plage)\n", indice, conformes, mesures);

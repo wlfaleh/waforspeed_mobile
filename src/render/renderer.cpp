@@ -1284,6 +1284,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     const char* eR = std::getenv("WFS_REFLETS");
     const bool sansReflet = (eR && !std::strcmp(eR, "0")) || diag::actif(diag::SANS_REFLET);   // WFS-419 : chaussée sans reflet de la scène
     u.nuitB = {fp.refletY, 1.f / (float)sw_, 1.f / (float)sh_, sansReflet ? -1.f : config().qualite.refletRouteMouillee};
+    if (const char* vs = std::getenv("WFS_VUE_SURFACE")) u.nuitB.w = !std::strcmp(vs, "normales") ? -2.f : !std::strcmp(vs, "rugosite") ? -3.f : u.nuitB.w;   // WFS-594 (accroche, banc) : planche des surfaces
     eclairage::avantImage(vk, u, r.frameSet, refletSet_[cur_]);   // WFS-151 (accroche E13) : IBL, exposition, ciel
     // WFS-348 (RG-01) : banc seulement (0 dans le jeu) : effets retirés un par un pour mesurer leur coût GPU par pixel
     if (bancSansEffets & 1u) u.spotN.x = 0;                       // lumières de nuit (phares, lampadaires)

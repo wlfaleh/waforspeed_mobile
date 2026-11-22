@@ -102,7 +102,7 @@ void main() {
     } else if ((flags & F_WALK) != 0u) {
         surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
     } else if ((flags & F_GROUND) != 0u) {
-        if (pc.params.z >= 1.0) surfaceTerrain(base, rough, metal, vNrm); else surfaceSol(base, rough, metal);   // WFS-383 (accroche)
+        if (pc.params.z >= 1.0) surfaceTerrain(base, rough, metal, vNrm, N); else surfaceSol(base, rough, metal);   // WFS-383 (accroche) ; WFS-594 : relief (N)
     } else if ((flags & F_FACADE) != 0u) {
         surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }
@@ -224,6 +224,14 @@ void main() {
     // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
     if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
 
+    // WFS-594 (accroche, banc seulement : WFS_VUE_SURFACE) : planche des surfaces procédurales : normale (0,5 + 0,5 × N) ou rugosité, au
+    // lieu de la couleur, pour la chaussée, le trottoir et le sol ; ramenée par l'exposition (lisible après la passe finale)
+    if (F.nuitB.w < -1.5 && (flags & (F_ROAD | F_WALK | F_GROUND)) != 0u) {
+        // normale : gris neutre + inclinaison × 4 (x en rouge, z en bleu) ; rugosité : 0 noir à 1 blanc ; ≈ gris moyen après l'exposition
+        vec3 v = F.nuitB.w < -2.5 ? vec3(rough) : clamp(vec3(0.5 + 4.0 * N.x, 0.5, 0.5 + 4.0 * N.z), 0.0, 1.0);
+        outColor = vec4(v * 0.3 / max(F.misc.x, 1e-6), 1.0);
+        return;
+    }
     // brouillard (perspective atmosphérique)
     // WFS-45 : brouillard linéaire de three r128 ; WFS-381 : brume selon la distance et la hauteur (appliquerBrume, eclairage.glsl)
     col = appliquerBrume(col, vWorld);
