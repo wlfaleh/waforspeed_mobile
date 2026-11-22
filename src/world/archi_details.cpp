@@ -313,10 +313,10 @@ void ventilateur(Batiment& out, vec3 c, float r, float h, int lod) {
         }
     };
     anneau(c.y, c.y + h, r);
-    anneau(c.y + h - 0.04f, c.y + h, r + 0.03f);   // rebord roulé
+    if (lod == 0) anneau(c.y + h - 0.04f, c.y + h, r + 0.03f);   // rebord roulé (de près)
     for (int k = 0; k < N; k++) {                  // dessus du rebord, puis fond sombre (moteur et pales, vus à travers la grille)
         const float a0 = 2 * PI * (k + 0.5f) / N, a1 = 2 * PI * (k + 1.5f) / N, y = c.y + h;
-        face(met, {c.x + std::cos(a0) * r, y, c.z + std::sin(a0) * r}, {c.x + std::cos(a1) * r, y, c.z + std::sin(a1) * r},
+        if (lod == 0) face(met, {c.x + std::cos(a0) * r, y, c.z + std::sin(a0) * r}, {c.x + std::cos(a1) * r, y, c.z + std::sin(a1) * r},
              {c.x + std::cos(a1) * (r + 0.03f), y, c.z + std::sin(a1) * (r + 0.03f)}, {c.x + std::cos(a0) * (r + 0.03f), y, c.z + std::sin(a0) * (r + 0.03f)}, {0, 1, 0});
         tri(met, {c.x, y - 0.12f, c.z}, {c.x + std::cos(a0) * r, y - 0.12f, c.z + std::sin(a0) * r}, {c.x + std::cos(a1) * r, y - 0.12f, c.z + std::sin(a1) * r}, {0, 1, 0});
     }
@@ -349,7 +349,7 @@ void centraleAir(Batiment& out, float cx, float H, float cz, int lod) {
         // cornières des 4 arêtes verticales, joints des panneaux double peau tous les 0,9 m sur les grandes faces
         for (float x : {cx - LX, cx + LX}) for (float z : {cz - LZ, cz + LZ})
             pave(met, x - 0.025f, x + 0.025f, y0 + 0.1f, y1, z - 0.025f, z + 0.025f, 1 | 2 | 4 | 8);
-        for (float x = cx - LX + 0.9f; x < cx + LX - 0.3f; x += 0.9f) {
+        if (lod == 0) for (float x = cx - LX + 0.9f; x < cx + LX - 0.3f; x += 0.9f) {   // (niveau 1 : joints de 3 cm sous le pixel)
             pave(met, x - 0.015f, x + 0.015f, y0 + 0.1f, y1, cz + LZ, cz + LZ + 0.012f, 1 | 4 | 8);
             pave(met, x - 0.015f, x + 0.015f, y0 + 0.1f, y1, cz - LZ - 0.012f, cz - LZ, 2 | 4 | 8);
         }
@@ -367,13 +367,13 @@ void gardeCorpsToit(Maillage& met, float H, float x0, float x1, float z0, float 
         const float z = zInt;
         pave(met, x0, x1, yh - GCT_TUBE, yh, z - t, z + t, lod ? 1 | 2 | 16 : 1 | 2 | 16 | 32);
         pave(met, x0, x1, yl - 0.03f, yl, z - t * 0.75f, z + t * 0.75f, lod ? 1 | 2 : 1 | 2 | 16 | 32);
-        const int n = std::max(1, (int)std::ceil((x1 - x0) / GCT_PAS));
+        const int n = std::max(1, (int)std::ceil((x1 - x0) / (lod ? 1.5f * GCT_PAS : GCT_PAS)));
         for (int k = 0; k <= n; k++) { const float x = std::clamp(x0 + (x1 - x0) * k / n, x0 + t, x1 - t); pave(met, x - t, x + t, H + ACRO, yh - GCT_TUBE, z - t, z + t, lod ? 1 | 2 : 1 | 2 | 4 | 8); }
     } else {
         const float x = zInt;
         pave(met, x - t, x + t, yh - GCT_TUBE, yh, z0, z1, lod ? 4 | 8 | 16 : 4 | 8 | 16 | 32);
         pave(met, x - t * 0.75f, x + t * 0.75f, yl - 0.03f, yl, z0, z1, lod ? 4 | 8 : 4 | 8 | 16 | 32);
-        const int n = std::max(1, (int)std::ceil((z1 - z0) / GCT_PAS));
+        const int n = std::max(1, (int)std::ceil((z1 - z0) / (lod ? 1.5f * GCT_PAS : GCT_PAS)));
         for (int k = 0; k <= n; k++) { const float z = std::clamp(z0 + (z1 - z0) * k / n, z0 + t, z1 - t); pave(met, x - t, x + t, H + ACRO, yh - GCT_TUBE, z - t, z + t, lod ? 4 | 8 : 1 | 2 | 4 | 8); }
     }
 }
