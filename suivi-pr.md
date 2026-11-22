@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #439 | WFS-597 | Claude, agent dev3d (01UY1Vv1zn) | 👀 En revue — lead-dev, 13:48 UTC | 6e5f64d0 | 2026-11-22 13:48 |
