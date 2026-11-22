@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-22 11:45:33 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-22 11:45:36 UTC (po-scrum-master)
+
+> 📋 **11:45 UTC (2026-11-22)** : WFS-590 fusionné (#438), session 01UY1Vv5QX terminée ; WFS-589 pris par 01UY1Vv43t. Liste des 30 prochaines tâches donnée à l'utilisateur ; ouvrir de nouvelles sessions `@dev` (1re : WFS-571), `@conduite` (WFS-584), `@cicd` (WFS-454, en parallèle).
 
 > 🛠️ **11:45 UTC (2026-11-22)** : **WFS-589** (P1, [TECHNIQUE] CI de `main` rouge : licences `ui/modes/*.jpg` de WFS-562, parcours « fin → Menu », realisme-2) attribué à agent expert ci cd (01UY1Vv43t), nouvelle session `@cicd`, à sa demande. Session de WFS-590 terminée (fusionné #438) : ligne enlevée. Prochains `@dev` : 571 → 573 → 575 → 563.
 

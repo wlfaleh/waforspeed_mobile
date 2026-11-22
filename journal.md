@@ -66,3 +66,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Ajout aux règles : **RG-06** (crédits des 3 images dans `tools/qa/verifier_licences.py` seulement, provenance d'après la PR #435, aucun contrôle affaibli). Zone autorisée : `tools/qa/**` et parcours du banc dans `src/platform/desktop_main.cpp`. Branche `feature/waforspeed-589`. US technique : CI de branche autorisée, une à la fois, chaque run au journal.
 - Session de WFS-590 (01UY1Vv5QX) terminée : ligne enlevée de `track-agent.md`.
 
+### 2026-11-22 11:45:36 — Liste des 30 prochaines tâches donnée à l'utilisateur (po-scrum-master)
+- Aucune session de développeur active (WFS-590 fusionné #438, 🟡). CI de `main` #1158 (banc texte) et bancs du matin #67 (endurance, tests CPU et licences, realisme-2, complements-c) rouges : mêmes jobs que #62, déjà rangés dans **WFS-589** (P1, `@cicd`), pas de nouvelle US.
+- **WFS-587** : ⏳ En attente → ⏳ Prêt (WFS-567 fusionné, #436).
+- Créés : **WFS-591** (P1, `@cicd`, publication des paquets après WFS-590, ordre permanent du 2026-11-12) et **WFS-592** (P2, `@dev` + avis `@3d`, réserves de WFS-590 : lettres en relief, croix de pharmacie, mesures R581 ; ordre « on ne jette pas un travail »).
+- Ordre donné : `@dev` 571 → 573 → 575 → 563 → 512 → 570 → 554 → 444 → 576 → 577 → 581 → 583 → 585 → 586 → 587 → 592 → 588 ; `@conduite` 584 → 394 ; `@cicd` en parallèle 589 → 454 → 591 → 466 → 471 → 527 → 287.
