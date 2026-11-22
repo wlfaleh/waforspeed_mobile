@@ -66,3 +66,95 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Ajout aux règles : **RG-06** (crédits des 3 images dans `tools/qa/verifier_licences.py` seulement, provenance d'après la PR #435, aucun contrôle affaibli). Zone autorisée : `tools/qa/**` et parcours du banc dans `src/platform/desktop_main.cpp`. Branche `feature/waforspeed-589`. US technique : CI de branche autorisée, une à la fois, chaque run au journal.
 - Session de WFS-590 (01UY1Vv5QX) terminée : ligne enlevée de `track-agent.md`.
 
+### 2026-11-22 11:45:36 — Liste des 30 prochaines tâches donnée à l'utilisateur (po-scrum-master)
+- Aucune session de développeur active (WFS-590 fusionné #438, 🟡). CI de `main` #1158 (banc texte) et bancs du matin #67 (endurance, tests CPU et licences, realisme-2, complements-c) rouges : mêmes jobs que #62, déjà rangés dans **WFS-589** (P1, `@cicd`), pas de nouvelle US.
+- **WFS-587** : ⏳ En attente → ⏳ Prêt (WFS-567 fusionné, #436).
+- Créés : **WFS-591** (P1, `@cicd`, publication des paquets après WFS-590, ordre permanent du 2026-11-12) et **WFS-592** (P2, `@dev` + avis `@3d`, réserves de WFS-590 : lettres en relief, croix de pharmacie, mesures R581 ; ordre « on ne jette pas un travail »).
+- Ordre donné : `@dev` 571 → 573 → 575 → 563 → 512 → 570 → 554 → 444 → 576 → 577 → 581 → 583 → 585 → 586 → 587 → 592 → 588 ; `@conduite` 584 → 394 ; `@cicd` en parallèle 589 → 454 → 591 → 466 → 471 → 527 → 287.
+
+### 2026-11-22 11:50:10 — Menus et écrans avant la course bloqués (ordre de l'utilisateur) (po-scrum-master)
+- Ordre : « Bloque toutes les tâches qui touchent le menu ou les espaces avant de jouer : garage, réglages, menu… ». Noté dans les ordres permanents du skill PO et dans le bandeau ⛔ de `TACHES.md`.
+- ⛔ Bloqués : WFS-563, 554, 586, 587, 588, 570, 553, 538, 556, 497, 486, 357, 347, 332, 345 (statuts d'avant gardés ici : 563, 554, 586, 587, 588, 570, 553, 538, 357, 332 ⏳ Prêt ; 556, 497, 486, 347, 345 ⏳ En attente).
+- Non bloqués (hors de ces écrans) : 512, 514, 585, 584, 589 (en cours), 454. Ordre `@dev` : 571 → 573 → 575 → 512 → 444 → 576 → 577 → 581 → 583 → 585 → 592.
+
+### 2026-11-22 11:52:55 — Pub et Google Play bloqués (ordre de l'utilisateur) (po-scrum-master)
+- Ordre : « pareil pour les tâches publicité Google machin, à bloquer pour l'instant ». Noté dans les ordres permanents du skill PO et dans le bandeau ⛔ de `TACHES.md`.
+- ⛔ Bloqués : WFS-512 (⏳ Prêt avant), 514, 515 (⏳ En attente avant), 516, 319, 320, 405, 407, 409, 509 (⏸ jour de publication avant). WFS-408 (🟣) inchangé.
+- Ordre `@dev` : 571 → 573 → 575 → 444 → 576 → 577 → 581 → 583 → 585 → 592.
+
+### 2026-11-22 11:56:09 — Liste des 30 prochaines tâches écrite dans `TACHES.md` sur `main` (po-scrum-master)
+- Demande de l'utilisateur : « Donne-moi la liste 30 dans main ». Bandeau 📋 en tête de `TACHES.md`, sans les tickets ⛔ (menus et écrans avant la course, pub et Google Play) ; la liste de 11:45 UTC est barrée.
+
+### 2026-11-22 12:00:28 — WFS-593 créé : seulement 10 % des personnes dans les cartes (po-scrum-master)
+- Demande de l'utilisateur : « Crée un ticket pour passer à seulement 10 % des personnes dans les cartes ». **WFS-593** (P1, E11, ⏳ Prêt, nouvelle session `@dev`), 1er de la liste `@dev` ; 341 sort de la liste des 30.
+- Règles : `regles-de-gestion/WFS-593.md` (10 % de `main` par catégorie et par carte, un seul facteur, tirage existant `garder()` réutilisé, rien créé en course, conducteurs et deux-roues inchangés). WFS-576 RG-02 mis à jour (le nombre suit `main`, donc WFS-593).
+
+### 2026-11-22 12:02:36 — WFS-594 créé : routes et sols réalistes de près (po-scrum-master)
+- Demande de l'utilisateur : « Créer une US pour améliorer le graphique » ; partie choisie par l'utilisateur (question du PO) : **routes et sols**.
+- **WFS-594** (P1, E9 + sols, ⏳ Prêt, `@dev` dev-artiste-3d + avis `@3d`), 2e de la liste `@dev` ; tâche compagne **WFS-595** (`@cicd`, ⏳ En attente). Règles : réutiliser les textures de `assets/textures/route/` et `sols.glsl` (WFS-205, 206, 383), E16 (⛔) non touchée, textures libres seulement par un dépôt GitHub public (`regles-reseau.md`).
+- **WFS-156** : ⏳ En attente → ⏳ Prêt (WFS-206 ✅) ; sa partie marquages est faite par WFS-594 (RG-03).
+
+### 2026-11-22 12:03:57 — WFS-596 créé : mini-carte sur l'écran central en vue Cockpit (po-scrum-master)
+- Demande de l'utilisateur : « Créer une US spécifique mode cockpit pour mettre la même map dans l'écran central des voitures et l'enlever de l'écran de jeu ». **WFS-596** (P1, E5 + E10, ⏳ Prêt, `@dev`), 3e de la liste `@dev`.
+- Réutiliser `src/ui/minicarte.*` (WFS-173) et l'écran central de `vehicule_cockpit.*` (WFS-201 RG-05, carte simplifiée remplacée) ; mêmes fichiers que WFS-583 : le 2e fusionné se synchronise ; WFS-583 RG-03 renvoie la mini-carte à WFS-596. Pas de tâche `@cicd` (rien de cuit dans les paquets).
+
+### 2026-11-22 12:08:26 — WFS-597 créé : fond de l'écran de chargement, 5 maquettes (po-scrum-master)
+- Demande de l'utilisateur : image d'arrière-plan de l'écran de chargement avec l'esprit des voitures de course, 5 maquettes, rien d'autre ne change. **WFS-597** (P2, E8, ⏳ En attente du choix de l'utilisateur) ; exception explicite au blocage des menus de 11:50 UTC (fond seulement).
+- Maquettes faites par le PO (esquisses dessinées par le code, aucun téléchargement) : `regles-de-gestion/maquettes/WFS-597/proposition-1` à `5` (feux de départ, filé de nuit, gomme et fumée, vibreur au couchant, drapeau à damier).
+
+### 2026-11-22 12:12:00 — WFS-597 : 2e série de maquettes, faites avec les images du jeu (po-scrum-master)
+- 1re série refusée par l'utilisateur (« C'est nul tes propositions »). 2e série : captures des bancs du matin (Release `captures-matin` du dépôt, groupes `nuit` et `vitrines`, téléchargées depuis GitHub, aucune licence tierce), recadrées et retouchées ; anciennes maquettes retirées du dossier. RG-05 : image finale = rendu du moteur en 2400 × 1080 natif. ⏳ En attente du choix de l'utilisateur.
+
+### 2026-11-22 12:13:04 — WFS-597 : choix de l'utilisateur, la voiture du menu dans une rue en 3D (po-scrum-master)
+- L'utilisateur : « inspirer le fond de notre voiture du menu, mais dans un plan 3D dans la rue, style réaliste 100 % ». Règles ajoutées (RG-08 à RG-11 : SF-X caméléon et skin bleu ciel de WFS-552, rue de la Ville, trois quarts avant caméra basse, soir / nuit humide, rendu 2400 × 1080 par le banc, 3 variantes + avis `@3d`). **WFS-597 ⏳ Prêt** (P2, `@dev` dev-artiste-3d).
+
+### 2026-11-22 12:17:09 — WFS-597 : maquettes de l'idée de l'utilisateur, en attente de son accord (po-scrum-master)
+- L'utilisateur : « tes maquettes nulles, je dois accepter la maquette avant le changement ». WFS-597 ⏳ Prêt → **⏳ En attente** (RG-00) ; ordre permanent noté dans le skill PO.
+- 3e version : SF-X du menu découpée de `references/maquettes-R19/01-menu.jpg` et posée dans 3 rues de la Ville la nuit (captures `captures-matin`, voiture du jeu effacée) : maquettes A, B, C ; séries 1 et 2 retirées du dossier.
+
+### 2026-11-22 12:24:36 — WFS-597 : maquettes de l'utilisateur ajoutées, en attente de son accord (po-scrum-master)
+- L'utilisateur a fait 2 images avec un générateur d'images (SF-X du menu, boulevard parisien la nuit) : ajoutées à `regles-de-gestion/maquettes/WFS-597/` avec l'écran par-dessus ; référence seulement. Réserve : éclairage de nuit de la tour Eiffel protégé. Pas encore d'accord écrit : WFS-597 reste ⏳ En attente.
+
+### 2026-11-22 12:27:19 — WFS-597 : maquette 2 acceptée par l'utilisateur, ⏳ Prêt (po-scrum-master)
+- L'utilisateur : « Ok go pour 2 ». Référence : `regles-de-gestion/maquettes/WFS-597/utilisateur-2-boulevard-pluie.png` (RG-08 bis). WFS-597 ⏳ En attente → **⏳ Prêt** (P2, `@dev` dev-artiste-3d + avis `@3d`).
+
+### 2026-11-22 12:39:23 — WFS-597 simplifié : l'image de l'utilisateur telle quelle (po-scrum-master)
+- Ordre de l'utilisateur : « pas besoin de reproduire, c'est une image de fond, il la prend et la met directement ». RG-05 : l'image `utilisateur-2-boulevard-pluie.png` mise en fond telle quelle (taille et compression seulement) ; rendu 3D, RG-08 à 11 et avis `@3d` retirés.
+
+### 2026-11-22 12:41:26 — WFS-597 en tête de la liste `@dev` (ordre de l'utilisateur) (po-scrum-master)
+- WFS-597 passe P1 et 1er de la liste `@dev`, avant WFS-593, 594 et 596.
+
+### 2026-11-22 12:45:35 — Liste des 30 prochaines tâches avec le type de session (po-scrum-master)
+- Demande de l'utilisateur : « Liste 30 avec type dev ». Nouveau bandeau 📋 en tête de `TACHES.md` (17 `@dev`, 2 `@conduite`, 2 `@cartes`, 9 `@cicd`) ; la liste de 11:56 UTC est barrée.
+
+### 2026-11-22 12:49:51 — WFS-597 attribué à Claude, agent dev3d (01UY1Vv1zn) (po-scrum-master)
+- Début : **WFS-597** (P1, E8, écran de chargement : l'image 2 de l'utilisateur, SF-X sur un boulevard sous la pluie, en fond, telle quelle) attribué à Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb), nouvelle session `@dev` (aucun ticket avant), à sa demande (« @dev go ») : 1er ticket prêt de la liste `@dev` de 12:45 UTC (WFS-597 passé en tête sur ordre de l'utilisateur à 12:41 UTC ; 571, 573, 575 suivent après 593, 594, 596 ; 563 ⛔ bloqué).
+- Zone autorisée : `src/ui/ecrans/chargement.*` (dessin du fond seulement), `assets/ui/chargement/fond.*`, `tests/**`. Exception au blocage des menus : fond seulement. Maquette acceptée par l'utilisateur (12:27 UTC). Pas E15 : pas d'avis `@3d` obligatoire. Règles : `regles-de-gestion/WFS-597.md`. Branche `feature/waforspeed-597`. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-22 12:50:44 — WFS-593 attribué à Claude, agent dev3d (01UY1Vv4Di) (po-scrum-master)
+- Début : **WFS-593** (P1, E11, seulement 10 % des personnes dans toutes les cartes) attribué à Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg), nouvelle session `@dev` (aucun ticket avant), à sa demande (« @dev go »). WFS-597 était déjà pris (01UY1Vv1zn) : 1er ticket prêt de la liste `@dev`.
+- Zone autorisée : `src/world/pietons.*`, `src/world/foule_poussette.*`, `src/world/apparition*`, réglage dans `configgame.json` s'il y en a, `tests/**` ; accroches ≤ 10 lignes annoncées au journal dans `ville.cpp`, `plage.cpp`, `circuit.cpp`. Pas E15 : pas d'avis `@3d` obligatoire. Après fusion : 🟡 À valider (utilisateur). Règles : `regles-de-gestion/WFS-593.md`.
+- Plan : un facteur commun 0,10 appliqué au tirage existant (`garder()`, `apparition::VILLE_GARDES_SUR_10`), comptes avant / après au journal du chargement, test CPU des comptes, captures Ville et Corniche avant / après.
+
+
+### 2026-11-22 12:51:35 — WFS-594 attribué à Claude, agent dev3d (01UY1Vv49f) (po-scrum-master)
+- **Ticket** : WFS-594 (P1, E9 + sols) — routes et sols réalistes de près. WFS-597 et WFS-593 venaient d'être pris par d'autres sessions : 1er ticket `@dev` prêt de la liste de 12:45 UTC.
+- **Session** : session_01UY1Vv49fLTvKRexaJUt2wy, nouvelle session `@dev` (dev-artiste-3d), aucun ticket avant (un sujet par session).
+- **Règles** : `regles-de-gestion/WFS-594.md` (zone de code et critères). Branche : `feature/waforspeed-594`. Avis `@3d` demandé ; captures avant / après ciblées, PR, appel du `lead-dev` ; arrêt de la session après la fusion.
+
+### 2026-11-22 12:52:35 — WFS-596 attribué à Claude, agent dev3d (01UY1Vv2sH) (po-scrum-master)
+- Début : **WFS-596** (P1, E5 + E10, vue Cockpit : la mini-carte du jeu sur l'écran central de la voiture, et plus à l'écran) attribué à Claude, agent dev3d (01UY1Vv2sH) (session_01UY1Vv2sHodzrS5FyXVX9uR), nouvelle session `@dev` (aucun ticket avant), à sa demande (« @dev go »). WFS-597, 593 et 594 déjà pris : 1er ticket prêt de la liste `@dev`.
+- Zone autorisée : `src/ui/minicarte.*`, `src/ui/hud.*` (affichage de la mini-carte seulement), `src/render/vehicule_cockpit.*` (écran central et carte), `tests/test_minicarte*`, `tests/test_cockpit*` ; accroche ≤ 10 lignes annoncée au journal dans `src/game/camera_vue.cpp`. Fichiers du cockpit partagés avec WFS-583 : synchroniser avec `main`. Taille des boutons inchangée ; aucun menu modifié (⛔). Pas E15 : pas d'avis `@3d` obligatoire. Après fusion : 🟡 À valider (utilisateur). Règles : `regles-de-gestion/WFS-596.md`.
+
+### 2026-11-22 12:53:06 — WFS-571 attribué à Claude, agent dev3d (01UY1Vv4Xe) (po-scrum-master)
+- Début : **WFS-571** (P1, E15 Ville, correction ANO-280 : tours en boîtes et cubes nus sur les toits remplacés par de vrais volumes) attribué à Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ), nouvelle session `@dev` (aucun ticket avant), à sa demande (« Go @dev »). Il demandait WFS-597 ; 597 (01UY1Vv1zn), 593 (01UY1Vv4Di), 594 (01UY1Vv49f) et 596 (01UY1Vv2sH) ont été pris entre 12:49 et 12:52 UTC : 1er ticket prêt suivant de la liste `@dev`.
+- Zone autorisée : `src/world/ville.cpp`, `ville_quartiers.*`, `archi_*`, `decor_ville_*`, `assets/world/modeles/ville/**`, `assets/textures/decor/ville/**`, `tests/**`. Skills : `agent-developer`, `waforspeed-natif`, `artiste-3d`, `expert-cartes` ; `expert-realisme-3d` en lecture. E15 : avis « VALIDÉ » de l'agent 3D sur le dernier commit avant la fusion, 700 Mo maximum. Modèles CC0 / CC BY seulement, notés au journal. Après fusion : 🟡 ; WFS-572 (`@cicd`) publie ensuite les paquets. Règles : `regles-de-gestion/WFS-571.md`.
+
+### 2026-11-22 13:02:22 — WFS-571 : inventaire (RG-02) et plan (Claude, agent dev3d (01UY1Vv4Xe))
+- Branche `feature/waforspeed-571` créée et poussée. Banc local (lavapipe) : `realisme-ville-large` de `main` refait, même image que la preuve d'ANO-280 ; Ville sur le **kit de secours** (paquet absent) : 625 bâtiments, 609 738 triangles au niveau 1, 302 330 au niveau 2.
+- **Inventaire (RG-02)** :
+  1. Tours = immeubles `Style::Moderne` (`ville::poserImmeublesKit`, `ville.cpp`, hauteur ≥ 20 m) assemblés par `archi::assembler` (`archi_kit.cpp`) et construits par `archi::construire` (`archi_geo.cpp`) : un seul prisme du sol au toit, tous niveaux de détail ; niveaux 1 et 2 (> 120 m) sans les nez de dalle (`facade()`, traits au niveau 0 seulement) → façade lisse vue de loin.
+  2. Cube de toit = édicule de `details::terrasse` (`archi_details.cpp`) aux niveaux 1 et 2 : pavé + dalle, porte peinte à plat, sans ventilation ni linteau ; aucun autre équipement de toiture (CTA, garde-corps).
+  3. Façades lisses aux fenêtres peintes : niveau 2 (> 300 m) seulement (`ouverture()`, baies peintes 1 cm devant le mur) ; à moins de 150 m, trous en retrait (niveaux 0 et 1) : conforme à RG-05. Façades arrière et latérales : peintes à tous les niveaux (WFS-455, choix de performance), hors des vues de la rue.
+  4. Repli `WFS_ARCHI=0` (`box()` de `ville.cpp`) : inactif en jeu, gardé tel quel (rien retiré du code).
+- **Plan** : (a) tours découpées en tronçons (socle, fût en retrait, attique) dans le kit (`archi::troncons`), posés comme bâtiments du kit (cuisson inchangée, une variante par graine : pas deux tours identiques côte à côte) ; (b) toits-terrasses : acrotère découpé sous les tronçons, édicule complet à tous les niveaux (dalle, porte métallique à cadre, linteau, grille de ventilation), centrale de traitement d'air sur rails, garde-corps de sécurité des toits des tours ; (c) nez de dalle des tours gardés au niveau 1. Version du bloc « batiments » montée (géométrie changée) : le paquet de la Ville est à republier (WFS-572).
