@@ -17,7 +17,10 @@
 #include "../game/track.h"
 #include "../ui/ecrans/reglages.h"
 #include "../world/cartes_v2/carte_donnees.h"
+#include "passes.h"
 #include "renderer.h"
+#include <algorithm>
+#include <vector>
 
 namespace wfs {
 namespace {
@@ -63,6 +66,27 @@ int benchRoutesSols(Game& g, Renderer& r, const std::string& out, const std::str
             const int n = (int)(c.secondes * 60);
             for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 8 == 0) g.render(t); }
             const std::string base = std::string("routes-sols-") + c.nom + "-" + moment;
+            // RG-07 (mesure du lead dev, 2e revue) : WFS_RS_PERF=1 : coût GPU de la passe de scène à cet endroit, même image rendue en
+            // 7 blocs de 20 (vue arrière, puis cockpit), médiane des blocs ; aucune capture. À lancer sur main (banc ajouté) puis la branche.
+            if (std::getenv("WFS_RS_PERF")) {
+                for (const VueCamera vc : {VueCamera::Poursuite, VueCamera::Cockpit}) {
+                    choisirVue(vc);
+                    for (int k = 0; k < 10; k++) g.render(t + 0.001 * k);   // chauffe (caches, pipelines)
+                    std::vector<double> blocs;
+                    for (int b = 0; b < 7; b++) {
+                        passes::remettreAZero();
+                        for (int k = 0; k < 20; k++) g.render(t + 0.001);
+                        for (const passes::Cout& x : passes::coutsCumules()) if (x.renderer && x.nom.rfind("ombres", 0) != 0 && x.nom.rfind("reflets", 0) != 0 && x.images) blocs.push_back(x.ms);
+                    }
+                    std::sort(blocs.begin(), blocs.end());
+                    const double med = blocs.empty() ? -1 : blocs[blocs.size() / 2];
+                    WFS_LOG("routes-sols perf %s %s %s : scène médiane %.2f ms (min %.2f, max %.2f, %d blocs)", c.nom, moment,
+                            vc == VueCamera::Cockpit ? "cockpit" : "arriere", med, blocs.empty() ? -1 : blocs.front(), blocs.empty() ? -1 : blocs.back(), (int)blocs.size());
+                }
+                choisirVue(VueCamera::Poursuite);
+                g.shutdown();
+                continue;
+            }
             auto capture = [&](const std::string& vue) {
                 g.render(t + 0.001); g.render(t + 0.002);
                 r.capturePng(out + "/" + base + "-" + vue + ".png");
@@ -103,6 +127,7 @@ int benchRoutesSols(Game& g, Renderer& r, const std::string& out, const std::str
     }
     // qualité Basse : même vue arrière en Ville de jour (aucune baisse attendue, RG-07)
     setenv("WFS_MOMENT", "jour", 1);
+    if (const char* f = std::getenv("WFS_RS_CARTE"); (f && std::string(f) != "ville") || std::getenv("WFS_RS_PERF")) { ecrans::reglages().qualite = ecrans::QUALITE_HAUTE; choisirVue(vue0); reglagesRessenti().reduireMouvements = reduit; unsetenv("WFS_METEO"); unsetenv("WFS_MOMENT"); unsetenv("WFS_CARTES_TEST"); return erreurs + (neige ? 0 : 1); }
     ecrans::reglages().qualite = ecrans::QUALITE_BASSE;
     if (g.init(r, "golf", "ville")) {
         choisirVue(VueCamera::Poursuite);
