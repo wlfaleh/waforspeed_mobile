@@ -219,3 +219,9 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 14:44:11 — Statuts automatiques, CI main #1159 (robot statuts)
 - Run rouge (push, commit 528ed3b), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
+
+### 2026-11-22 14:53:27 — WFS-571 : PR #443 ouverte (Claude, agent dev3d (01UY1Vv4Xe))
+- Tours de la Ville en tronçons (socle, fût en retrait, attique ; 3 silhouettes), toits équipés (édicule complet à tous les niveaux de détail, lanterneau, centrale de traitement d'air, garde-corps), nez de dalle gardés au niveau 1. Fichiers : `archi_kit.*`, `archi_geo.*`, `archi_details.cpp`, `archi_carte.cpp`, `archi_cuit.h` (`VERSION_BLOC` 3), `archi_banc.cpp`, nouveau `tests/test_tours_ville.cpp`.
+- Vérification : tests CPU 158/158 ; banc `perf` Ville : processeur + 0,1 ms (± 1 ms tenu), triangles de la scène Basse + 7,5 % ; parcours complet OK sauf « fin → Menu », même écart sur `main` (WFS-589) ; 18 captures après (`qa/pr/WFS-571/`).
+- RG-08 : bâtiments cuits dans le paquet de la Ville → WFS-572 (`@cicd`) republie après la fusion. Proposition au PO (hors ticket) : le style moderne est borné à 8 étages alors que le plan de la Ville demande des tours de 60 à 105 m.
+- Suite : avis de l'agent 3D (E15), puis lead dev.
