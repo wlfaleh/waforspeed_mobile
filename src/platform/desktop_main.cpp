@@ -88,6 +88,7 @@ namespace wfs { void benchAutocollants(Game& g, Renderer& r, const std::string& 
 #include "../ui/ecrans/market_ecran.h"   // WFS-513 (accroche) : WFS_BANC=market, écran Market
 #include "../ui/ecrans/atelier.h"   // WFS-496 (accroche) : WFS_BANC=atelier
 #include "../ui/toasts.h"   // WFS-567 (accroche) : WFS_BANC=messages
+#include "../ui/minicarte.h"   // WFS-596 (accroche) : WFS_BANC=carte-cockpit
 #include "../ui/credits.h"   // WFS-406 (accroche) : WFS_BANC=credits
 #include "../ui/ecrans/cadeau_jour.h"   // WFS-501 (accroche) : WFS_BANC=cadeau
 #include "../game/score_fin.h"   // WFS-537 (accroche) : WFS_BANC=score-fin
@@ -248,6 +249,7 @@ int main(int argc, char** argv) {
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "carte-cockpit") { ui::chargerPolice(r); benchCarteCockpit(g, r, out); return finir(); }   // WFS-596 (accroche) : carte de l'écran central en vue Cockpit
     if (banc == "messages") { ui::chargerPolice(r); const int e = benchMessages(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-567 (accroche) : messages de course, captures messages-*
     if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*
     if (banc == "sol") { const int e = benchSol(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-391 (accroche) : conduite au bas-côté et sur la neige, captures sol-*

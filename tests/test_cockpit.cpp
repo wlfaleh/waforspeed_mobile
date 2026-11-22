@@ -484,6 +484,48 @@ int main(int argc, char** argv) {
         cas("Corvette : poignée de maintien tenue par la planche et la console (pieds collés, sans jour, enfoncés de 2,5 mm au plus ; barre dans chaque pied) ; aucune autre voiture",
             corvette && jHaut <= 0 && jHaut >= -0.0025f && jBas <= 0 && jBas >= -0.0025f && tenue && !poigneeMaintien(*interieurPour("tcross"), autre) && autre.barre.empty());
     }
+    // WFS-596 (RG-01, RG-04, RG-05) : place de la carte GPS de la planche (la mini-carte du HUD y est projetée)
+    {
+        bool dansEcran = true, plan = true, sf90Combine = false, model3Droite = false;
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            const PlaceCarte p = placeCarte(d);
+            vec3 c[4]; coinsCarte(p, mat4::identity(), c);
+            // repère de l'écran (ou du combiné) : la carte doit tenir dedans, dalle comprise, 0,6 mm devant
+            const bool ecran = d.ecranW > 0;
+            const mat4 E = ecran ? versOeil(d.ecranPos, d.ecranLacet) : versOeil(d.combinePos, 0);
+            const float W = ecran ? d.ecranW : d.combineW, Hh = ecran ? d.ecranH : d.combineH;
+            for (const vec3& q : c) {
+                const vec3 l = inverseAffine(E).transformPoint(q);
+                if (std::fabs(l.x) > W / 2 + 1e-4f || std::fabs(l.y) > Hh / 2 + 1e-4f || std::fabs(l.z - 0.0006f) > 1e-4f) dansEcran = false;
+            }
+            const vec3 a = c[1] - c[0], b = c[3] - c[0];
+            if (std::fabs(length(a) - p.w) > 1e-4f || std::fabs(length(b) - p.h) > 1e-4f || std::fabs(dot(a, b)) > 1e-6f) plan = false;
+            if (std::strcmp(d.car, "sf90") == 0) sf90Combine = !ecran && p.w >= 0.03f && p.h >= 0.03f && c[0].x > d.combineW / 6 - 1e-4f;   // place réduite (RG-04 : dit dans la PR)
+            if (std::strcmp(d.car, "model3") == 0) model3Droite = c[0].x > d.ecranPos.x - d.ecranW / 2 + d.ecranW * 0.34f;
+        }
+        cas("WFS-596 : carte GPS dans l'écran central (ou le combiné), rectangle aux vraies mesures, 0,6 mm devant la dalle", dansEcran && plan);
+        cas("WFS-596 : SF90 (pas d'écran central) : carte dans le tiers droit du combiné, vue à travers le volant (≥ 30 × 30 mm) ; Model 3 : à droite de la vitesse", sf90Combine && model3Droite);
+        // la carte est dessinée avec l'interface (après la scène) : aucun point de son bord ne doit être caché par la jante, vu de l'œil
+        std::string caches;
+        for (int i = 0; i < nombreInterieurs(); i++) {
+            const InterieurDef& d = interieur(i);
+            bool retiree = false;   // X5, A 45, Elantra N : retirées du jeu (WFS-404), jamais conduites
+            for (const char* v : VOITURES_RETIREES) if (std::strcmp(v, d.car) == 0) retiree = true;
+            if (retiree) continue;
+            const PlaceCarte p = placeCarte(d);
+            bool cache = false;
+            for (int k = 0; k <= 20 && !cache; k++) {
+                const float a = k / 20.f;
+                const vec3 bord[4] = {{-p.w / 2 + p.w * a, -p.h / 2, 0}, {-p.w / 2 + p.w * a, p.h / 2, 0}, {-p.w / 2, -p.h / 2 + p.h * a, 0}, {p.w / 2, -p.h / 2 + p.h * a, 0}};
+                for (const vec3& b : bord) if (cacheParJante(d, p.repere.transformPoint(b), 0.f)) cache = true;
+            }
+            if (cache) caches += std::string(d.car) + " ";
+            if (std::strcmp(d.car, "sf90") == 0) std::printf("cockpit : WFS-596 : SF90 : carte de %.0f × %.0f mm dans le combiné, vue à travers le volant\n", p.w * 1000, p.h * 1000);
+        }
+        if (!caches.empty()) std::printf("cockpit : WFS-596 : carte cachée en partie par la jante : %s\n", caches.c_str());
+        cas("WFS-596 : carte jamais cachée par la jante du volant, vue de l'œil (17 voitures jouables)", caches.empty());
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
     return 0;

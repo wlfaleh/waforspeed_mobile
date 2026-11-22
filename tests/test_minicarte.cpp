@@ -121,6 +121,38 @@ int main() {
         }
         VERIFIE(ramener(-1, 10) == 0 && ramener(11, 10) == 10 && ramener(5, 10) == 5, "ramener");
     }
+    // ---- WFS-596 : vue Cockpit : la carte va sur l'écran central de la planche (RG-02) ; projection en perspective (RG-01, RG-03)
+    {
+        VERIFIE(lieuCarte(true, true) == LieuCarte::Ecran, "WFS-596 : vue Cockpit avec intérieur : carte sur l'écran central, plus au HUD");
+        VERIFIE(lieuCarte(false, true) == LieuCarte::Hud && lieuCarte(false, false) == LieuCarte::Hud,
+                "WFS-596 : vues Poursuite, Capot, Proche : mini-carte du HUD inchangée");
+        VERIFIE(lieuCarte(true, false) == LieuCarte::Hud, "WFS-596 : cockpit commun (sans écran) : mini-carte du HUD");
+        const Cadre c = cadreEcran(0.209f, 0.079f);   // Giulia : 209 × 79 mm
+        VERIFIE(c.h == COTE && std::fabs(c.w / c.h - 0.209f / 0.079f) < 1e-4f, "WFS-596 : cadre virtuel aux proportions de l'écran réel");
+        // quadrilatère en perspective (écran tourné et vu de côté) : coins exacts, centre sur l'intersection des diagonales
+        const vec2 q[4] = {{820, 470}, {1010, 452}, {1016, 530}, {818, 541}};
+        const Homographie H = carreVers(q);
+        const vec2 uv[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+        float e = 0;
+        for (int i = 0; i < 4; i++) { const vec2 p = appliquer(H, uv[i]); e = std::max(e, std::fabs(p.x - q[i].x) + std::fabs(p.y - q[i].y)); }
+        VERIFIE(e < 1e-2f, "WFS-596 : homographie : coins à %.4f px des coins de l'écran", e);
+        const vec2 d1 = moins(q[2], q[0]), d2 = moins(q[3], q[1]);
+        const float t = vect(moins(q[1], q[0]), d2) / vect(d1, d2);
+        const vec2 x = plus(q[0], fois(d1, t)), m = appliquer(H, {0.5f, 0.5f});
+        VERIFIE(std::fabs(m.x - x.x) < 0.05f && std::fabs(m.y - x.y) < 0.05f, "WFS-596 : homographie : centre (%.2f, %.2f) au lieu de (%.2f, %.2f)", m.x, m.y, x.x, x.y);
+        // parallélogramme : application affine (milieu d'un bord au milieu du bord)
+        const vec2 r[4] = {{100, 100}, {300, 100}, {300, 180}, {100, 180}};
+        const vec2 b = appliquer(carreVers(r), {0.5f, 1});
+        VERIFIE(std::fabs(b.x - 200) < 1e-3f && std::fabs(b.y - 180) < 1e-3f, "WFS-596 : homographie d'un rectangle");
+        // projection d'un point du monde : devant la caméra (repère de vue identité, projection simple), derrière : refusé
+        mat4 vp = mat4::identity(); vp.at(3, 2) = -1; vp.at(3, 3) = 0;   // w = −z : l'avant est vers −z
+        vec2 o{};
+        VERIFIE(versUi(vp, {0, 0, -2}, 1280, 720, o) && std::fabs(o.x - 640) < 1e-3f && std::fabs(o.y - 360) < 1e-3f, "WFS-596 : point devant au centre");
+        VERIFIE(!versUi(vp, {0, 0, 2}, 1280, 720, o), "WFS-596 : point derrière la caméra refusé");
+        VERIFIE(ECRAN_HZ <= 30 && ECRAN_NUIT < 1 && ECRAN_NUIT > 0.3f, "WFS-596 : écran recalculé au plus 30 fois par seconde, plus sombre la nuit");
+        auto cyan = [](unsigned h) { const int R = (h >> 16) & 255, G = (h >> 8) & 255, B = h & 255; return G > 150 && B > 150 && R < 100; };
+        VERIFIE(!cyan(ECRAN_FOND) && !cyan(ECRAN_ITINERAIRE) && !cyan(ECRAN_GAINE) && !cyan(ECRAN_CHECKPOINT), "WFS-596 : aucun cyan sur l'écran de la voiture");
+    }
     if (echecs) { std::printf("test_minicarte : %d échec(s) sur %d contrôles\n", echecs, cas); return 1; }
     std::printf("test_minicarte : OK (%d contrôles)\n", cas);
     return 0;
