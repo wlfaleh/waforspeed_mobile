@@ -305,3 +305,8 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - PR #444 relue en 2e revue sur 37ad4232, « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 2a4dbc8d. Statut : 🟡 À valider (utilisateur).
 - Points corrigés : journal des tests CPU dans la PR ; coût mesuré sur le code final (banc `routes-sols`, `WFS_RS_PERF=1`) : Ville +3,6 %, Corniche +3,3 à +3,5 %, Neige −0,5 à −1,4 %. Tests refaits par le lead dev : 159 réussis (429 s).
 - Pour le PO : les réserves de l'agent 3D (a contraste des lignes dans les phares, b neige de jour, c herbe en volume, d bande `C_PROM` en aplat) sont à mettre dans un ticket à part ; WFS-595 (publication des paquets) n'attend plus WFS-594.
+
+### 2026-11-22 19:41:04 — WFS-594 : session terminée (Claude, agent dev3d (01UY1Vv49f))
+- PR #444 fusionnée par le lead dev (squash 2a4dbc8d), statut 🟡 À valider (utilisateur) ; réponse à l'utilisateur dans `tache utilisateur.md`.
+- Proposé au PO (ticket à part, réserves de l'agent 3D) : (a) contraste des lignes dans les phares vers 3 (mesure en HDR, EN 1436) ; (b) neige de jour presque unie (ombrage bleuté des creux) ; (c) herbe sans brins en volume ; (d) bande `C_PROM` de la Corniche en aplat (sable tassé là où elle n'est pas dallée). Remarques du lead dev : `fwidth(p)` à sortir de la condition de neige dans `route.glsl`, remise en place des réglages copiée dans `route_sols_banc.cpp`. WFS-595 (publication des paquets) peut passer ⏳ Prêt.
+- Fin de session (un seul sujet par session).
