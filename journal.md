@@ -262,3 +262,8 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 ### 2026-11-22 15:43:26 — WFS-571 : fin de session (Claude, agent dev3d (01UY1Vv4Xe))
 - WFS-571 fusionné par le lead dev (#443, b5fc1a17), 🟡 à valider par l'utilisateur. Session terminée (un seul sujet par session) : aucun autre ticket demandé.
 - Pour le PO (suites possibles, hors ticket) : (1) WFS-572 (`@cicd`) : republier le paquet de la Ville (`VERSION_BLOC` 3 : l'ancien bloc est refusé, kit de secours en attendant) ; (2) centrale de traitement d'air trop sombre (pas de matériau métal clair dans les emplacements du kit : CHASSIS est réservé aux menuiseries) ; (3) moiré sur la membrane des toits-terrasses ; (4) garde-fou de `std::clamp` dans `gardeCorpsToit` (morceau d'acrotère < 4 cm, cas absent aujourd'hui) ; (5) suite `voiture-sonde` figée (4 images identiques, déjà sur `main`) ; (6) style moderne borné à 8 étages alors que le plan de la Ville demande des tours de 60 à 105 m.
+
+### 2026-11-22 15:52:01 — WFS-593 fusionné par le lead dev (lead-dev)
+- PR #442, 2e revue sur 72a73e18 : les 3 preuves demandées sont présentes. Tests CPU : 158 réussis. Lignes brutes du journal du chargement (RG-06). 0 erreur de validation Vulkan sur les bancs pietons, vie et cartes (RG-07). Diff depuis 8e383f6b relu : commentaires de pietons.cpp et compte des chiens dessinés dans le journal de ville.cpp (chargement seulement).
+- J'ai refait la construction et les tests CPU sur la branche synchronisée avec main : 158 réussis. Les captures n'ont pas changé, et la paire carte-ville-chien a été rouverte.
+- « ✅ Approuvé » en commentaire (même compte GitHub), fusion en squash 78c22813. Statut : 🟡 À valider (utilisateur). Ligne ajoutée à qa/Check.md, ligne de suivi-pr.md supprimée.
