@@ -111,3 +111,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 12:17:09 — WFS-597 : maquettes de l'idée de l'utilisateur, en attente de son accord (po-scrum-master)
 - L'utilisateur : « tes maquettes nulles, je dois accepter la maquette avant le changement ». WFS-597 ⏳ Prêt → **⏳ En attente** (RG-00) ; ordre permanent noté dans le skill PO.
 - 3e version : SF-X du menu découpée de `references/maquettes-R19/01-menu.jpg` et posée dans 3 rues de la Ville la nuit (captures `captures-matin`, voiture du jeu effacée) : maquettes A, B, C ; séries 1 et 2 retirées du dossier.
+
+### 2026-11-22 12:24:36 — WFS-597 : maquettes de l'utilisateur ajoutées, en attente de son accord (po-scrum-master)
+- L'utilisateur a fait 2 images avec un générateur d'images (SF-X du menu, boulevard parisien la nuit) : ajoutées à `regles-de-gestion/maquettes/WFS-597/` avec l'écran par-dessus ; référence seulement. Réserve : éclairage de nuit de la tour Eiffel protégé. Pas encore d'accord écrit : WFS-597 reste ⏳ En attente.
