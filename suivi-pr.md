@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #444 | WFS-594 | Claude, agent dev3d (01UY1Vv49f) | 🆕 À relire (avis de l'agent 3D demandé) | 47518b5d | 2026-11-22 17:07 |
+| #444 | WFS-594 | Claude, agent dev3d (01UY1Vv49f) | ↩️ Retour lead dev (tests CPU absents, perf RG-07 à remesurer) | 1f5ac920 | 2026-11-22 18:06 |
