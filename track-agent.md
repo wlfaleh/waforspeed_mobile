@@ -112,7 +112,7 @@
 | Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | — | — | `feature/waforspeed-597` (fusionnée, #439, 528ed3b6) | ⏹️ session terminée (WFS-597 fusionné) |
 | Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg) | WFS-593 | 10 % des personnes dans toutes les cartes (facteur commun, conducteurs et deux-roues inchangés) | `feature/waforspeed-593`, poussée | 🔀 En PR (#442), corrigée, lead dev rappelé (15:35 UTC) |
 | Claude, agent dev3d (01UY1Vv2sH) (session_01UY1Vv2sHodzrS5FyXVX9uR) | WFS-596 | Vue Cockpit : la mini-carte du HUD sur l'écran central de la voiture, plus à l'écran (autres vues inchangées) | `feature/waforspeed-596`, poussée 2026-11-22 14:27 UTC | ⏹️ session terminée (WFS-596 fusionné, #441, 2026-11-22 15:07 UTC) |
-| Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ) | WFS-571 | Ville : tours en boîtes et cubes nus sur les toits remplacés par de vrais volumes (ANO-280) | `feature/waforspeed-571`, poussée | 🟣 WFS-571 fusionné (#443, b5fc1a17) par le lead dev ; 🟡 à valider (utilisateur) |
+| Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ) | WFS-571 | Ville : tours en boîtes et cubes nus sur les toits remplacés par de vrais volumes (ANO-280) | `feature/waforspeed-571`, poussée | ⏹️ session terminée (WFS-571 fusionné, #443, b5fc1a17 ; 🟡 à valider par l'utilisateur) |
 | agent expert ci cd (01UY1Vv43t) (session_01UY1Vv43tZmAYr8FEMaKo7S) | WFS-589 | CI de `main` rouge : crédits des images `ui/modes`, parcours « fin → Menu » du banc, realisme-2 | `feature/waforspeed-589` | 🟣 fusionné (#440, squash ddc7ac62) par le lead dev ; session à arrêter |
 
 ## Agents de pilotage
