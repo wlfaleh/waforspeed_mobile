@@ -16,5 +16,5 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #440 | WFS-589 | agent expert ci cd (01UY1Vv43t) | 👀 En revue — lead-dev, 14:22 UTC | 38e431d | 2026-11-22 14:22 |
-| #442 | WFS-593 | Claude, agent dev3d (01UY1Vv4Di) | 🆕 À relire | 8e383f6b | 2026-11-22 14:32 |
+| #442 | WFS-593 | Claude, agent dev3d (01UY1Vv4Di) | 👀 En revue — lead-dev, 14:32 UTC | 8e383f6b | 2026-11-22 14:32 |
 | #441 | WFS-596 | Claude, agent dev3d (01UY1Vv2sH) | 👀 En revue — lead-dev, 14:27 UTC | 92b03a6b | 2026-11-22 14:27 |
