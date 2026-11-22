@@ -123,3 +123,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 12:41:26 — WFS-597 en tête de la liste `@dev` (ordre de l'utilisateur) (po-scrum-master)
 - WFS-597 passe P1 et 1er de la liste `@dev`, avant WFS-593, 594 et 596.
+
+### 2026-11-22 12:45:35 — Liste des 30 prochaines tâches avec le type de session (po-scrum-master)
+- Demande de l'utilisateur : « Liste 30 avec type dev ». Nouveau bandeau 📋 en tête de `TACHES.md` (17 `@dev`, 2 `@conduite`, 2 `@cartes`, 9 `@cicd`) ; la liste de 11:56 UTC est barrée.
