@@ -71,3 +71,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - **WFS-587** : ⏳ En attente → ⏳ Prêt (WFS-567 fusionné, #436).
 - Créés : **WFS-591** (P1, `@cicd`, publication des paquets après WFS-590, ordre permanent du 2026-11-12) et **WFS-592** (P2, `@dev` + avis `@3d`, réserves de WFS-590 : lettres en relief, croix de pharmacie, mesures R581 ; ordre « on ne jette pas un travail »).
 - Ordre donné : `@dev` 571 → 573 → 575 → 563 → 512 → 570 → 554 → 444 → 576 → 577 → 581 → 583 → 585 → 586 → 587 → 592 → 588 ; `@conduite` 584 → 394 ; `@cicd` en parallèle 589 → 454 → 591 → 466 → 471 → 527 → 287.
+
+### 2026-11-22 11:50:10 — Menus et écrans avant la course bloqués (ordre de l'utilisateur) (po-scrum-master)
+- Ordre : « Bloque toutes les tâches qui touchent le menu ou les espaces avant de jouer : garage, réglages, menu… ». Noté dans les ordres permanents du skill PO et dans le bandeau ⛔ de `TACHES.md`.
+- ⛔ Bloqués : WFS-563, 554, 586, 587, 588, 570, 553, 538, 556, 497, 486, 357, 347, 332, 345 (statuts d'avant gardés ici : 563, 554, 586, 587, 588, 570, 553, 538, 357, 332 ⏳ Prêt ; 556, 497, 486, 347, 345 ⏳ En attente).
+- Non bloqués (hors de ces écrans) : 512, 514, 585, 584, 589 (en cours), 454. Ordre `@dev` : 571 → 573 → 575 → 512 → 444 → 576 → 577 → 581 → 583 → 585 → 592.
