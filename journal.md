@@ -107,3 +107,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 12:13:04 — WFS-597 : choix de l'utilisateur, la voiture du menu dans une rue en 3D (po-scrum-master)
 - L'utilisateur : « inspirer le fond de notre voiture du menu, mais dans un plan 3D dans la rue, style réaliste 100 % ». Règles ajoutées (RG-08 à RG-11 : SF-X caméléon et skin bleu ciel de WFS-552, rue de la Ville, trois quarts avant caméra basse, soir / nuit humide, rendu 2400 × 1080 par le banc, 3 variantes + avis `@3d`). **WFS-597 ⏳ Prêt** (P2, `@dev` dev-artiste-3d).
+
+### 2026-11-22 12:17:09 — WFS-597 : maquettes de l'idée de l'utilisateur, en attente de son accord (po-scrum-master)
+- L'utilisateur : « tes maquettes nulles, je dois accepter la maquette avant le changement ». WFS-597 ⏳ Prêt → **⏳ En attente** (RG-00) ; ordre permanent noté dans le skill PO.
+- 3e version : SF-X du menu découpée de `references/maquettes-R19/01-menu.jpg` et posée dans 3 rues de la Ville la nuit (captures `captures-matin`, voiture du jeu effacée) : maquettes A, B, C ; séries 1 et 2 retirées du dossier.
