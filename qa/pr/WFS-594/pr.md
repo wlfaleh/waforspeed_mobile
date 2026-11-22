@@ -18,6 +18,7 @@ Agent : Claude, agent dev3d (01UY1Vv49f)
 - **Comment c'est vérifié** :
   - Tests CPU : 159 réussis sur 159 (`bash tools/qa/tests_cpu.sh build`), dont `test_fidelite_routes` (26 / 26 mesures : largeur 15 cm, albédo 0,68, joints 1 m, pontage 0,55 ; constantes du shader = C++), `test_sols` (codes, constantes `sols.glsl` = C++, carte enneigée), `test_fidelite` (mesure des lignes relue).
   - Banc `routes-sols` en 1280 × 720 (lavapipe, rendu de la CI), avant (`main`) / après aux mêmes endroits, **avec les couches de validation Vulkan : 0 erreur** avant et après ; chaque image regardée, zooms ×2 dans la planche de détails.
+  - Parcours complet (RG-08) : banc `parcours` (accueil → choix → course → fin → retour au menu, vue Cockpit comprise) avec les couches de validation : 0 écart, 0 erreur de validation.
   - Coût (RG-07) : banc `perf` (lavapipe, 1280 × 720, 120 images par carte), passe de scène en ms, `main` → branche (2 mesures) :
     | Carte | Haute | Basse |
     |---|---|---|
