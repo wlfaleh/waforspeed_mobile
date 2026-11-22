@@ -20,6 +20,7 @@
 #include <map>
 #include <vector>
 #include "../core/jobs.h"
+#include "foule_apparition.h"   // WFS-593 (accroche) : promeneurs gardés
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/course.h"
@@ -1642,6 +1643,7 @@ public:
         }
         // chiens : 1,3 m devant leur promeneur, côté façades ; pas de marche réglé sur la distance (cycle de 0,9 m)
         if (!chien_[0].empty()) for (size_t i = 0; i < promS_.size(); i++) {
+            if (!apparition::promeneurGarde((int)i)) continue;   // WFS-593 (accroche) : pas de chien sans son maître (pietons.cpp)
             const ville::Promeneur& m = plan_->promeneurs[i];
             double rel = promS_[i] - std::fmod(std::fmod((double)aP, (double)L) + L, (double)L);
             if (rel > L / 2.0) rel -= L; if (rel < -L / 2.0) rel += L;

@@ -29,6 +29,7 @@
 #include "../game/course_system.h"   // WFS-140 : décompte (feux de départ allumés un par un)
 #include "../game/trace_cartes.h"    // WFS-140 : sections du tracé 2, état des feux de départ
 #include "../render/eclairage.h"
+#include "foule_apparition.h"   // WFS-593 (accroche) : 10 % des spectateurs
 #include "decor_carte.h"
 #include "decor_grandprix_modeles.h"   // WFS-373 : objets modélisés
 #include "enseignes.h"   // AtlasTextes (WFS-71) : texte des panneaux publicitaires (WFS-93)
@@ -284,8 +285,9 @@ protected:
         const uint32_t taux = (uint32_t)std::min(82, places ? 100 * plafond / places : 0);
         int n = 0;
         parcourir([&](int k, float d, uint32_t h) {
-            const bool occupe = n < plafond && (h >> 3) % 100 < taux;
-            n += occupe;
+            const bool avant = n < plafond && (h >> 3) % 100 < taux;   // place occupée sur main au 2026-11-22
+            n += avant;
+            const bool occupe = avant && apparition::garderPart(n - 1);   // WFS-593 (accroche) : 10 % des spectateurs, répartis
             f(k, d, occupe, h);
         });
     }
