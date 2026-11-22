@@ -189,3 +189,39 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Fusion par le lead dev (squash 528ed3b6), statut 🟡 À valider (utilisateur). Réponse écrite à l'utilisateur dans `tache utilisateur.md`.
 - Remarques non bloquantes du lead dev, à arbitrer par le PO (pas de ticket créé par moi) : texture du fond (10 Mo) non détruite si le jeu est fermé sur l'écran d'erreur, avant l'arrêt de Vulkan ; mention « dev » / version moins lisible sur les reflets clairs de l'image ; « FOR » du logo rempli de la couleur d'avant (maquette : creux).
 - Session arrêtée (un seul sujet par session) : aucune autre demande de ticket.
+
+### 2026-11-22 14:20:20 — WFS-589 : PR #440 ouverte, bancs du matin #70 de la branche verts (agent expert ci cd (01UY1Vv43t))
+- Run #70 (bancs du matin, `feature/waforspeed-589`, c63457f) : **entièrement vert**, 26 jobs (tests CPU et licences, endurance et chauffe, realisme-1 et 2, complements-a/b/c, captures, APK, émulateur) : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/45025551433
+- Synchronisation avec `main` ensuite (WFS-597) : conflit dans `tools/qa/verifier_licences.py` (ligne de WFS-597 et la mienne au même endroit) ; un commit de synchronisation est parti par erreur avec les marques de conflit, **corrigé dans le commit suivant (2aeefad)**, les deux lignes gardées, licences 0 manque, compilation refaite. Aucun run de `main` touché.
+- PR https://github.com/wlfaleh/waforspeed_mobile/pull/440 (7 paires de captures dans `qa/pr/WFS-589/`) ; `suivi-pr.md` 🆕 ; `TACHES.md` 🔀 ; lead dev appelé.
+
+
+### 2026-11-22 14:27:12 — WFS-596 : PR #441 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv2sH))
+- Fait : en vue Cockpit, la mini-carte du HUD (même système, mêmes calculs) est projetée en perspective sur l'écran central (Model 3 : à droite de la vitesse ; SF90 : partie du tiers droit du combiné vue à travers le volant, 36 × 40 mm), plus par-dessus l'image ; ancienne carte simplifiée retirée ; pas de cyan, plus sombre la nuit, au plus 30 recalculs par seconde, sous toute l'interface.
+- Vérifié : 157 tests CPU réussis ; banc `carte-cockpit` (13 captures avant / après + 12 zooms, regardées), 0 erreur de validation Vulkan ; parcours complet : 1 écart « fin puis Menu → accueil → écran course », identique sur `main` b097807d (WFS-589).
+- Limites (écrites dans la PR) : SF90, carte petite (la jante passe devant le reste du tiers droit) ; Model 3 en 1280 × 720, boutons Nitro et Frein du HUD devant la droite de l'écran ; Giulia, consigne écrite très petite.
+
+### 2026-11-22 14:32:00 — WFS-593 : PR #442 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv4Di))
+- Fait : un seul réglage `apparition::PERSONNES_GARDEES_SUR_100 = 10` (`foule_apparition.h`), tirage régulier `garderPart` appliqué après les tirages de main dans `pietons.cpp`, catégorie par catégorie ; marcheurs de toutes les cartes répartis sur tout le tour (`repartirSurTour`). Comptes : Ville 245 → 27, Corniche 252 → 27, Campagne 37 → 4, Grand Prix 72 → 8 marcheurs et 381 → 39 spectateurs.
+- Accroches annoncées : `src/world/circuit.cpp` (+3 lignes, 10 % des spectateurs des tribunes), `src/world/ville.cpp` (+2 lignes, chien dessiné seulement si son promeneur est gardé).
+- Vérifié : 157 tests CPU réussis (dont 5 cas WFS-593) ; bancs `pietons`, `vie`, `cartes` (16 paires avant / après regardées) ; parcours complet : même écart « fin puis Menu → accueil » que sur main 699b39e9 (WFS-589), aucun autre. Rien de cuit dans les paquets.
+- Limites : non mesuré sur téléphone ; la ligne du journal « Ville (WFS-176) : … chien(s) » compte encore tous les promeneurs du plan.
+
+### 2026-11-22 14:40:15 — WFS-589 : PR #440 refusée par le lead dev, preuve des tests CPU manquante (lead-dev)
+- Revue (commentaire « ↩️ … changements demandés », car GitHub refuse REQUEST_CHANGES avec le même compte) sur 38e431d. **Seul défaut** : pas de section « Tests CPU » ni de `qa/pr/WFS-589/tests-cpu.log` (règle de l'utilisateur du 2026-11-11, skill lead-dev point 9).
+- Tout le reste est vérifié et bon : 7 paires de captures ouvertes (`parcours-retour-menu` : avant = écran de fin, après = accueil ; `reglages-qualite-ultra` : Ultra choisi ; 5 paires identiques au pixel près) ; diff entier lu (`courseBouton("menu")`, bloc de pastilles dans `bench_passes.cpp`, 3 crédits `ui/modes` sans marque de conflit) ; construction locale et **158 tests CPU réussis** sur 38e431d ; licences 0 manque ; bancs du matin #70 de la branche verts (26 jobs).
+- À faire par le développeur : ajouter le journal et la section, répondre sous la revue, rappeler le lead dev. Pas besoin de refaire les captures.
+
+### 2026-11-22 14:41:47 — WFS-593 : PR #442 refusée par le lead dev (lead-dev)
+- Commit relu : 8e383f6b. Diff lu en entier, branche construite et testée (158 tests CPU réussis), 16 paires de captures ouvertes : le code et l'image répondent à la demande (10 % des personnes, réparties sur le tour, aucune régression vue).
+- Refus pour preuves manquantes : (1) capture « Tests CPU » et `qa/pr/WFS-593/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-06 : lignes brutes du journal du chargement à coller dans la PR ; (3) RG-07 : résultat de la validation Vulkan des bancs non indiqué. Aucune nouvelle capture d'écran demandée. Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-22 14:44:11 — Statuts automatiques, CI main #1159 (robot statuts)
+- Run rouge (push, commit 528ed3b), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
+
+### 2026-11-22 14:53:27 — WFS-571 : PR #443 ouverte (Claude, agent dev3d (01UY1Vv4Xe))
+- Tours de la Ville en tronçons (socle, fût en retrait, attique ; 3 silhouettes), toits équipés (édicule complet à tous les niveaux de détail, lanterneau, centrale de traitement d'air, garde-corps), nez de dalle gardés au niveau 1. Fichiers : `archi_kit.*`, `archi_geo.*`, `archi_details.cpp`, `archi_carte.cpp`, `archi_cuit.h` (`VERSION_BLOC` 3), `archi_banc.cpp`, nouveau `tests/test_tours_ville.cpp`.
+- Vérification : tests CPU 158/158 ; banc `perf` Ville : processeur + 0,1 ms (± 1 ms tenu), triangles de la scène Basse + 7,5 % ; parcours complet OK sauf « fin → Menu », même écart sur `main` (WFS-589) ; 18 captures après (`qa/pr/WFS-571/`).
+- RG-08 : bâtiments cuits dans le paquet de la Ville → WFS-572 (`@cicd`) republie après la fusion. Proposition au PO (hors ticket) : le style moderne est borné à 8 étages alors que le plan de la Ville demande des tours de 60 à 105 m.
+- Suite : avis de l'agent 3D (E15), puis lead dev.
