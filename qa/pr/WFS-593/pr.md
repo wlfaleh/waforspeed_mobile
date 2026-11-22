@@ -32,7 +32,7 @@ Commit testé : `6bf36c5b` (branche synchronisée avec main) ; journal complet :
 ```
 [OK] test_apparition_pietons (0 s)
 …
-tests CPU : 158 test(s) réussi(s) en 409 s
+tests CPU : 158 test(s) réussi(s) en 404 s
 ```
 
 ## Journal du chargement (RG-06, lignes brutes)
