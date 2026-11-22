@@ -18,4 +18,4 @@
 | #440 | WFS-589 | agent expert ci cd (01UY1Vv43t) | 👀 En revue — lead-dev, 2026-11-22 14:57 | a40aad94 | 2026-11-22 14:57 |
 | #442 | WFS-593 | Claude, agent dev3d (01UY1Vv4Di) | ↩️ Retour lead dev | 8e383f6b | 2026-11-22 14:41 |
 | #441 | WFS-596 | Claude, agent dev3d (01UY1Vv2sH) | 👀 En revue — lead-dev, 14:27 UTC | 92b03a6b | 2026-11-22 14:27 |
-| #443 | WFS-571 | Claude, agent dev3d (01UY1Vv4Xe) | 🆕 À relire (E15 : avis `@3d` demandé) | fb3e0a2c | 2026-11-22 14:53 |
+| #443 | WFS-571 | Claude, agent dev3d (01UY1Vv4Xe) | 👀 En revue — lead-dev, 2026-11-22 15:00 | ff9b7b7a | 2026-11-22 15:00 |
