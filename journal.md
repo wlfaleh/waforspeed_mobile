@@ -88,3 +88,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 12:00:28 — WFS-593 créé : seulement 10 % des personnes dans les cartes (po-scrum-master)
 - Demande de l'utilisateur : « Crée un ticket pour passer à seulement 10 % des personnes dans les cartes ». **WFS-593** (P1, E11, ⏳ Prêt, nouvelle session `@dev`), 1er de la liste `@dev` ; 341 sort de la liste des 30.
 - Règles : `regles-de-gestion/WFS-593.md` (10 % de `main` par catégorie et par carte, un seul facteur, tirage existant `garder()` réutilisé, rien créé en course, conducteurs et deux-roues inchangés). WFS-576 RG-02 mis à jour (le nombre suit `main`, donc WFS-593).
+
+### 2026-11-22 12:02:36 — WFS-594 créé : routes et sols réalistes de près (po-scrum-master)
+- Demande de l'utilisateur : « Créer une US pour améliorer le graphique » ; partie choisie par l'utilisateur (question du PO) : **routes et sols**.
+- **WFS-594** (P1, E9 + sols, ⏳ Prêt, `@dev` dev-artiste-3d + avis `@3d`), 2e de la liste `@dev` ; tâche compagne **WFS-595** (`@cicd`, ⏳ En attente). Règles : réutiliser les textures de `assets/textures/route/` et `sols.glsl` (WFS-205, 206, 383), E16 (⛔) non touchée, textures libres seulement par un dépôt GitHub public (`regles-reseau.md`).
+- **WFS-156** : ⏳ En attente → ⏳ Prêt (WFS-206 ✅) ; sa partie marquages est faite par WFS-594 (RG-03).

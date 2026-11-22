@@ -13,6 +13,9 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Créer une US pour améliorer le graphique ; partie choisie : routes et sols (2026-11-22 12:02 UTC).
+( PO, 2026-11-22 12:02:36 UTC : c'est créé — **WFS-594** (P1, ⏳ Prêt, 2e de la liste `@dev` après WFS-593). De près, depuis la voiture : grain de l'enrobé net sans flou ni répétition, traces des roues et réparations, marquages un peu usés qui brillent aux phares la nuit, vraies bordures et trottoirs (chanfrein, joints), herbe, terre, sable et roche en textures au lieu d'aplats, bande de terre et gravier au bord de la route ; Ville, Corniche et Neige ; sans perte de fluidité sur le téléphone. Avis de l'agent 3D avant la fusion ; tâche **WFS-595** (`@cicd`) pour publier les paquets ensuite ; puis c'est toi qui valides (🟡). Règles : `regles-de-gestion/WFS-594.md`. )
+
 - Créer un ticket pour passer à seulement 10 % des personnes dans les cartes (2026-11-22 12:00 UTC).
 ( PO, 2026-11-22 12:00:28 UTC : c'est créé — **WFS-593** (P1, ⏳ Prêt, 1er de la liste `@dev`). Dans chaque carte, on garde 10 % des personnes d'aujourd'hui (passants, terrasses, plage, poussettes, spectateurs), réparties sur tout le tour ; les conducteurs dans les voitures et les deux-roues ne changent pas. Après la fusion, c'est toi qui valides sur le téléphone (🟡). Règles : `regles-de-gestion/WFS-593.md`. )
 
