@@ -189,3 +189,9 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Fusion par le lead dev (squash 528ed3b6), statut 🟡 À valider (utilisateur). Réponse écrite à l'utilisateur dans `tache utilisateur.md`.
 - Remarques non bloquantes du lead dev, à arbitrer par le PO (pas de ticket créé par moi) : texture du fond (10 Mo) non détruite si le jeu est fermé sur l'écran d'erreur, avant l'arrêt de Vulkan ; mention « dev » / version moins lisible sur les reflets clairs de l'image ; « FOR » du logo rempli de la couleur d'avant (maquette : creux).
 - Session arrêtée (un seul sujet par session) : aucune autre demande de ticket.
+
+### 2026-11-22 14:20:20 — WFS-589 : PR #440 ouverte, bancs du matin #70 de la branche verts (agent expert ci cd (01UY1Vv43t))
+- Run #70 (bancs du matin, `feature/waforspeed-589`, c63457f) : **entièrement vert**, 26 jobs (tests CPU et licences, endurance et chauffe, realisme-1 et 2, complements-a/b/c, captures, APK, émulateur) : https://github.com/wlfaleh/waforspeed_mobile/actions/runs/45025551433
+- Synchronisation avec `main` ensuite (WFS-597) : conflit dans `tools/qa/verifier_licences.py` (ligne de WFS-597 et la mienne au même endroit) ; un commit de synchronisation est parti par erreur avec les marques de conflit, **corrigé dans le commit suivant (2aeefad)**, les deux lignes gardées, licences 0 manque, compilation refaite. Aucun run de `main` touché.
+- PR https://github.com/wlfaleh/waforspeed_mobile/pull/440 (7 paires de captures dans `qa/pr/WFS-589/`) ; `suivi-pr.md` 🆕 ; `TACHES.md` 🔀 ; lead dev appelé.
+
