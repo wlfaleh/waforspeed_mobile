@@ -93,3 +93,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Demande de l'utilisateur : « Créer une US pour améliorer le graphique » ; partie choisie par l'utilisateur (question du PO) : **routes et sols**.
 - **WFS-594** (P1, E9 + sols, ⏳ Prêt, `@dev` dev-artiste-3d + avis `@3d`), 2e de la liste `@dev` ; tâche compagne **WFS-595** (`@cicd`, ⏳ En attente). Règles : réutiliser les textures de `assets/textures/route/` et `sols.glsl` (WFS-205, 206, 383), E16 (⛔) non touchée, textures libres seulement par un dépôt GitHub public (`regles-reseau.md`).
 - **WFS-156** : ⏳ En attente → ⏳ Prêt (WFS-206 ✅) ; sa partie marquages est faite par WFS-594 (RG-03).
+
+### 2026-11-22 12:03:57 — WFS-596 créé : mini-carte sur l'écran central en vue Cockpit (po-scrum-master)
+- Demande de l'utilisateur : « Créer une US spécifique mode cockpit pour mettre la même map dans l'écran central des voitures et l'enlever de l'écran de jeu ». **WFS-596** (P1, E5 + E10, ⏳ Prêt, `@dev`), 3e de la liste `@dev`.
+- Réutiliser `src/ui/minicarte.*` (WFS-173) et l'écran central de `vehicule_cockpit.*` (WFS-201 RG-05, carte simplifiée remplacée) ; mêmes fichiers que WFS-583 : le 2e fusionné se synchronise ; WFS-583 RG-03 renvoie la mini-carte à WFS-596. Pas de tâche `@cicd` (rien de cuit dans les paquets).

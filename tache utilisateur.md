@@ -13,6 +13,9 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Vue Cockpit : mettre la même carte sur l'écran central des voitures et l'enlever de l'écran de jeu (2026-11-22 12:03 UTC).
+( PO, 2026-11-22 12:03:57 UTC : c'est créé — **WFS-596** (P1, ⏳ Prêt, 3e de la liste `@dev` après 593 et 594). En vue Cockpit, la mini-carte n'est plus dessinée sur l'image du jeu : c'est la même carte (route, checkpoints, adversaires, police) qui s'affiche sur l'écran central de la planche de bord, comme un GPS, plus sombre la nuit ; elle ne cache plus le rétroviseur. Voitures sans écran central (SF90) : la carte va à droite du combiné. Dans les autres vues, rien ne change. Après la fusion, c'est toi qui valides (🟡). Règles : `regles-de-gestion/WFS-596.md`. )
+
 - Créer une US pour améliorer le graphique ; partie choisie : routes et sols (2026-11-22 12:02 UTC).
 ( PO, 2026-11-22 12:02:36 UTC : c'est créé — **WFS-594** (P1, ⏳ Prêt, 2e de la liste `@dev` après WFS-593). De près, depuis la voiture : grain de l'enrobé net sans flou ni répétition, traces des roues et réparations, marquages un peu usés qui brillent aux phares la nuit, vraies bordures et trottoirs (chanfrein, joints), herbe, terre, sable et roche en textures au lieu d'aplats, bande de terre et gravier au bord de la route ; Ville, Corniche et Neige ; sans perte de fluidité sur le téléphone. Avis de l'agent 3D avant la fusion ; tâche **WFS-595** (`@cicd`) pour publier les paquets ensuite ; puis c'est toi qui valides (🟡). Règles : `regles-de-gestion/WFS-594.md`. )
 
