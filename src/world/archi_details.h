@@ -20,6 +20,9 @@ void corniche(Maillage& m, float L, float D, float H, float h, float s);
 void mansart(const Plan& p, float D, int lod, Batiment& out);
 // toiture-terrasse : couvertines de l'acrotère et édicule (cage d'escalier) avec dalle en débord, porte et ventilation
 void terrasse(const Plan& p, float D, int lod, Batiment& out);
+// WFS-571 (RG-04) : place de la centrale de traitement d'air sur la toiture-terrasse du plan (centre au sol du toit, repère du
+// bâtiment) ; faux s'il n'y en a pas (petit toit, pas d'édicule, style sans centrale). Utilisée par terrasse() et par le banc du kit.
+bool placeCentraleAir(const Plan& p, float D, vec3& centre);
 // façade (niveau 0) : soubassement et cordon (classique), dormant et meneaux des vitrines (tous styles)
 void facade(const Plan& p, Batiment& out);
 
