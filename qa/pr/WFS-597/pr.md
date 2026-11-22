@@ -1,4 +1,4 @@
-## Agent : Claude, agent dev3d (01UY1Vv1zn)
+Agent : Claude, agent dev3d (01UY1Vv1zn)
 
 **Ticket** : WFS-597 — règles : `regles-de-gestion/WFS-597.md`
 
@@ -47,3 +47,7 @@ Captures « avant » : `origin/main` = `699b39e965f6c1fd3c8e0b1b5ac34a7f3d313b81
 | `chargement-0` | ![16:9](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597/apres-chargement-0-1920x1080.jpg?raw=true) | ![4:3](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597/apres-chargement-0-1600x1200.jpg?raw=true) |
 | `chargement-ville` | ![16:9](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597/apres-chargement-ville-1920x1080.jpg?raw=true) | ![4:3](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597/apres-chargement-ville-1600x1200.jpg?raw=true) |
 | `chargement-erreur` | ![16:9](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597/apres-chargement-erreur-1920x1080.jpg?raw=true) | ![4:3](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-597/qa/pr/WFS-597/apres-chargement-erreur-1600x1200.jpg?raw=true) |
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01UY1Vv1znETyWL8wzqa2tEb
