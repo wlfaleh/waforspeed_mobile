@@ -13,6 +13,9 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Bloquer aussi les tâches de publicité et de Google Play pour l'instant (2026-11-22 11:52 UTC).
+( PO, 2026-11-22 11:52:55 UTC : c'est fait. **10 tickets bloqués** (⛔) : WFS-512 (vidéo récompensée, consentement), 514 (×2 par vidéo en fin de course), 515 (essais réels achats et pub), 516 (déclarations Play Console), 319 (AAB Play Store), 320 (sortie publique), 405 (version grand public), 407 (fiche du store), 409 (formulaires Play Console), 509 (fiche en anglais). Ordre permanent noté. Pour débloquer, dis-le simplement. )
+
 - Bloquer toutes les tâches qui touchent le menu ou les espaces avant de jouer (garage, réglages, menu…) (2026-11-22 11:50 UTC).
 ( PO, 2026-11-22 11:50:10 UTC : c'est fait. **15 tickets bloqués** (⛔) : WFS-563 (garage 3D), 554 (menu 3D), 586 (manette au choix du terrain), 587 (écrans en 16:9 / 20:9 / 4:3), 588 (salon du duel, Réglages), 570 (Market), 553 (Market depuis le score), 538 (écran Profil), 556 (badge au garage), 497 (atelier du garage), 486 (e-mail), 357 et 345 (écran des paquets), 347 (Réglages), 332 (fond du menu). Ordre permanent noté. Restent ouverts parce qu'ils ne touchent pas ces écrans : WFS-512 (pub, code Android), 514 et 585 (fin de course), 584 (commandes en course). Dis-moi si tu veux aussi bloquer 512 ou 514 ; pour débloquer, dis-le simplement. )
 

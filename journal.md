@@ -76,3 +76,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Ordre : « Bloque toutes les tâches qui touchent le menu ou les espaces avant de jouer : garage, réglages, menu… ». Noté dans les ordres permanents du skill PO et dans le bandeau ⛔ de `TACHES.md`.
 - ⛔ Bloqués : WFS-563, 554, 586, 587, 588, 570, 553, 538, 556, 497, 486, 357, 347, 332, 345 (statuts d'avant gardés ici : 563, 554, 586, 587, 588, 570, 553, 538, 357, 332 ⏳ Prêt ; 556, 497, 486, 347, 345 ⏳ En attente).
 - Non bloqués (hors de ces écrans) : 512, 514, 585, 584, 589 (en cours), 454. Ordre `@dev` : 571 → 573 → 575 → 512 → 444 → 576 → 577 → 581 → 583 → 585 → 592.
+
+### 2026-11-22 11:52:55 — Pub et Google Play bloqués (ordre de l'utilisateur) (po-scrum-master)
+- Ordre : « pareil pour les tâches publicité Google machin, à bloquer pour l'instant ». Noté dans les ordres permanents du skill PO et dans le bandeau ⛔ de `TACHES.md`.
+- ⛔ Bloqués : WFS-512 (⏳ Prêt avant), 514, 515 (⏳ En attente avant), 516, 319, 320, 405, 407, 409, 509 (⏸ jour de publication avant). WFS-408 (🟣) inchangé.
+- Ordre `@dev` : 571 → 573 → 575 → 444 → 576 → 577 → 581 → 583 → 585 → 592.
