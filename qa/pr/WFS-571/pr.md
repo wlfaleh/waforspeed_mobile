@@ -12,7 +12,7 @@
   - **Paquet (RG-08)** : les bâtiments **sont cuits** dans le paquet `.wfcarte` de la Ville (bloc « batiments ») : `VERSION_BLOC` passe à 3, l'ancien bloc est refusé proprement (kit construit par le code en secours) → **WFS-572 doit republier les paquets** de la Ville.
   - Banc du kit (`archi_banc.cpp`) : la tour moderne en tronçons (graine choisie pour porter une centrale de traitement d'air), 7 nouvelles vues `archi-tour-moderne-*` (toit de près, niveaux 1 et 2, rue de jour et de nuit, centrale de près et au niveau 1), `WFS_ARCHI_FILTRE` pour l'essai local (style porté par chaque vue : le filtre ne décale plus les styles, retour de l'agent 3D).
 - **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) :
-  - **Tests CPU : 158/158 verts** (`tools/qa/tests_cpu.sh build`), dont le nouveau `test_tours_ville` (3,9 millions de contrôles : tronçons conformes au kit, empilés, mêmes niveaux et hauteur, retraits croissants, profondeur ≥ 6 m, silhouettes différentes entre voisines, aucun acrotère ni couvertine sous le tronçon du dessus, porte et grille de l'édicule à chaque niveau de détail, centrales et garde-corps présents, sens des triangles) ; `test_archi_geo`, `test_archi_kit`, `test_batiments_cuits`, `test_carte_cuite` verts.
+  - **Tests CPU : 159/159 verts** (section « Tests CPU » ci-dessous) (`tools/qa/tests_cpu.sh build`), dont le nouveau `test_tours_ville` (3,9 millions de contrôles : tronçons conformes au kit, empilés, mêmes niveaux et hauteur, retraits croissants, profondeur ≥ 6 m, silhouettes différentes entre voisines, aucun acrotère ni couvertine sous le tronçon du dessus, porte et grille de l'édicule à chaque niveau de détail, centrales et garde-corps présents, sens des triangles) ; `test_archi_geo`, `test_archi_kit`, `test_batiments_cuits`, `test_carte_cuite` verts.
   - Banc `perf` (Ville, lavapipe, 200 images) `main` → branche : processeur 1,5 → 1,6-1,7 ms (Basse), `ArchiCarteSysteme.render` 0,05 → 0,07 ms : **dans la tolérance de ± 1 ms** ; triangles des bâtiments près du joueur 94 749 → 129 030 (scène Basse 456 776 → 491 059, + 7,5 %). Le temps « GPU » de lavapipe (rendu logiciel, très bruité d'un lancement à l'autre) n'est pas celui du téléphone.
   - Kit de la Ville : 625 → 905 bâtiments posés (tronçons) ; triangles niveau 1 : 609 738 → ≈ 790 000, niveau 2 : 302 330 → 334 946.
   - Parcours complet (banc `parcours`) : accueil, choix, course, pause, reprise, fin OK ; « fin → Menu » en écart **aussi sur `main`** (même banc, même résultat) : rouge connu suivi par **WFS-589** (`@cicd`), sans lien avec ce ticket.
@@ -23,6 +23,21 @@
   - Les fenêtres du kit de secours restent des vitres sombres en retrait (l'image avec relief des menuiseries n'existe que dans le paquet cuit) : WFS-572 republie.
   - Mesure de performance sur lavapipe seulement : à confirmer par l'utilisateur sur son téléphone (ticket 🟡).
   - Taille du paquet : + ≈ 30 % de triangles de bâtiments au niveau 1 ; le paquet de la Ville (≈ 200 Mo) reste loin des 700 Mo.
+
+## Tests CPU
+
+Commit testé : `ff9b7b7a` (`bash tools/qa/tests_cpu.sh build`) ; journal complet : [`qa/pr/WFS-571/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-571/qa/pr/WFS-571/tests-cpu.log).
+
+```
+Commit testé : ff9b7b7aef410d21593f212b33cfb50e973db1bb (feature/waforspeed-571), 2026-11-22 15:21:52 UTC, conteneur Linux, build Release
+...
+[OK] test_ville_lieux (0 s)
+[OK] test_ville_sol (3 s)
+[OK] test_virages_fleches (1 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 159 test(s) réussi(s) en 502 s
+code de sortie : 0
+```
 
 ## Captures pour le lead dev (20 après)
 
