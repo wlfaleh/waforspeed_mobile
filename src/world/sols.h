@@ -22,9 +22,9 @@ enum class Climat { Mediterraneen = 1, Tempere = 2, Automne = 3 };
 // code du sol lu par le shader (pc.params.z) : climat + 4 × teinte + 8 × rocheux ; WFS-594 (RG-05) : + 16 × sable (couleur de la palette
 // gardée, rides de vent, grain), + 32 × neige (neige fraîche au sol), + 64 × bord de route (uv.x = latéral en m : bande de terre et de
 // gravier de BANDE_GRAVIER_MIN_M à BANDE_GRAVIER_MAX_M au pied du trottoir de Game, qui finit à BORD_TROTTOIR_M de l'axe)
-struct Options { bool teinte = false, rocheux = false, sable = false, neige = false, bordRoute = false; };
-constexpr float code(Climat c, bool teinte, bool rocheux, bool sable = false, bool neige = false, bool bordRoute = false) {
-    return (float)((int)c + (teinte ? 4 : 0) + (rocheux ? 8 : 0) + (sable ? 16 : 0) + (neige ? 32 : 0) + (bordRoute ? 64 : 0));
+struct Options { bool teinte = false, rocheux = false, sable = false, neige = false, bordRoute = false, gazon = false; };   // gazon : + 128 (pelouse arrosée de la Ville)
+constexpr float code(Climat c, bool teinte, bool rocheux, bool sable = false, bool neige = false, bool bordRoute = false, bool gazon = false) {
+    return (float)((int)c + (teinte ? 4 : 0) + (rocheux ? 8 : 0) + (sable ? 16 : 0) + (neige ? 32 : 0) + (bordRoute ? 64 : 0) + (gazon ? 128 : 0));
 }
 constexpr float BORD_TROTTOIR_M = 11.5f;   // RW (7,5) + WALK_W (4) de game.cpp ; = shaders/sols.glsl (test_sols)
 constexpr float BANDE_GRAVIER_MIN_M = 0.3f, BANDE_GRAVIER_MAX_M = 0.8f;   // RG-05 : 30 à 80 cm ; = shaders/sols.glsl

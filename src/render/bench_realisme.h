@@ -481,12 +481,12 @@ inline bool passagePieton(const std::string& source, const char* marque, double&
 }
 inline MesureRoute mesurerRoute(const std::string& sceneFrag, const std::string& villeCpp) {
     MesureRoute r; std::smatch m;
-    const bool a = chercher(sceneFrag, R"(fract\(p\.y / ([0-9.]+)\), ([0-9.]+)\))", m);
+    const bool a = chercher(sceneFrag, R"(couvertureTirets\(p\.y / ([0-9.]+), ([0-9.]+),)", m);   // WFS-594 (accroche) : tirets filtrés au pixel
     if (a) { r.periode = std::stod(m[1]); r.trait = r.periode * std::stod(m[2]); }
     // WFS-594 (accroche) : largeur des lignes de voie et de rive = LARGEUR_MARQUAGE_M ; retrait de la ligne de rive lu dans son calcul
     const bool b = chercher(sceneFrag, R"(const float LARGEUR_MARQUAGE_M = ([0-9.]+))", m);
     if (b) r.largeurAxe = r.largeurRive = std::stod(m[1]);
-    const bool c = b && chercher(sceneFrag, R"(abs\(abs\(p\.x\) - \(halfW - ([0-9.]+)\)\))", m);
+    const bool c = b && chercher(sceneFrag, R"(abs\(p\.x\) - \(halfW - ([0-9.]+)\))", m);
     if (c) r.retraitRive = std::stod(m[1]);
     const bool d = chercher(sceneFrag, R"(float\(k\) \* halfW / ([0-9.]+))", m);
     if (d) r.diviseurVoies = std::stod(m[1]);

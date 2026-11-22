@@ -18,7 +18,7 @@ Material materiau(Climat c, bool teinte, bool rocheux) {
 
 Material materiau(Climat c, const Options& o) {
     Material m = materiau(c, o.teinte, o.rocheux);
-    m.cutoff = code(c, o.teinte, o.rocheux, o.sable, o.neige, o.bordRoute);
+    m.cutoff = code(c, o.teinte, o.rocheux, o.sable, o.neige, o.bordRoute, o.gazon);
     return m;
 }
 

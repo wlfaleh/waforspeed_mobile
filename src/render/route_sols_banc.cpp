@@ -80,6 +80,8 @@ int benchRoutesSols(Game& g, Renderer& r, const std::string& out, const std::str
             g.camMode = 2; g.orbitHauteur = 2.0f; g.orbitRecul = 4.0f;
             g.orbit = cap + 0.5f; g.orbitVise = v.fwd * 6.0f + droite * 5.5f - vec3{0, 0.55f, 0};
             capture("rasante");
+            if (std::string(moment) == "jour")
+                for (const char* vs : {"normales", "rugosite"}) { setenv("WFS_VUE_SURFACE", vs, 1); capture(std::string("rasante-") + vs); unsetenv("WFS_VUE_SURFACE"); }
             g.orbit = cap - 0.5f; g.orbitVise = v.fwd * 6.0f - droite * 5.5f - vec3{0, 0.55f, 0};
             capture("rasante-gauche");
             // bas-côté de près : œil à 10,5 m à droite de la voiture, 1,6 m de haut, regard vers le sol à 14 m de l'axe de la voiture
@@ -87,6 +89,14 @@ int benchRoutesSols(Game& g, Renderer& r, const std::string& out, const std::str
             g.orbitHauteur = 1.6f; g.orbitRecul = 10.5f; g.orbit = std::atan2(droite.x, droite.z);
             g.orbitVise = droite * 14.0f + v.fwd * 4.0f - vec3{0, 0.45f, 0};
             capture("bascote");
+            // planche des surfaces (de jour, carte par carte) : normales et rugosité des mêmes vues (WFS_VUE_SURFACE, renderer.cpp)
+            if (std::string(moment) == "jour") {
+                for (const char* vs : {"normales", "rugosite"}) {
+                    setenv("WFS_VUE_SURFACE", vs, 1);
+                    capture(std::string("bascote-") + vs);
+                    unsetenv("WFS_VUE_SURFACE");
+                }
+            }
             g.camMode = 0; g.orbitVise = vec3{}; g.orbitHauteur = 1.7f; g.orbitRecul = 6.5f;
             g.shutdown();
         }

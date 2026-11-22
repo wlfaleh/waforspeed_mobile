@@ -36,7 +36,7 @@ vec2 cellulesSol(vec2 p) {
 // regles-reseau.md). Relief : hauteur h (m) → normale par les dérivées écran (Mikkelsen 2010, « Bump mapping unparametrized
 // surfaces on the GPU ») : aucune lecture de plus ; h ne contient que des détails plus grands que le pixel (fondu « detail »), donc
 // aucun scintillement. Bits du code (src/world/sols.h) : 16 sable (couleur de la palette gardée), 32 neige (couche de neige fraîche),
-// 64 bord de route (uv.x = latéral en m depuis l'axe : bande de terre et de gravier au pied du trottoir).
+// 64 bord de route (uv.x = latéral en m depuis l'axe : bande de terre et de gravier au pied du trottoir), 128 gazon (pelouse arrosée).
 const float BORD_TROTTOIR_M = 11.5;       // RW + largeur du trottoir de Game (WALK_W = 4 m) : le sol commence là
 const float BANDE_GRAVIER_MIN_M = 0.3, BANDE_GRAVIER_MAX_M = 0.8;   // RG-05 : bande de terre et de gravier au bord (30 à 80 cm)
 vec3 bosseSol(vec3 N, float h) {   // relief h (m) → normale (dérivées écran)
@@ -51,7 +51,7 @@ vec3 bosseSol(vec3 N, float h) {   // relief h (m) → normale (dérivées écra
 void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 Ng, inout vec3 N) {
     const int code = int(pc.params.z + 0.5), climat = code % 4;
     const bool teinte = (code & 4) != 0, rocheux = (code & 8) != 0;
-    const bool sable = (code & 16) != 0, neigeSol = (code & 32) != 0, bordRoute = (code & 64) != 0;
+    const bool sable = (code & 16) != 0, neigeSol = (code & 32) != 0, bordRoute = (code & 64) != 0, gazon = (code & 128) != 0;
     const vec3 couleurBande = base.rgb;   // WFS-594 : couleur de la palette (sable sec ou mouillé), avant le mélange du pré
     const vec2 w = vWorld.xz;
     // finesse : les détails de moins de 0,5 m s'effacent quand un pixel couvre plus de 15 cm (pas de scintillement au loin)
@@ -78,16 +78,22 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
         pre = vec3(0.147, 0.212, 0.042); tache = vec3(0.323, 0.275, 0.102); terre = vec3(0.156, 0.102, 0.051);
         maquis = vec3(0.090, 0.110, 0.035); roche = vec3(0.270, 0.254, 0.216); roche2 = vec3(0.178, 0.165, 0.144);
     }
+    // WFS-594 : pelouse arrosée de la Ville (gazon tondu, entretenu) : herbe verte de materiaux.json (mat.herbe.albedo 0,105 / 0,133 /
+    // 0,041, PB-MAT) un peu plus dense en vert, au lieu du pré d'été en partie sec : rapport rouge / vert affiché ≈ 0,8
+    if (gazon) { pre = vec3(0.088, 0.142, 0.036); tache = vec3(0.112, 0.150, 0.045); }
     // champ cultivé : sa couleur (blé, labour…) garde la parcelle lisible, ramenée à mi-chemin du pré mesuré (plus d'aplat saturé)
     if (teinte) pre = mix(base.rgb, pre, 0.45);
 
     // pente faible : pré, grandes taches d'une autre herbe (≈ 25 m, contraste 0,4, fondu large : jamais un motif de camouflage),
     // taches rondes de terre nue (≈ 3,5 m, fondu doux, couleur ramenée vers le pré), grain de 40 cm
-    vec3 bas = mix(pre, tache, smoothstep(0.3, 0.8, macro) * (teinte || bordRoute ? 0.25 : 0.4));   // WFS-594 : bord de route arrosé (ville) : moins d'herbe sèche
+    // WFS-594 : pelouse arrosée de la Ville (gazon) : presque pas d'herbe sèche, rapport rouge / vert ≈ 0,8 (avis de l'agent 3D)
+    vec3 bas = mix(pre, tache, smoothstep(0.3, 0.8, macro) * (gazon ? 0.06 : teinte || bordRoute ? 0.25 : 0.4));   // WFS-594 : bord de route arrosé (ville) : moins d'herbe sèche
     bas = mix(bas, mix(terre, pre, 0.35), smoothstep(0.62, 0.9, meso) * 0.35);
     if (climat == 1) {   // garrigue : pointillé de touffes de maquis sombre (romarin, chêne kermès) de 30 à 80 cm, effacé au loin
-        const float touffe = smoothstep(0.62, 0.78, rnoise(w * 1.9 + 23.0) * 0.6 + rnoise(w * 4.1 + 5.0) * 0.4);
-        bas = mix(bas, maquis, touffe * 0.7 * detail + 0.12 * (1.0 - detail));
+        const float touffe = smoothstep(0.52, 0.72, rnoise(w * 1.9 + 23.0) * 0.6 + rnoise(w * 4.1 + 5.0) * 0.4);
+        // WFS-594 : massifs de 1 à 3 m (lentisque, ciste) lisibles jusqu'à ≈ 60 m ; touffes de 30 à 80 cm de près
+        const float massif = smoothstep(0.5, 0.75, rnoise(w * 0.45 + 41.0) * 0.7 + rnoise(w * 1.1 + 7.0) * 0.3);
+        bas = mix(bas, maquis, max(touffe * 0.7 * detail + 0.12 * (1.0 - detail), massif * 0.6));
     }
     if (climat == 3) {   // feuilles mortes variées (brun, roux, jaune, brun foncé) en taches irrégulières de 10 à 30 cm ; au loin : leur moyenne
         const float h = rnoise(w * 3.3 + 41.0), couvre = smoothstep(0.42, 0.6, rnoise(w * 5.7 + 13.0) * 0.65 + meso * 0.35);
@@ -124,7 +130,8 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
     const float mi = 1.0 - smoothstep(0.03, 0.1, px);         // touffes et mottes de 15 à 30 cm (visibles jusqu'à ≈ 30 m)
     const float fin2 = f40;
     const float touffeM = LEGER ? 0.5 : mix(0.5, rnoise(w * 6.7 + 31.0), mi) * 0.55 + mix(0.5, rnoise(w * 14.3 + 5.0), f14) * 0.45;
-    bas *= 0.8 + 0.4 * touffeM;                                // herbe : touffes plus sombres et plus claires (pas un aplat)
+    bas *= 0.72 + 0.56 * touffeM;                              // herbe : touffes plus sombres et plus claires (pas un aplat)
+    if (!LEGER && f14 > 0.0) bas *= mix(1.0, 0.75 + 0.5 * rnoise(w * 19.0 + 2.0), f14);   // touffes de brins (5 cm), creux sombres entre elles
     float h = 0.0;
     if (!LEGER && f14 > 0.0) {
         // herbe : brins et touffes (1 à 3 cm), pointes plus claires, creux plus sombres (ombre entre les brins)
@@ -179,7 +186,7 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
         const float ang = (macro - 0.5) * 1.2 + (meso - 0.5) * 0.4;
         const vec2 dir = vec2(cos(ang), sin(ang));
         const float ph = dot(w, dir) / 0.11 + rnoise(w * 0.3) * 1.5 + rnoise(w * 1.1) * 0.35;   // crêtes longues, qui se rejoignent par endroits
-        const float fRide = 1.0 - smoothstep(0.012, 0.035, px);              // rides de 11 cm : effacées avant le moiré
+        const float fRide = 1.0 - smoothstep(0.004, 0.012, px);              // rides de 11 cm (et leur harmonique de 5,5 cm) : effacées avant le moiré
         const float ride = 0.5 + 0.35 * sin(6.2831853 * ph) + 0.15 * sin(12.566371 * ph + 1.2);   // profil doux, dissymétrique
         const float pietine = smoothstep(0.55, 0.8, meso);                   // zones piétinées : rides effacées
         const float r = mix(0.5, ride, fRide * (1.0 - pietine * 0.85) * (1.0 - mouille));
@@ -190,9 +197,10 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
         const vec2 soleil = length(F.sunDir.xz) > 1e-3 ? normalize(F.sunDir.xz) : vec2(0.0);
         vec3 c = c0 * (0.92 + 0.12 * g) * (0.97 + 0.06 * r) * (1.0 + 0.22 * pente * dot(soleil, dir));
         if (f40 > 0.0) {   // coquillages et débris (1 à 3 cm), rares : seulement de près (cellules calculées là seulement)
-            const vec2 cd = cellulesSol(w * 9.0 + 41.0);
-            c = mix(c, vec3(0.62, 0.58, 0.50), smoothstep(0.25, 0.4, cd.x) * step(0.93, cd.y) * f40 * 0.6);
-            c = mix(c, vec3(0.12, 0.10, 0.07), smoothstep(0.25, 0.4, cd.x) * step(0.985, fract(cd.y * 13.0)) * f40 * 0.5);
+            const vec2 cd = cellulesSol(w * 25.0 + 41.0);                    // cellules de 4 cm : un débris au cœur d'une cellule sur 40
+            const float coeur = smoothstep(0.42, 0.55, cd.x) * f40;          // tache arrondie de 1 à 2 cm (loin des joints)
+            c = mix(c, vec3(0.66, 0.62, 0.55), coeur * step(0.975, cd.y) * 0.7);                  // coquillage clair
+            c = mix(c, vec3(0.20, 0.17, 0.12), coeur * step(0.996, fract(cd.y * 13.0)) * 0.6);   // brindille, algue sèche : très rares
         }
         base.rgb = c;
         rough = mix(0.92, 0.55, mouille);
@@ -208,12 +216,14 @@ void surfaceTerrain(inout vec4 base, inout float rough, inout float metal, vec3 
     // congères et croûte de vent (sastrugi, 1 à 4 m), grain de surface ; quelques herbes qui percent en bord de route
     if (neigeSol) {
         const float cong = bruitSol(w * 0.35 + 3.0, oct);
-        const float vent = rnoise(w * vec2(2.1, 0.6) + 17.0) * 0.6 + rnoise(w * vec2(5.3, 1.7)) * 0.4;
+        const float vent = rnoise(w * vec2(1.3, 0.9) + 17.0) * 0.6 + rnoise(w * vec2(3.1, 2.3)) * 0.4;
         const float grain = mix(0.5, rnoise(w * 43.0) * 0.6 + rnoise(w * 103.0) * 0.4, f100);
         const float crete = pow(vent, 2.0);                                    // crêtes de vent plus nettes que les creux
-        const float hN = cong * 0.3 * detail + crete * 0.06 * mi + grain * 0.004;
-        // creux plus bleutés (lumière du ciel seulement, neige plus tassée), bosses plus blanches ; albédo moyen ≈ 0,8 (neige fraîche)
-        vec3 c = mix(vec3(0.70, 0.74, 0.82), vec3(0.86, 0.88, 0.91), smoothstep(0.25, 0.75, cong * 0.6 + crete * 0.4))
+        // relief doux (congères de quelques cm sur 3 m, crêtes de 1 à 2 cm) : sous les phares rasants, un relief plus fort faisait des
+        // stries ; grain fin en couleur seulement (pas de relief au pixel)
+        const float hN = cong * 0.12 * detail + crete * 0.015 * mi;
+        // creux un peu bleutés, bosses plus blanches ; albédo de 0,80 à 0,88 (neige fraîche, DA-realisme.md)
+        vec3 c = mix(vec3(0.80, 0.82, 0.87), vec3(0.87, 0.88, 0.90), smoothstep(0.25, 0.75, cong * 0.6 + crete * 0.4))
                  * (0.96 + 0.06 * grain);
         base.rgb = mix(base.rgb, c, 0.97);
         rough = 0.7;

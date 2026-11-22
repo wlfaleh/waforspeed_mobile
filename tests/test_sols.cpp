@@ -28,6 +28,7 @@ int main() {
     VERIFIER(m.flags == MAT_GROUND && m.cutoff == 9.f && m.rough > 0.9f);
     // ---- WFS-594 (RG-05) : options du sol : 16 × sable, 32 × neige, 64 × bord de route ; constantes du shader = C++
     VERIFIER(sols::code(sols::Climat::Tempere, false, false, false, false, true) == 66.f);
+    VERIFIER(sols::materiau(sols::Climat::Tempere, sols::Options{.gazon = true}).cutoff == 130.f);
     {
         const Material ms = sols::materiau(sols::Climat::Mediterraneen, sols::Options{.sable = true});
         const Material mn = sols::materiau(sols::Climat::Tempere, sols::Options{.teinte = true, .neige = true});

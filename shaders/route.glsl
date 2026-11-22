@@ -296,6 +296,11 @@ vec4 riveRoute(vec2 p, float halfW, int carte, out float part) {
     return vec4(0.0);
 }
 
+// WFS-594 (RG-03) : part du pixel couverte par une bande [−demi, demi] (pixel de largeur w centré en x : filtre en boîte exact)
+float couvertureBande(float x, float demi, float w) { return clamp(min(x + 0.5 * w, demi) - max(x - 0.5 * w, -demi), 0.0, w) / w; }
+// part du pixel couverte par les tirets (créneau de période 1 et de rapport r, pixel de largeur w en périodes, centré en t)
+float primitiveTirets(float t, float r) { return floor(t) * r + min(fract(t), r); }
+float couvertureTirets(float t, float r, float w) { return (primitiveTirets(t + 0.5 * w, r) - primitiveTirets(t - 0.5 * w, r)) / w; }
 // chaussée (F_ROAD) : uv = mètres (x latéral, y le long de la route)
 void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout vec3 N, inout bool wetRoad, inout float flaque) {
     vec2 p = vUv;
@@ -332,17 +337,22 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
     }
     // WFS-594 (RG-03) : lignes de 15 cm (IISR, 7e partie : u = 7,5 cm, ligne de rive et de voie 2u en ville), bords anticrénelés au
     // pixel et légèrement irréguliers (± 6 mm : peinture appliquée à la machine, bords mangés) ; au loin, la ligne s'efface au prorata
-    float pixM = max(length(fwidth(p)), 1e-4);
-    float netM = 1.0 - smoothstep(0.004, 0.02, pixM);   // détails de la peinture (< 1 cm) seulement au plus près
+    // couverture exacte au pixel (filtre en boîte) : la largeur du pixel est prise EN TRAVERS de la ligne (dérivée de la distance au bord,
+    // pas de p entier : en vue rasante, la dérivée le long de la route élargissait la ligne) ; plus fine que le pixel, la ligne garde sa
+    // couverture moyenne (largeur / pixel) sans s'élargir. Tirets : même filtre le long de la route (intégrale du créneau).
+    float netM = 1.0 - smoothstep(0.004, 0.02, abs(fwidth(p.x)) + 1e-4);   // bords mangés (< 1 cm) seulement au plus près
     float bordM = (rnoise(p * vec2(23.0, 2.1)) - 0.5) * 0.012 * netM;
     float demiM = LARGEUR_MARQUAGE_M * 0.5;
-    float edgeL = 1.0 - smoothstep(demiM - pixM, demiM + pixM, abs(abs(p.x) - (halfW - 0.45)) + bordM);  // lignes de rive continues
+    float xr = abs(p.x) - (halfW - 0.45);
+    float edgeL = couvertureBande(xr + bordM, demiM, max(fwidth(xr), 1e-4));   // lignes de rive continues
     float lane = 0.0;
     float usureTiret = 0.0;
+    float wTiret = max(fwidth(p.y), 1e-4) / 12.0;
     for (int k = -1; k <= 1; k += 2) {                                           // 3 voies : 2 lignes pointillées
         float lx = float(k) * halfW / 3.0;
-        float dash = step(fract(p.y / 12.0), 0.45);
-        float l = (1.0 - smoothstep(demiM - pixM, demiM + pixM, abs(p.x - lx) + bordM)) * dash;
+        float xl = p.x - lx;
+        float dash = couvertureTirets(p.y / 12.0, 0.45, wTiret);
+        float l = couvertureBande(xl + bordM, demiM, max(fwidth(xl), 1e-4)) * dash;
         if (l > lane) { lane = l; usureTiret = hash(vec2(floor(p.y / 12.0), float(k) + 3.0)); }   // chaque tiret son âge
     }
     // WFS-223 (RG-02) : pas de tirets de voie dans un virage serré (anneau de giratoire) : uv.y croît de SEG_M par segment sur
@@ -356,15 +366,15 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
     lane *= 1.0 - smoothstep(0.047, 0.055, kappa);
     // WFS-594 (RG-03) : peinture usée : les roues l'arrachent par plaques (plus sur les tirets que l'on franchit en changeant de voie et
     // dans les bandes de roulement), le grain de l'enrobé perce ; au loin, la couverture moyenne (pas de scintillement)
-    float usureP = 0.12 + 0.28 * usureTiret * step(edgeL, lane);
+    float usureP = 0.06 + 0.2 * usureTiret * step(edgeL, lane);
     {
         float voie = 2.0 * halfW / 3.0, kv = clamp(floor((p.x + halfW) / voie), 0.0, 2.0), cv = -halfW + (kv + 0.5) * voie;
         float dxr = abs(abs(p.x - cv) - ECARTEMENT_ROUES_M * 0.5);
-        usureP += 0.35 * (1.0 - smoothstep(BANDE_ROULEMENT_M * 0.5 - 0.1, BANDE_ROULEMENT_M * 0.5 + 0.1, dxr));
+        usureP += 0.2 * (1.0 - smoothstep(BANDE_ROULEMENT_M * 0.5 - 0.1, BANDE_ROULEMENT_M * 0.5 + 0.1, dxr));
     }
-    float netF = 1.0 - smoothstep(0.002, 0.006, pixM);   // détails de ≈ 1 cm : effacés avant d'être plus fins que 4 pixels
+    float netF = 1.0 - smoothstep(0.002, 0.006, abs(fwidth(p.x)) + 1e-4);   // détails de ≈ 1 cm : effacés avant d'être plus fins que 4 pixels
     float trous = rnoise(p * vec2(31.0, 11.0)) * 0.55 + mix(0.5, rnoise(p * vec2(97.0, 61.0)), netF) * 0.45;
-    float couvre = mix(1.0 - usureP * 0.6, 1.0 - smoothstep(1.0 - usureP - 0.08, 1.0 - usureP + 0.08, trous), netM);
+    float couvre = mix(1.0 - usureP * 0.5, 1.0 - smoothstep(1.0 - usureP - 0.08, 1.0 - usureP + 0.08, trous), netM);
     float paint = max(edgeL, lane) * clamp(couvre, 0.0, 1.0);
     vec3 peinture = vec3(MARQUAGE_ALBEDO) * vec3(1.0, 1.0, 0.97) * (0.93 + 0.07 * mix(0.5, noise(p * 60.0), netF))
                   * mix(1.0, 0.9, smoothstep(0.4, 0.8, rnoise(p * vec2(0.7, 0.15))));   // poussière et gomme par endroits
