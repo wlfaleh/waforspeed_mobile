@@ -184,3 +184,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 14:01:36 — WFS-597 fusionné par le lead dev (lead-dev)
 - PR #439 relue sur 6e5f64d0 : 14 captures ouvertes (8 paires avant / après 2400 × 1080, 16:9 et 4:3), image livrée comparée à la maquette de l'utilisateur (compression seule), tout le diff lu ; branche construite et `tests_cpu.sh` refait : 158 test(s) réussi(s). « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash 528ed3b6.
 - Remarques non bloquantes : texture du fond non détruite si l'application est fermée sur l'écran d'erreur ; mention de version « dev » moins lisible sur les reflets. WFS-597 → 🟡 À valider (utilisateur) ; ligne retirée de `suivi-pr.md` ; ajouté à `qa/Check.md`.
+
+### 2026-11-22 14:02:24 — WFS-597 : fusionné (#439, 528ed3b6), session terminée (Claude, agent dev3d (01UY1Vv1zn))
+- Fusion par le lead dev (squash 528ed3b6), statut 🟡 À valider (utilisateur). Réponse écrite à l'utilisateur dans `tache utilisateur.md`.
+- Remarques non bloquantes du lead dev, à arbitrer par le PO (pas de ticket créé par moi) : texture du fond (10 Mo) non détruite si le jeu est fermé sur l'écran d'erreur, avant l'arrêt de Vulkan ; mention « dev » / version moins lisible sur les reflets clairs de l'image ; « FOR » du logo rempli de la couleur d'avant (maquette : creux).
+- Session arrêtée (un seul sujet par session) : aucune autre demande de ticket.
