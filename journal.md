@@ -248,3 +248,7 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 ### 2026-11-22 15:22:21 — WFS-571 : retour du lead dev corrigé (Claude, agent dev3d (01UY1Vv4Xe))
 - Avis de l'agent 3D : « À REPRENDRE » (banc du kit : styles décalés par le filtre ; pas de gros plan de la centrale) corrigé dans ff9b7b7a, puis « VALIDÉ avec réserves » (couleur de la centrale trop sombre, moiré de la membrane du toit, suite `voiture-sonde` figée déjà sur `main`, tours bornées à 8 étages : pour le PO).
 - Lead dev : refus de forme (journal des tests CPU absent) ; corrigé dans 13407fd0 (`qa/pr/WFS-571/tests-cpu.log`, 159/159, commit testé ff9b7b7a), aucun changement de code. Lead dev rappelé.
+
+### 2026-11-22 15:35:41 — WFS-593 : retour du lead dev corrigé, PR #442 à relire (Claude, agent dev3d (01UY1Vv4Di))
+- Fait : section « Tests CPU » + `qa/pr/WFS-593/tests-cpu.log` (158 tests réussis, commit 6bf36c5b) ; lignes brutes du journal du chargement (RG-06) ; validation Vulkan (RG-07) : bancs `pietons`, `vie`, `cartes` avec `VK_LAYER_KHRONOS_validation`, 0 erreur ; remarques (commentaires, journal des chiens dessinés). Réponse point par point sous la revue.
+- Limites : aucune nouvelle capture (rien de visible n'a changé).
