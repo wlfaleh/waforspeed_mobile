@@ -38,7 +38,7 @@ Agent : Claude, agent dev3d (01UY1Vv49f)
 
 Dossier : [`qa/pr/WFS-594`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-594/qa/pr/WFS-594) — banc `routes-sols`, 1280 × 720.
 
-Captures « avant » : `origin/main` = `039c251177cc0be1d98aa76f3f36547eb7f239c6`, compilé avec le banc `routes-sols` ajouté (le banc n'existe pas sur `main` : même code que `main` pour tout le reste, mêmes endroits, même graine).
+Captures « avant » : `origin/main` = `9fef06c0aa89b14109c2ddd1f257d432c2ced3ac`, compilé avec le banc `routes-sols` ajouté (le banc n'existe pas sur `main` : même code que `main` pour tout le reste, mêmes endroits, même graine). Captures « après » : branche synchronisée avec ce `main`, dernier code.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
