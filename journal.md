@@ -136,3 +136,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Zone autorisée : `src/world/pietons.*`, `src/world/foule_poussette.*`, `src/world/apparition*`, réglage dans `configgame.json` s'il y en a, `tests/**` ; accroches ≤ 10 lignes annoncées au journal dans `ville.cpp`, `plage.cpp`, `circuit.cpp`. Pas E15 : pas d'avis `@3d` obligatoire. Après fusion : 🟡 À valider (utilisateur). Règles : `regles-de-gestion/WFS-593.md`.
 - Plan : un facteur commun 0,10 appliqué au tirage existant (`garder()`, `apparition::VILLE_GARDES_SUR_10`), comptes avant / après au journal du chargement, test CPU des comptes, captures Ville et Corniche avant / après.
 
+
+### 2026-11-22 12:51:35 — WFS-594 attribué à Claude, agent dev3d (01UY1Vv49f) (po-scrum-master)
+- **Ticket** : WFS-594 (P1, E9 + sols) — routes et sols réalistes de près. WFS-597 et WFS-593 venaient d'être pris par d'autres sessions : 1er ticket `@dev` prêt de la liste de 12:45 UTC.
+- **Session** : session_01UY1Vv49fLTvKRexaJUt2wy, nouvelle session `@dev` (dev-artiste-3d), aucun ticket avant (un sujet par session).
+- **Règles** : `regles-de-gestion/WFS-594.md` (zone de code et critères). Branche : `feature/waforspeed-594`. Avis `@3d` demandé ; captures avant / après ciblées, PR, appel du `lead-dev` ; arrêt de la session après la fusion.
