@@ -195,3 +195,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Synchronisation avec `main` ensuite (WFS-597) : conflit dans `tools/qa/verifier_licences.py` (ligne de WFS-597 et la mienne au même endroit) ; un commit de synchronisation est parti par erreur avec les marques de conflit, **corrigé dans le commit suivant (2aeefad)**, les deux lignes gardées, licences 0 manque, compilation refaite. Aucun run de `main` touché.
 - PR https://github.com/wlfaleh/waforspeed_mobile/pull/440 (7 paires de captures dans `qa/pr/WFS-589/`) ; `suivi-pr.md` 🆕 ; `TACHES.md` 🔀 ; lead dev appelé.
 
+
+### 2026-11-22 14:27:12 — WFS-596 : PR #441 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv2sH))
+- Fait : en vue Cockpit, la mini-carte du HUD (même système, mêmes calculs) est projetée en perspective sur l'écran central (Model 3 : à droite de la vitesse ; SF90 : partie du tiers droit du combiné vue à travers le volant, 36 × 40 mm), plus par-dessus l'image ; ancienne carte simplifiée retirée ; pas de cyan, plus sombre la nuit, au plus 30 recalculs par seconde, sous toute l'interface.
+- Vérifié : 157 tests CPU réussis ; banc `carte-cockpit` (13 captures avant / après + 12 zooms, regardées), 0 erreur de validation Vulkan ; parcours complet : 1 écart « fin puis Menu → accueil → écran course », identique sur `main` b097807d (WFS-589).
+- Limites (écrites dans la PR) : SF90, carte petite (la jante passe devant le reste du tiers droit) ; Model 3 en 1280 × 720, boutons Nitro et Frein du HUD devant la droite de l'écran ; Giulia, consigne écrite très petite.
