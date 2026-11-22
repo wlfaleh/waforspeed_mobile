@@ -114,3 +114,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 12:24:36 — WFS-597 : maquettes de l'utilisateur ajoutées, en attente de son accord (po-scrum-master)
 - L'utilisateur a fait 2 images avec un générateur d'images (SF-X du menu, boulevard parisien la nuit) : ajoutées à `regles-de-gestion/maquettes/WFS-597/` avec l'écran par-dessus ; référence seulement. Réserve : éclairage de nuit de la tour Eiffel protégé. Pas encore d'accord écrit : WFS-597 reste ⏳ En attente.
+
+### 2026-11-22 12:27:19 — WFS-597 : maquette 2 acceptée par l'utilisateur, ⏳ Prêt (po-scrum-master)
+- L'utilisateur : « Ok go pour 2 ». Référence : `regles-de-gestion/maquettes/WFS-597/utilisateur-2-boulevard-pluie.png` (RG-08 bis). WFS-597 ⏳ En attente → **⏳ Prêt** (P2, `@dev` dev-artiste-3d + avis `@3d`).
