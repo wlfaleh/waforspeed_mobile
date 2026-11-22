@@ -101,3 +101,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 12:08:26 — WFS-597 créé : fond de l'écran de chargement, 5 maquettes (po-scrum-master)
 - Demande de l'utilisateur : image d'arrière-plan de l'écran de chargement avec l'esprit des voitures de course, 5 maquettes, rien d'autre ne change. **WFS-597** (P2, E8, ⏳ En attente du choix de l'utilisateur) ; exception explicite au blocage des menus de 11:50 UTC (fond seulement).
 - Maquettes faites par le PO (esquisses dessinées par le code, aucun téléchargement) : `regles-de-gestion/maquettes/WFS-597/proposition-1` à `5` (feux de départ, filé de nuit, gomme et fumée, vibreur au couchant, drapeau à damier).
+
+### 2026-11-22 12:12:00 — WFS-597 : 2e série de maquettes, faites avec les images du jeu (po-scrum-master)
+- 1re série refusée par l'utilisateur (« C'est nul tes propositions »). 2e série : captures des bancs du matin (Release `captures-matin` du dépôt, groupes `nuit` et `vitrines`, téléchargées depuis GitHub, aucune licence tierce), recadrées et retouchées ; anciennes maquettes retirées du dossier. RG-05 : image finale = rendu du moteur en 2400 × 1080 natif. ⏳ En attente du choix de l'utilisateur.
