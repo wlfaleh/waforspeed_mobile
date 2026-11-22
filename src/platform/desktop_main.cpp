@@ -88,6 +88,7 @@ namespace wfs { void benchAutocollants(Game& g, Renderer& r, const std::string& 
 #include "../ui/ecrans/market_ecran.h"   // WFS-513 (accroche) : WFS_BANC=market, écran Market
 #include "../ui/ecrans/atelier.h"   // WFS-496 (accroche) : WFS_BANC=atelier
 #include "../ui/toasts.h"   // WFS-567 (accroche) : WFS_BANC=messages
+#include "../ui/minicarte.h"   // WFS-596 (accroche) : WFS_BANC=carte-cockpit
 #include "../ui/credits.h"   // WFS-406 (accroche) : WFS_BANC=credits
 #include "../ui/ecrans/cadeau_jour.h"   // WFS-501 (accroche) : WFS_BANC=cadeau
 #include "../game/score_fin.h"   // WFS-537 (accroche) : WFS_BANC=score-fin
@@ -167,15 +168,15 @@ static int parcoursFinMenu(Game& g, Renderer& r, const std::string& out) {
     images(80);   // boutons de l'écran de fin actifs 0,9 s après la fin
     attendu(activeCourse() && activeCourse()->state == RaceState::Over, "course → écran de fin");
     g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/parcours-fin.png");
-    // « Menu » : à droite de « Rejouer » (CourseSystem::drawOver, WFS-57), avec ou sans la ligne « RECORD » (WFS-101)
-    const float W = (float)r.width(), H = (float)r.height(), u = H / 100, bw = 40 * u, bh = 10 * u;
-    const float mx = W / 2 - (bw + 2 * u + bw * 0.7f) / 2 + bw + 2 * u + bw * 0.35f;
-    for (float plus : {0.f, 28 * H / 720.f}) {
-        if (g.ecran() != Ecran::Course) break;
-        const float my = 10 * u + 60 * u + plus + bh / 2;
+    // « Menu » : place réelle lue sur l'écran de fin après son dessin (courseBouton, WFS-589 RG-01 : plus de coordonnée en dur,
+    // le bouton a bougé avec les écrans R19, WFS-557 / 561)
+    {
         g.render(t);
-        g.onTouch({40, mx, my, true}); image(); g.onTouch({40, mx, my, false}); images(10);
-        WFS_LOG("parcours : écran de fin, appui sur « Menu » à (%.0f, %.0f) → écran %s", mx, my, nomEcran(g.ecran()));
+        float mx = 0, my = 0;
+        if (courseBouton("menu", mx, my)) {
+            g.onTouch({40, mx, my, true}); image(); g.onTouch({40, mx, my, false}); images(10);
+            WFS_LOG("parcours : écran de fin, appui sur « Menu » à (%.0f, %.0f) → écran %s", mx, my, nomEcran(g.ecran()));
+        } else { ecarts++; WFS_ERR("parcours : écran de fin, bouton « Menu » absent (ÉCHEC)"); }
     }
     attendu(g.ecran() == Ecran::Menu, "fin puis « Menu » → accueil");
     images(60);
@@ -248,6 +249,7 @@ int main(int argc, char** argv) {
     if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "carte-cockpit") { ui::chargerPolice(r); benchCarteCockpit(g, r, out); return finir(); }   // WFS-596 (accroche) : carte de l'écran central en vue Cockpit
     if (banc == "messages") { ui::chargerPolice(r); const int e = benchMessages(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-567 (accroche) : messages de course, captures messages-*
     if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*
     if (banc == "sol") { const int e = benchSol(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-391 (accroche) : conduite au bas-côté et sur la neige, captures sol-*

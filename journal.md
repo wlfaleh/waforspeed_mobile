@@ -200,3 +200,51 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Fait : en vue Cockpit, la mini-carte du HUD (même système, mêmes calculs) est projetée en perspective sur l'écran central (Model 3 : à droite de la vitesse ; SF90 : partie du tiers droit du combiné vue à travers le volant, 36 × 40 mm), plus par-dessus l'image ; ancienne carte simplifiée retirée ; pas de cyan, plus sombre la nuit, au plus 30 recalculs par seconde, sous toute l'interface.
 - Vérifié : 157 tests CPU réussis ; banc `carte-cockpit` (13 captures avant / après + 12 zooms, regardées), 0 erreur de validation Vulkan ; parcours complet : 1 écart « fin puis Menu → accueil → écran course », identique sur `main` b097807d (WFS-589).
 - Limites (écrites dans la PR) : SF90, carte petite (la jante passe devant le reste du tiers droit) ; Model 3 en 1280 × 720, boutons Nitro et Frein du HUD devant la droite de l'écran ; Giulia, consigne écrite très petite.
+
+### 2026-11-22 14:32:00 — WFS-593 : PR #442 ouverte, lead dev appelé (Claude, agent dev3d (01UY1Vv4Di))
+- Fait : un seul réglage `apparition::PERSONNES_GARDEES_SUR_100 = 10` (`foule_apparition.h`), tirage régulier `garderPart` appliqué après les tirages de main dans `pietons.cpp`, catégorie par catégorie ; marcheurs de toutes les cartes répartis sur tout le tour (`repartirSurTour`). Comptes : Ville 245 → 27, Corniche 252 → 27, Campagne 37 → 4, Grand Prix 72 → 8 marcheurs et 381 → 39 spectateurs.
+- Accroches annoncées : `src/world/circuit.cpp` (+3 lignes, 10 % des spectateurs des tribunes), `src/world/ville.cpp` (+2 lignes, chien dessiné seulement si son promeneur est gardé).
+- Vérifié : 157 tests CPU réussis (dont 5 cas WFS-593) ; bancs `pietons`, `vie`, `cartes` (16 paires avant / après regardées) ; parcours complet : même écart « fin puis Menu → accueil » que sur main 699b39e9 (WFS-589), aucun autre. Rien de cuit dans les paquets.
+- Limites : non mesuré sur téléphone ; la ligne du journal « Ville (WFS-176) : … chien(s) » compte encore tous les promeneurs du plan.
+
+### 2026-11-22 14:40:15 — WFS-589 : PR #440 refusée par le lead dev, preuve des tests CPU manquante (lead-dev)
+- Revue (commentaire « ↩️ … changements demandés », car GitHub refuse REQUEST_CHANGES avec le même compte) sur 38e431d. **Seul défaut** : pas de section « Tests CPU » ni de `qa/pr/WFS-589/tests-cpu.log` (règle de l'utilisateur du 2026-11-11, skill lead-dev point 9).
+- Tout le reste est vérifié et bon : 7 paires de captures ouvertes (`parcours-retour-menu` : avant = écran de fin, après = accueil ; `reglages-qualite-ultra` : Ultra choisi ; 5 paires identiques au pixel près) ; diff entier lu (`courseBouton("menu")`, bloc de pastilles dans `bench_passes.cpp`, 3 crédits `ui/modes` sans marque de conflit) ; construction locale et **158 tests CPU réussis** sur 38e431d ; licences 0 manque ; bancs du matin #70 de la branche verts (26 jobs).
+- À faire par le développeur : ajouter le journal et la section, répondre sous la revue, rappeler le lead dev. Pas besoin de refaire les captures.
+
+### 2026-11-22 14:41:47 — WFS-593 : PR #442 refusée par le lead dev (lead-dev)
+- Commit relu : 8e383f6b. Diff lu en entier, branche construite et testée (158 tests CPU réussis), 16 paires de captures ouvertes : le code et l'image répondent à la demande (10 % des personnes, réparties sur le tour, aucune régression vue).
+- Refus pour preuves manquantes : (1) capture « Tests CPU » et `qa/pr/WFS-593/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-06 : lignes brutes du journal du chargement à coller dans la PR ; (3) RG-07 : résultat de la validation Vulkan des bancs non indiqué. Aucune nouvelle capture d'écran demandée. Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-22 14:44:11 — Statuts automatiques, CI main #1159 (robot statuts)
+- Run rouge (push, commit 528ed3b), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
+
+### 2026-11-22 14:53:27 — WFS-571 : PR #443 ouverte (Claude, agent dev3d (01UY1Vv4Xe))
+- Tours de la Ville en tronçons (socle, fût en retrait, attique ; 3 silhouettes), toits équipés (édicule complet à tous les niveaux de détail, lanterneau, centrale de traitement d'air, garde-corps), nez de dalle gardés au niveau 1. Fichiers : `archi_kit.*`, `archi_geo.*`, `archi_details.cpp`, `archi_carte.cpp`, `archi_cuit.h` (`VERSION_BLOC` 3), `archi_banc.cpp`, nouveau `tests/test_tours_ville.cpp`.
+- Vérification : tests CPU 158/158 ; banc `perf` Ville : processeur + 0,1 ms (± 1 ms tenu), triangles de la scène Basse + 7,5 % ; parcours complet OK sauf « fin → Menu », même écart sur `main` (WFS-589) ; 18 captures après (`qa/pr/WFS-571/`).
+- RG-08 : bâtiments cuits dans le paquet de la Ville → WFS-572 (`@cicd`) republie après la fusion. Proposition au PO (hors ticket) : le style moderne est borné à 8 étages alors que le plan de la Ville demande des tours de 60 à 105 m.
+- Suite : avis de l'agent 3D (E15), puis lead dev.
+
+### 2026-11-22 14:56:57 — WFS-589 : PR #440 corrigée après le refus du lead dev (agent expert ci cd (01UY1Vv43t))
+- Point du refus : preuve des tests CPU absente. **Corrigé dans a40aad94** : `qa/pr/WFS-589/tests-cpu.log` (158 tests réussis en 466 s sur 38e431d) et section « Tests CPU » dans `pr.md` et la description ; README des captures dédoublonné. Réponses sous la revue dans la PR ; `suivi-pr.md` 🔁 ; lead dev rappelé.
+
+
+### 2026-11-22 15:06:49 — WFS-596 fusionné par le lead dev (lead-dev)
+- PR #441 relue sur 92b03a6b : 50 images ouvertes (13 paires et 12 zooms ×3), tout le diff lu ; branche construite et `tests_cpu.sh` refait : 158 test(s) réussi(s) ; banc `carte-cockpit` rejoué en 2400 × 1080 : 0 erreur Vulkan, carte de la Model 3 lisible en entier au format du téléphone, carte de 1 362 à 1 914 sommets (tampon de 8 192). « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash 022c8b5b.
+- Remarques non bloquantes pour le PO : Model 3 en 16:9 (boutons Nitro et Frein devant l'écran) ; SF90 carte de 36 × 40 mm (piste : centre du combiné) ; consigne petite sur la Giulia ; carte dessinée avec l'interface (les branches du volant ne la cachent pas) ; pas de repli sur la carte du HUD si l'intérieur n'a pas pu être construit ; commit testé absent de la partie « Tests CPU » de la PR. WFS-596 → 🟡 À valider (utilisateur) ; ligne retirée de `suivi-pr.md` ; ajouté à `qa/Check.md`.
+
+### 2026-11-22 15:07:31 — WFS-596 : fusionné (#441), session terminée (Claude, agent dev3d (01UY1Vv2sH))
+- Fusionné par le lead dev (022c8b5b) ; statut 🟡 À valider (utilisateur). Remarques du lead dev pour le PO : SF90, carte de 36 × 40 mm (piste : carte au centre du combiné) ; Model 3, boutons du HUD devant l'écran en 16:9 seulement ; Giulia, consigne petite ; pas de repli au HUD si l'intérieur n'a pas pu être construit. Session arrêtée (un seul ticket par session).
+
+### 2026-11-22 15:12:52 — WFS-571 : PR #443 refusée par le lead dev (lead-dev)
+- PR #443 relue sur ff9b7b7a : diff entier lu (archi_kit, archi_details, archi_geo, archi_carte, archi_cuit, archi_banc, test_tours_ville, CMakeLists) ; 20 paires et vues ouvertes ; branche construite et `tests_cpu.sh` refait : 159 test(s) réussi(s). Avis agent 3D « VALIDÉ avec réserves » sur ff9b7b7a présent.
+- Fond conforme (tours en tronçons, toits équipés, nuit sans boîte noire). **Refus pour un seul point bloquant** : la description n'a pas le bloc « Tests CPU » (fin du journal et commit testé) et `qa/pr/WFS-571/tests-cpu.log` manque (règle de l'utilisateur du 2026-11-11). Aucune nouvelle capture demandée si le code ne change pas.
+- Remarques non bloquantes pour le PO : couleur de la centrale (même gris sombre que la façade), moiré de la membrane des toits, `std::clamp` de `gardeCorpsToit` à protéger, parcours « fin → Menu » à reprouver après WFS-589 ; WFS-572 devra republier les paquets de la Ville (VERSION_BLOC 3).
+
+### 2026-11-22 15:15:02 — WFS-589 fusionné par le lead dev (lead-dev)
+PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corrigé vérifié : section « Tests CPU » et `qa/pr/WFS-589/tests-cpu.log` présents ; tests relancés par le lead dev sur a40aad94 : 158 réussis en 461 s ; licences 0 manque. La synchronisation b78c119 et a40aad94 ne touchent ni `src/` ni `tools/` : captures de la 1re revue toujours valables (2 captures clés rouvertes). « ✅ Approuvé » en commentaire (même compte GitHub). Statut 🟣 Fusionné ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` à jour.
+
+### 2026-11-22 15:22:21 — WFS-571 : retour du lead dev corrigé (Claude, agent dev3d (01UY1Vv4Xe))
+- Avis de l'agent 3D : « À REPRENDRE » (banc du kit : styles décalés par le filtre ; pas de gros plan de la centrale) corrigé dans ff9b7b7a, puis « VALIDÉ avec réserves » (couleur de la centrale trop sombre, moiré de la membrane du toit, suite `voiture-sonde` figée déjà sur `main`, tours bornées à 8 étages : pour le PO).
+- Lead dev : refus de forme (journal des tests CPU absent) ; corrigé dans 13407fd0 (`qa/pr/WFS-571/tests-cpu.log`, 159/159, commit testé ff9b7b7a), aucun changement de code. Lead dev rappelé.
