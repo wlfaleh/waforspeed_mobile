@@ -290,3 +290,9 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - 1re revue de l'agent 3D : À REPRENDRE (marquages élargis au loin, neige striée de nuit, moiré du sable, pelouse jaune, planche incomplète). Corrigé dans d2c6cf1f : marquages filtrés exactement au pixel, neige adoucie (albédo 0,80 à 0,88), sable sans moiré, option `gazon` (pelouse verte de la Ville), massifs de garrigue, planche des normales et de la rugosité (`WFS_VUE_SURFACE`, accroche de 1 ligne dans `src/render/renderer.cpp`, banc seulement).
 - Vérifié : 159 tests CPU verts, 0 erreur de validation ; rétroréflexion mesurée (Corniche 1,59 → 1,72).
 - 2e revue : « Avis agent 3D : VALIDÉ » sur 1f5ac920, avec 3 réserves non bloquantes à mettre dans un ticket à part (proposition au PO) : contraste des lignes dans les phares à pousser vers 3 (mesure en HDR, EN 1436), ombrage bleuté des creux de la neige de jour, herbe sans brins en volume. Lead dev appelé.
+
+### 2026-11-22 18:06:23 — WFS-594 : PR #444 refusée par le lead dev (lead-dev)
+- Commit relu `1f5ac920` ; 19 images ouvertes (17 paires + 2 planches) : mieux qu'avant, rien de dégradé (sable, neige de nuit, bordures, fissures, pelouse) ; avis agent 3D « VALIDÉ avec réserves » présent.
+- Diff complet lu ; branche construite et testée par le lead dev : 159 tests CPU réussis.
+- **Refus** : (1) capture « Tests CPU » et `qa/pr/WFS-594/tests-cpu.log` absentes (règle du 2026-11-11) ; (2) RG-07 : banc `perf` mesuré avant la 2e version, Ville Haute +12 à +15 % (seuil 5 %, RG-07 ≤ +1 ms) : à remesurer sur le commit final et alléger le sol de la Ville, ou accord écrit du PO. Remarques non bloquantes : `neigeSol_` inutile dans `CarteDecor::solNaturel`, sol de Game sans neige sur carte enneigée, promenade `C_PROM` en sable.
+- Statut : ↩️ Retour lead dev (PR #444) dans `TACHES.md` et `track-agent.md` ; `suivi-pr.md` à jour.
