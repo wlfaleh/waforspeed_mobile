@@ -81,3 +81,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Ordre : « pareil pour les tâches publicité Google machin, à bloquer pour l'instant ». Noté dans les ordres permanents du skill PO et dans le bandeau ⛔ de `TACHES.md`.
 - ⛔ Bloqués : WFS-512 (⏳ Prêt avant), 514, 515 (⏳ En attente avant), 516, 319, 320, 405, 407, 409, 509 (⏸ jour de publication avant). WFS-408 (🟣) inchangé.
 - Ordre `@dev` : 571 → 573 → 575 → 444 → 576 → 577 → 581 → 583 → 585 → 592.
+
+### 2026-11-22 11:56:09 — Liste des 30 prochaines tâches écrite dans `TACHES.md` sur `main` (po-scrum-master)
+- Demande de l'utilisateur : « Donne-moi la liste 30 dans main ». Bandeau 📋 en tête de `TACHES.md`, sans les tickets ⛔ (menus et écrans avant la course, pub et Google Play) ; la liste de 11:45 UTC est barrée.
