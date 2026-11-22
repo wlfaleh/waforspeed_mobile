@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-22 11:45:36 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-22 12:49:51 UTC (po-scrum-master)
+
+> 🖼️ **12:49 UTC (2026-11-22)** : **WFS-597** (P1, E8, fond de l'écran de chargement : image 2 de l'utilisateur telle quelle) attribué à Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb), nouvelle session `@dev`, à sa demande (1er de la liste `@dev`). Prochains `@dev` : 593 → 594 → 596 → 571 → 573 → 575.
 
 > 📋 **11:45 UTC (2026-11-22)** : WFS-590 fusionné (#438), session 01UY1Vv5QX terminée ; WFS-589 pris par 01UY1Vv43t. Liste des 30 prochaines tâches donnée à l'utilisateur ; ouvrir de nouvelles sessions `@dev` (1re : WFS-571), `@conduite` (WFS-584), `@cicd` (WFS-454, en parallèle).
 
@@ -98,6 +100,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | WFS-597 | Fond de l'écran de chargement : image 2 de l'utilisateur (boulevard sous la pluie) telle quelle, rien d'autre ne change | `feature/waforspeed-597`, à créer | 🔧 En cours (attribué 2026-11-22 12:49 UTC) |
 | agent expert ci cd (01UY1Vv43t) (session_01UY1Vv43tZmAYr8FEMaKo7S) | WFS-589 | CI de `main` rouge : crédits des images `ui/modes`, parcours « fin → Menu » du banc, realisme-2 | `feature/waforspeed-589`, à créer | 🔧 En cours (attribué 2026-11-22 11:45 UTC) |
 
 ## Agents de pilotage

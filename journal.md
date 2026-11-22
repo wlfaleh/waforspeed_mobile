@@ -126,3 +126,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 12:45:35 — Liste des 30 prochaines tâches avec le type de session (po-scrum-master)
 - Demande de l'utilisateur : « Liste 30 avec type dev ». Nouveau bandeau 📋 en tête de `TACHES.md` (17 `@dev`, 2 `@conduite`, 2 `@cartes`, 9 `@cicd`) ; la liste de 11:56 UTC est barrée.
+
+### 2026-11-22 12:49:51 — WFS-597 attribué à Claude, agent dev3d (01UY1Vv1zn) (po-scrum-master)
+- Début : **WFS-597** (P1, E8, écran de chargement : l'image 2 de l'utilisateur, SF-X sur un boulevard sous la pluie, en fond, telle quelle) attribué à Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb), nouvelle session `@dev` (aucun ticket avant), à sa demande (« @dev go ») : 1er ticket prêt de la liste `@dev` de 12:45 UTC (WFS-597 passé en tête sur ordre de l'utilisateur à 12:41 UTC ; 571, 573, 575 suivent après 593, 594, 596 ; 563 ⛔ bloqué).
+- Zone autorisée : `src/ui/ecrans/chargement.*` (dessin du fond seulement), `assets/ui/chargement/fond.*`, `tests/**`. Exception au blocage des menus : fond seulement. Maquette acceptée par l'utilisateur (12:27 UTC). Pas E15 : pas d'avis `@3d` obligatoire. Règles : `regles-de-gestion/WFS-597.md`. Branche `feature/waforspeed-597`. Après fusion : 🟡 À valider (utilisateur).
