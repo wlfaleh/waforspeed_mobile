@@ -17,7 +17,13 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-22 12:50:44 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-22 12:53:06 UTC (po-scrum-master)
+
+> 🏙️ **12:53 UTC (2026-11-22)** : **WFS-571** (P1, E15 Ville, ANO-280 : tours en boîtes et cubes nus des toits remplacés) attribué à Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ), nouvelle session `@dev`, à sa demande (597, 593, 594 et 596 déjà pris : 1er prêt de la liste `@dev`). Prochains `@dev` : 573 → 575 → 444.
+
+> 🧭 **12:52 UTC (2026-11-22)** : **WFS-596** (P1, E5 + E10, mini-carte sur l'écran central en vue Cockpit, plus à l'écran) attribué à Claude, agent dev3d (01UY1Vv2sH) (session_01UY1Vv2sHodzrS5FyXVX9uR), nouvelle session `@dev`, à sa demande (597, 593 et 594 déjà pris). Prochains `@dev` : 571 → 573 → 575.
+
+> 🛣️ **12:51 UTC (2026-11-22)** : **WFS-594** (P1, routes et sols réalistes de près) attribué à Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy), nouvelle session `@dev`, à sa demande (WFS-597 et 593 déjà pris) ; avis `@3d` obligatoire. Prochains `@dev` : 596 → 571 → 573.
 
 > 👥 **12:50 UTC (2026-11-22)** : **WFS-593** (P1, E11, seulement 10 % des personnes dans toutes les cartes) attribué à Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg), nouvelle session `@dev`, à sa demande (WFS-597 déjà pris : 1er prêt de la liste `@dev`). Prochains `@dev` : 594 → 596 → 571 → 573 → 575.
 
@@ -102,8 +108,11 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy) | WFS-594 | Routes et sols réalistes de près (asphalte, marquages, trottoirs, herbe, terre, sable) | `feature/waforspeed-594`, à créer | 🔧 En cours (attribué 2026-11-22 12:51 UTC) |
 | Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | WFS-597 | Fond de l'écran de chargement : image 2 de l'utilisateur (boulevard sous la pluie) telle quelle, rien d'autre ne change | `feature/waforspeed-597`, à créer | 🔧 En cours (attribué 2026-11-22 12:49 UTC) |
 | Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg) | WFS-593 | 10 % des personnes dans toutes les cartes (facteur commun, conducteurs et deux-roues inchangés) | `feature/waforspeed-593`, à créer | 🔧 En cours (attribué 2026-11-22 12:50 UTC) |
+| Claude, agent dev3d (01UY1Vv2sH) (session_01UY1Vv2sHodzrS5FyXVX9uR) | WFS-596 | Vue Cockpit : la mini-carte du HUD sur l'écran central de la voiture, plus à l'écran (autres vues inchangées) | `feature/waforspeed-596`, à créer | 🔧 En cours (attribué 2026-11-22 12:52 UTC) |
+| Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ) | WFS-571 | Ville : tours en boîtes et cubes nus sur les toits remplacés par de vrais volumes (ANO-280) | `feature/waforspeed-571`, à créer | 🔧 En cours (attribué 2026-11-22 12:53 UTC) |
 | agent expert ci cd (01UY1Vv43t) (session_01UY1Vv43tZmAYr8FEMaKo7S) | WFS-589 | CI de `main` rouge : crédits des images `ui/modes`, parcours « fin → Menu » du banc, realisme-2 | `feature/waforspeed-589`, à créer | 🔧 En cours (attribué 2026-11-22 11:45 UTC) |
 
 ## Agents de pilotage
