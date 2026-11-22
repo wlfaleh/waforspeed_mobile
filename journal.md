@@ -101,3 +101,7 @@ PR #437, 2e revue sur `ff06d60c` : les 3 points du refus sont corrigés (`tests-
 ### 2026-11-21 17:54:23 — Statuts automatiques, CI main #1158 (robot statuts)
 - Run rouge (push, commit 5311bfe), aucun statut changé. Job(s) en échec : banc-essai (texte).
 - Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
+
+### 2026-11-22 10:27:44 — Statuts automatiques, bancs du matin #67 (robot statuts)
+- Run rouge (schedule, commit 1b1c3ac), aucun statut changé. Job(s) en échec : endurance et chauffe, tests CPU et licences, banc (realisme-2), banc (complements-c).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
