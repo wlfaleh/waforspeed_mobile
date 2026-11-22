@@ -105,10 +105,16 @@ COUVERTURE = [
     # WFS-564 : icône fournie par l'utilisateur (references/maquettes-R19/icone-pistolet-utilisateur.png, SHA-256 167444ee…),
     # réduite en 256 px par WFS-551 (PR #426) ; aucun téléchargement Internet, aucune licence tierce. Ce fichier seul.
     (r"ui/icone-pistolet\.png", None, None),
+<<<<<<< HEAD
     # WFS-589 : 3 photos des modes de WFS-562 (PR #435), faites une fois dans le jeu par le banc modes-photos
     # (src/game/modes_photos_banc.cpp, tools/ui/photos_modes.sh) : rendu du jeu, sans image extérieure ni retouche ;
     # les modèles visibles (voitures, décor) sont déjà crédités par leurs propres lignes. Ces 3 fichiers seuls.
     (r"ui/modes/(checkpoint|course5|poursuite)\.jpg", None, None),
+=======
+    # WFS-597 : fond de l'écran de chargement fourni par l'utilisateur (regles-de-gestion/maquettes/WFS-597/utilisateur-2-boulevard-pluie.png,
+    # SHA-256 bcc7aa72…), mis en 2400 × 1080 et compressé, sans retouche ; aucun téléchargement Internet, aucune licence tierce. Ce fichier seul.
+    (r"ui/chargement/fond\.jpg", None, None),
+>>>>>>> origin/main
 ]
 # identifiant de la voiture → fichier de licence (dossier du modèle dans le jeu web), quand le nom diffère
 ALIAS = {"golf": "golf-8", "m4": "bmw-m4", "p911": "porsche-911", "gallardo": "lambo-gallardo"}
