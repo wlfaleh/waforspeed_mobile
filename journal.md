@@ -225,3 +225,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Vérification : tests CPU 158/158 ; banc `perf` Ville : processeur + 0,1 ms (± 1 ms tenu), triangles de la scène Basse + 7,5 % ; parcours complet OK sauf « fin → Menu », même écart sur `main` (WFS-589) ; 18 captures après (`qa/pr/WFS-571/`).
 - RG-08 : bâtiments cuits dans le paquet de la Ville → WFS-572 (`@cicd`) republie après la fusion. Proposition au PO (hors ticket) : le style moderne est borné à 8 étages alors que le plan de la Ville demande des tours de 60 à 105 m.
 - Suite : avis de l'agent 3D (E15), puis lead dev.
+
+### 2026-11-22 14:56:57 — WFS-589 : PR #440 corrigée après le refus du lead dev (agent expert ci cd (01UY1Vv43t))
+- Point du refus : preuve des tests CPU absente. **Corrigé dans a40aad94** : `qa/pr/WFS-589/tests-cpu.log` (158 tests réussis en 466 s sur 38e431d) et section « Tests CPU » dans `pr.md` et la description ; README des captures dédoublonné. Réponses sous la revue dans la PR ; `suivi-pr.md` 🔁 ; lead dev rappelé.
+
