@@ -48,8 +48,7 @@ public:
     void render(Renderer& r, const GameView& g) override {
         const EtatVitrine& e = vitrine();
         if (!e.actif || !e.interieur || !g.sceneDediee) return;
-        static const std::vector<vec2> sansRoute;
-        e.interieur->dessiner(r, mat4::identity(), cockpit::EtatInterieur{}, sansRoute, {0, 0}, 0);
+        e.interieur->dessiner(r, mat4::identity(), cockpit::EtatInterieur{});   // WFS-596 : sans carte (scène dédiée : la mini-carte ne dessine pas)
     }
 };
 WFS_SYSTEM(VitrineCockpit, 398)

@@ -19,6 +19,8 @@ class Renderer;
 class Game;
 // banc d'essai (RG-11) : captures minicarte-checkpoint et minicarte-ligne (dans outDir), puis g.shutdown()
 void benchMiniCarte(Game& g, Renderer& r, const std::string& outDir);
+// WFS-596 : banc « carte-cockpit » : carte de l'écran central en vue Cockpit (Giulia, Model 3, SF90), vue arrière, suite en roulant
+void benchCarteCockpit(Game& g, Renderer& r, const std::string& outDir);
 
 namespace minicarte {
 
@@ -174,6 +176,52 @@ inline vec2 surParcours(const vec2* p, int n, double s, double fin, int* i = nul
     if (i) *i = a;
     const float t = (float)(f - a);
     return plus(p[a], fois(moins(p[a + 1], p[a]), t));
+}
+
+// ---- WFS-596 : vue Cockpit : la même carte sur l'écran central de la planche (vehicule_cockpit.h : placeCarte, carteEcranVue)
+// où dessiner la carte : au HUD (vues Poursuite, Capot, Proche ; cockpit commun sans intérieur par modèle, qui n'a pas d'écran),
+// ou sur l'écran de la planche (vue Cockpit avec l'intérieur du modèle : RG-02, plus de carte par-dessus l'image)
+enum class LieuCarte { Hud, Ecran };
+inline LieuCarte lieuCarte(bool cockpit, bool interieur) { return cockpit && interieur ? LieuCarte::Ecran : LieuCarte::Hud; }
+constexpr double ECRAN_HZ = 30;            // RG-07 : carte de l'écran recalculée au plus 30 fois par seconde (reprojetée à chaque image)
+constexpr float ECRAN_NUIT = 0.60f;        // RG-03 : luminosité de l'écran la nuit (jour : 1) ; dalle de l'écran de nuit : 0,45 (vehicule_cockpit.cpp)
+constexpr unsigned ECRAN_FOND = 0x0B0E14;  // RG-03 : fond d'écran de voiture : noir mat légèrement bleuté (pas de cyan)
+constexpr unsigned ECRAN_ITINERAIRE = 0x3A86FF, ECRAN_GAINE = 0x3B4049, ECRAN_CHECKPOINT = 0xF2F4F8;   // itinéraire bleu (pas de cyan)
+// cadre virtuel où la carte est dessinée avant d'être projetée : COTE de haut (u = 1 : mêmes tailles que le panneau du HUD), largeur
+// aux proportions de l'écran réel (w × h en m)
+inline Cadre cadreEcran(float w, float h) { return {0, 0, h > 0 ? COTE * w / h : COTE, COTE}; }
+
+// point du monde → pixel de l'interface (même calcul que les étiquettes : fantome_etiquette.cpp) ; faux derrière la caméra
+inline bool versUi(const mat4& vp, vec3 p, float W, float H, vec2& o) {
+    const float cx = vp.at(0, 0) * p.x + vp.at(0, 1) * p.y + vp.at(0, 2) * p.z + vp.at(0, 3);
+    const float cy = vp.at(1, 0) * p.x + vp.at(1, 1) * p.y + vp.at(1, 2) * p.z + vp.at(1, 3);
+    const float cw = vp.at(3, 0) * p.x + vp.at(3, 1) * p.y + vp.at(3, 2) * p.z + vp.at(3, 3);
+    if (cw < 0.05f) return false;
+    o = {(cx / cw * 0.5f + 0.5f) * W, (cy / cw * 0.5f + 0.5f) * H};
+    return true;
+}
+// projection d'un carré unité sur un quadrilatère quelconque (Heckbert, « Fundamentals of Texture Mapping », 1989) :
+// (0, 0) → q[0], (1, 0) → q[1], (1, 1) → q[2], (0, 1) → q[3] ; X = (a u + b v + c) / (g u + h v + 1), Y = (d u + e v + f) / (…)
+struct Homographie { float a = 1, b = 0, c = 0, d = 0, e = 1, f = 0, g = 0, h = 0; };
+inline Homographie carreVers(const vec2 (&q)[4]) {
+    Homographie H;
+    const float dx1 = q[1].x - q[2].x, dx2 = q[3].x - q[2].x, dx3 = q[0].x - q[1].x + q[2].x - q[3].x;
+    const float dy1 = q[1].y - q[2].y, dy2 = q[3].y - q[2].y, dy3 = q[0].y - q[1].y + q[2].y - q[3].y;
+    const float det = dx1 * dy2 - dx2 * dy1;
+    if ((std::fabs(dx3) < 1e-6f && std::fabs(dy3) < 1e-6f) || std::fabs(det) < 1e-12f) {   // parallélogramme : application affine
+        H.g = H.h = 0;
+    } else {
+        H.g = (dx3 * dy2 - dx2 * dy3) / det;
+        H.h = (dx1 * dy3 - dx3 * dy1) / det;
+    }
+    H.a = q[1].x - q[0].x + H.g * q[1].x; H.b = q[3].x - q[0].x + H.h * q[3].x; H.c = q[0].x;
+    H.d = q[1].y - q[0].y + H.g * q[1].y; H.e = q[3].y - q[0].y + H.h * q[3].y; H.f = q[0].y;
+    return H;
+}
+inline vec2 appliquer(const Homographie& H, vec2 uv) {
+    const float w = H.g * uv.x + H.h * uv.y + 1;
+    const float iw = std::fabs(w) > 1e-9f ? 1.f / w : 0.f;
+    return {(H.a * uv.x + H.b * uv.y + H.c) * iw, (H.d * uv.x + H.e * uv.y + H.f) * iw};
 }
 
 } // namespace minicarte

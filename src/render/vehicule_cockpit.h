@@ -164,6 +164,82 @@ inline vec2 versVoiture(vec2 p, vec2 joueur, double cap) {
 constexpr double CARTE_ARRIERE_M = 150, CARTE_AVANT_M = 350, CARTE_PAS_M = 5;   // fenêtre de la mini-carte GPS (WFS-173 RG-06)
 constexpr float CARTE_JOUEUR_Y = 0.30f;   // flèche du joueur à 30 % de la hauteur depuis le bas (route qui arrive au-dessus)
 
+// orientation d'un écran tourné vers l'œil (normale +z vers le conducteur), avec un lacet donné (WFS-596 : sortie de
+// vehicule_cockpit.cpp, sans changement, pour placeCarte)
+inline mat4 versOeil(vec3 p, float lacet) { return translate(p) * rotateY(lacet) * rotateX(std::atan2(p.y, -p.z)); }
+// WFS-596 (RG-01, RG-03 à RG-05) : place de la carte GPS de la planche (la même que la mini-carte du HUD) : repère du plan de la
+// carte dans le repère de l'œil (x à droite, y en haut, +z vers le conducteur) et taille (m) ; placement de l'ancienne carte de
+// WFS-197 / 201, inchangé : écran central entier ; Model 3 (style Aucun) : 62 % de droite de l'écran central (vitesse et rapport
+// à gauche, RG-05) ; SF90 (pas d'écran central) : tiers droit du combiné (RG-04). La carte est posée 0,6 mm devant la dalle.
+struct PlaceCarte { mat4 repere = mat4::identity(); float w = 0, h = 0; };
+// WFS-596 : vrai si le rayon de l'œil de la caméra vers p (repère de l'œil du siège) traverse la jante du volant avant d'atteindre p
+// (anneau de rayon moyen volantD / 2 − janteEp / 2 et de largeur janteEp dans le plan du volant, élargi de `marge` de chaque côté :
+// le tube rond déborde un peu de son plan du milieu vu de biais)
+inline bool cacheParJante(const InterieurDef& d, vec3 p, float marge) {
+    const vec3 oeil{0, OEIL_CAMERA_PLUS_M, 0}, dir = p - oeil;
+    const vec3 n = (translate(d.volantPos) * rotateX(d.volantIncl)).transformDir({0, 0, 1});
+    const float den = dot(n, dir);
+    if (std::fabs(den) < 1e-9f) return false;
+    const float t = dot(n, d.volantPos - oeil) / den;
+    if (t <= 0 || t >= 1) return false;   // le volant n'est pas entre l'œil et p
+    const float r = length(oeil + dir * t - d.volantPos), R = d.volantD * 0.5f - d.janteEp * 0.5f;
+    return std::fabs(r - R) < d.janteEp * 0.5f + marge;
+}
+constexpr float CARTE_MARGE_JANTE = 0.010f;   // WFS-596 (RG-04) : 1 cm de jour entre la carte et le bord de la jante, vu de l'œil
+// WFS-596 (RG-04) : voiture sans écran central (SF90) : dans le tiers droit du combiné, le plus grand rectangle (largeur / hauteur
+// de 0,55 à 1,6 : une carte de GPS en hauteur est admise) dont aucun point du bord n'est caché par la jante vu de l'œil, au-dessus du
+// moyeu (bandeLisibleCombine) ; pas de 4 mm. SF90 : 36 × 40 mm (la jante passe devant le reste du tiers droit, comme dans la vraie voiture).
+// Calcul fait une fois (Interieur::construire) ; sans place : tout le tiers droit, comme avant (RG-04 : à dire dans la PR)
+inline bool placeVisibleCombine(const InterieurDef& d, float& cx, float& cy, float& w, float& h) {
+    const mat4 C = versOeil(d.combinePos, 0);
+    auto vu = [&](float x, float y) { return !cacheParJante(d, C.transformPoint({x, y, 0.0006f}), CARTE_MARGE_JANTE); };
+    auto bordVu = [&](float x0, float y0, float x1, float y1) {
+        for (int i = 0; i <= 8; i++) {
+            const float a = i / 8.f, x = x0 + (x1 - x0) * a, y = y0 + (y1 - y0) * a;
+            if (!vu(x, y0) || !vu(x, y1) || !vu(x0, y) || !vu(x1, y)) return false;
+        }
+        return true;
+    };
+    constexpr float PAS = 0.004f, BORD = 0.004f;
+    const BandeCombine b = bandeLisibleCombine(d);
+    const float xa = d.combineW / 6 + BORD, xb = d.combineW / 2 - BORD, ya = b.bas + BORD, yb = d.combineH / 2 - BORD;
+    float meilleure = 0;
+    for (float x0 = xa; x0 < xb; x0 += PAS) for (float x1 = x0 + 4 * PAS; x1 <= xb + 1e-5f; x1 += PAS)
+        for (float y0 = ya; y0 < yb; y0 += PAS) for (float y1 = y0 + 4 * PAS; y1 <= yb + 1e-5f; y1 += PAS) {
+            const float ww = x1 - x0, hh = y1 - y0, r = ww / hh;
+            if (ww * hh <= meilleure || r < 0.55f || r > 1.6f || !bordVu(x0, y0, x1, y1)) continue;
+            meilleure = ww * hh; cx = (x0 + x1) / 2; cy = (y0 + y1) / 2; w = ww; h = hh;
+        }
+    return meilleure > 0;
+}
+inline PlaceCarte placeCarte(const InterieurDef& d) {
+    PlaceCarte p;
+    if (d.combine == Combine::Aucun) {
+        p.w = d.ecranW * 0.62f; p.h = d.ecranH * 0.90f;
+        p.repere = versOeil(d.ecranPos, d.ecranLacet) * translate({d.ecranW * 0.5f - p.w * 0.5f - 0.008f, 0, 0.0006f});
+    } else if (d.ecranW > 0) {
+        p.w = d.ecranW; p.h = d.ecranH;
+        p.repere = versOeil(d.ecranPos, d.ecranLacet) * translate({0, 0, 0.0006f});
+    } else {
+        float cx = d.combineW / 3, cy = 0;
+        p.w = d.combineW / 3 * 0.92f; p.h = d.combineH * 0.86f;
+        placeVisibleCombine(d, cx, cy, p.w, p.h);
+        p.repere = versOeil(d.combinePos, 0) * translate({cx, cy, 0.0006f});
+    }
+    return p;
+}
+// coins de la carte (bas gauche, bas droit, haut droit, haut gauche), dans le repère de `M` × repère de la carte
+inline void coinsCarte(const PlaceCarte& p, const mat4& M, vec3 c[4]) {
+    const mat4 T = M * p.repere;
+    const float x = p.w / 2, y = p.h / 2;
+    c[0] = T.transformPoint({-x, -y, 0}); c[1] = T.transformPoint({x, -y, 0}); c[2] = T.transformPoint({x, y, 0}); c[3] = T.transformPoint({-x, y, 0});
+}
+// WFS-596 : carte de l'écran de la dernière image où l'intérieur a été dessiné (même principe que PareBriseVu) : écrite par
+// Interieur::dessiner (render, avant l'interface), lue et remise à faux par la mini-carte (src/ui/minicarte.cpp, drawUi), qui y
+// dessine la carte du HUD en perspective. coins : repère du monde ; w, h : taille réelle (m) ; nuit : écran moins lumineux
+struct CarteEcranVue { bool vu = false; vec3 coins[4]{}; float w = 0, h = 0; bool nuit = false; };
+CarteEcranVue& carteEcranVue();
+
 // ---------- état de l'image ----------
 struct EtatInterieur {
     float volant = 0;      // angle du volant (rad, volantCible lissé)
@@ -263,13 +339,12 @@ public:
     // WFS-324 : carrosserie de la voiture (largeur, longueur, modèle 3D) : place des rétroviseurs extérieurs
     bool construire(Renderer& r, const InterieurDef& d, const retro::Carrosserie& carrosserie = {});
     const std::array<retro::Miroir, retro::NB_GLACES>& miroirs() const { return miroirs_; }   // WFS-324
+    const PlaceCarte& carte() const { return carte_; }   // WFS-596 : place de la carte GPS (placeCarte, calculée à la construction)
     void detruire(Renderer& r);
     bool pret() const { return def_ != nullptr; }
     const InterieurDef* def() const { return def_; }
-    // cam : matrice de la caméra (monde ← œil) ; carte : tracé autour du joueur (points du monde x, z déjà échantillonnés),
-    // position et cap du joueur
-    void dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, const std::vector<vec2>& route, vec2 joueur, double cap);
-    void tailleCarte(float& w, float& h) const;   // taille de la carte (m) : écran central, ou tiers droit du combiné (SF90)
+    // cam : matrice de la caméra (monde ← œil) ; WFS-596 : la carte de l'écran est dessinée par la mini-carte (carteEcranVue)
+    void dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e);
     int appels() const { return appels_; }   // RG-08 : appels de dessin de la dernière image
     size_t octets() const { return octets_; }   // RG-08 : mémoire des maillages et textures de l'intérieur
 private:
@@ -277,7 +352,6 @@ private:
     struct Piece { Mesh m; int mat; int attache; };
     void ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, int attache);
     void dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& v);
-    void dessinerCarte(Renderer& r, const mat4& cam, const std::vector<vec2>& route, vec2 joueur, double cap, bool nuit);
     const InterieurDef* def_ = nullptr;
     std::vector<Piece> pieces_;
     std::vector<Material> mats_;
@@ -289,11 +363,12 @@ private:
     Mesh gabarit_{};                         // WFS-349 (RG-03) : banc seulement, jamais dessiné en course (g_gabaritCeinture)
     Material cleDouce_{};                    // WFS-349 (RG-03) : clé du banc « cockpit-voisine » (bords nets)
     const Material& mat(const Material& m) const;
-    // écrans dynamiques : un maillage par couleur (actif, fond, alerte ; route, flèche)
+    // écrans dynamiques du combiné : un maillage par couleur (actif, fond, alerte) ; WFS-596 : la carte n'en a plus
     Mesh dyn_[5]{}; Material dynMat_[5]{}, dynNuit_[5]{};
     std::vector<Vertex> dv_[5]; std::vector<uint32_t> di_[5];
     int appels_ = 0; size_t octets_ = 0;
     std::array<retro::Miroir, retro::NB_GLACES> miroirs_{};   // WFS-324 : glaces des rétroviseurs (repère de l'œil)
+    PlaceCarte carte_{};   // WFS-596
     float cx_ = 0.36f, demi_ = 0.78f, montant_ = 0.72f;   // WFS-315 : centre de la voiture (repère de l'œil), demi-largeur aux coudes, demi-écart des montants (m)
 };
 

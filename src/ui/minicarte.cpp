@@ -11,11 +11,13 @@
 //   RG-03 : signalements : police, barrage, adversaires, accident, bouchon (trafic réel), radar et travaux (fictifs, sans effet
 //           sur le jeu), apparition et disparition en fondu.
 #include "minicarte.h"
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdio>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "../game/camera_vue.h"     // WFS-596 : vue Cockpit (etatCockpit, lecture seule)
 #include "../game/course5.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
@@ -26,6 +28,7 @@
 #include "../game/traffic_system.h"
 #include "../render/eclairage_physique.h"   // nuit (lecture seule)
 #include "../render/renderer.h"
+#include "../render/vehicule_cockpit.h"   // WFS-596 : place de l'écran central (carteEcranVue, interieurPour : lecture seule)
 #include "../world/zones.h"
 #include "ecrans/reglages.h"   // gaucher (lecture seule)
 #include "navigation.h"
@@ -53,9 +56,11 @@ constexpr int SIGNAUX_MAX = 24;            // signalements suivis (fondu)
 constexpr int TRAFIC_MAX = 64;             // voitures du trafic lues pour les accidents et bouchons
 using namespace minicarte;                 // WFS-245 (RG-09) : tailles du bandeau et du nom de rue (minicarte.h)
 constexpr float FONDU_S = 0.35f;           // RG-03 : durée du fondu des signalements (s)
+constexpr size_t ECRAN_SOMMETS = 8192;     // WFS-596 : sommets gardés de la carte de l'écran central (≈ 1 365 quadrilatères ; HUD : SOMMETS_MAX)
 
 // dernière image dessinée : journal du banc (RG-05)
-struct EtatCarte { bool dessinee = false, nuit = false; int points = 0, sommets = 0, objets = 0, signaux = 0; float cote = 0, avantM = 0;
+// WFS-596 : ecran = carte dessinée sur l'écran central de la planche (vue Cockpit)
+struct EtatCarte { bool dessinee = false, nuit = false, ecran = false; int points = 0, sommets = 0, objets = 0, signaux = 0; float cote = 0, avantM = 0;
                    nav::Prochaine prochaine; std::string consigne, rue, rueSuivante, distance;
                    float tailleDistance = 0, tailleConsigne = 0, tailleRue = 0; };   // WFS-245 : tailles passées à ui::text (px)
 EtatCarte g_etat;
@@ -141,6 +146,7 @@ vec2 plan(const TrackPoint& q) { return {(float)q.x, (float)q.z}; }   // plan ho
 class MiniCarte : public System {
 public:
     const char* name() const override { return "mini-carte"; }
+    void init(Renderer&, const GameView&) override { cacheEcran_.reserve(ECRAN_SOMMETS); tempsEcran_ = -1; }   // WFS-596 (RG-07)
 
     void drawUi(Renderer& r, const GameView& g) override {
         g_etat = {};
@@ -150,6 +156,15 @@ public:
         if (c->timeLeft > 1e6) return;
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
         const bool poursuite = modeCourse() == ModeCourse::Poursuite;
+        // WFS-596 (RG-02) : en vue Cockpit, la carte va sur l'écran central de la planche, plus par-dessus l'image du jeu
+        cockpit::CarteEcranVue& vue = cockpit::carteEcranVue();
+        const bool vu = vue.vu;
+        vue.vu = false;   // relue à chaque image : l'intérieur la réécrit à chaque image où il est dessiné
+        if (lieuCarte(etatCockpit().actif, g.car && cockpit::interieurPour(g.car->id)) == LieuCarte::Ecran) {
+            if (vu) ecran(r, g, *c, vue, poursuite);
+            return;
+        }
+        surEcran_ = false;
         const Cadre carre = placer(W, H, g.marges, obstacles(W, H, g.marges, poursuite, ecrans::reglages().gaucher), poursuite);
         if (carre.w <= 0) {   // pas assez de place : pas de carte, une seule ligne au journal (WFS-173, RG-03)
             if (!tropPetit_) WFS_LOG("mini-carte : pas de place sous %.0f px de côté (écran %.0f x %.0f) : carte masquée", COTE_MIN * k, W, H);
@@ -171,6 +186,55 @@ public:
 private:
     bool tropPetit_ = false, nuit_ = false;
     double tempsPrec_ = 0, avant_ = -1, cap_ = 0;
+    // WFS-596 : carte de l'écran central : dessinée dans un cadre virtuel (cadreEcran), gardée (sommets de l'interface, 6 par
+    // quadrilatère) et recalculée au plus ECRAN_HZ fois par seconde, puis projetée à chaque image sur l'écran vu de l'œil
+    bool surEcran_ = false;
+    double tempsEcran_ = -1;
+    float wEcran_ = 0, hEcran_ = 0;
+    std::vector<UiVertex> cacheEcran_;   // capacité ECRAN_SOMMETS réservée à init (aucune allocation en course)
+    EtatCarte etatEcran_;
+
+    // ---- WFS-596 (RG-01, RG-03, RG-07) : la carte du HUD (carte(), mêmes calculs, mêmes signalements) dessinée dans le cadre
+    // virtuel de l'écran, puis chaque sommet projeté en perspective sur l'écran central vu de l'œil (coins de carteEcranVue)
+    void ecran(Renderer& r, const GameView& g, const Course& c, const cockpit::CarteEcranVue& vue, bool poursuite) {
+        const mat4 vp = g.proj * g.view;
+        vec2 q[4];   // coins à l'écran : haut gauche, haut droit, bas droit, bas gauche (ordre du carré unité de carreVers)
+        const int ordre[4] = {3, 2, 1, 0};   // coins de carteEcranVue : bas gauche, bas droit, haut droit, haut gauche
+        for (int i = 0; i < 4; i++) if (!versUi(vp, vue.coins[ordre[i]], g.uiWidth, g.uiHeight, q[i])) return;
+        const Homographie Hm = carreVers(q);
+        const Cadre cadre = cadreEcran(vue.w, vue.h);
+        const size_t debut = r.uiSommets();
+        const bool neuf = vue.w != wEcran_ || vue.h != hEcran_ || g.time < tempsEcran_ || cacheEcran_.empty();
+        if (neuf || g.time - tempsEcran_ >= 1.0 / ECRAN_HZ - 1e-6) {
+            g_piste = g.track;
+            const double dt = tempsPrec_ > 0 ? std::clamp(g.time - tempsPrec_, 0.0, 0.25) : 0;
+            tempsPrec_ = g.time; tempsEcran_ = g.time; wEcran_ = vue.w; hEcran_ = vue.h;
+            nuit_ = vue.nuit;
+            surEcran_ = true;
+            Pinceau P{r};
+            carte(P, r, g, c, cadre, 1.f, poursuite, dt);   // u = k = 1 : tailles du panneau du HUD rapportées à la hauteur de l'écran
+            const std::span<UiVertex> pose = r.uiDepuis(debut);
+            cacheEcran_.assign(pose.begin(), pose.begin() + (long)std::min(pose.size(), (size_t)ECRAN_SOMMETS));
+            g_etat.sommets = P.sommets;
+            etatEcran_ = g_etat;   // comptes de l'image recalculée, gardés pour les images rejouées (journal du banc)
+        } else {
+            g_etat = etatEcran_;
+            for (size_t i = 0; i + 5 < cacheEcran_.size(); i += 6) {   // a, b, c, a, c, d → quadrilatère (a, b, c, d)
+                const UiVertex v[4] = {cacheEcran_[i], cacheEcran_[i + 1], cacheEcran_[i + 2], cacheEcran_[i + 5]};
+                r.uiQuad(v);
+            }
+        }
+        const float lum = vue.nuit ? ECRAN_NUIT : 1.f;
+        for (UiVertex& v : r.uiDepuis(debut)) {
+            const vec2 p = appliquer(Hm, {v.x / cadre.w, v.y / cadre.h});
+            v.x = p.x; v.y = p.y; v.r *= lum; v.g *= lum; v.b *= lum;
+        }
+        // l'écran fait partie de la planche (monde 3D) : sa carte passe sous toute l'interface déjà posée à cette image (HUD,
+        // commandes tactiles) : ses sommets vont en tête de la liste (dessinés en premier, dans le même ordre)
+        const std::span<UiVertex> tout = r.uiDepuis(0);
+        std::rotate(tout.begin(), tout.begin() + (long)std::min(debut, tout.size()), tout.end());
+        g_etat.dessinee = true; g_etat.ecran = true; g_etat.cote = cadre.w; g_etat.nuit = vue.nuit;
+    }
     std::array<vec2, ROUTE_N> ecran_{};
     const Track* piste_ = nullptr; const MapDef* carte_ = nullptr;
     std::vector<nav::SignalFixe> fixes_;       // RG-03 : radars et travaux du tour (préparés une fois par carte, hors image)
@@ -205,35 +269,40 @@ private:
         g_etat.avantM = (float)avant_;
         // WFS-557 (maquette 17) : panneau de verre gris sombre aux coins arrondis (avant : carte claire ou sombre à angles droits)
         vec2 bord[ui::boutons::MAX_SOMMETS];
-        const int nb = ui::boutons::contourArrondi(bord, carre.x, carre.y, carre.w, carre.h, 14 * u);
-        dessin2d::halo(r, bord, nb, 10 * u, {0, 0, 0, 0.22f});
-        dessin2d::polygone(r, bord, nb, {hex(0x2B2D32, 0.80f), hex(0x2E2F31, 0.74f), carre.y, carre.y + carre.h});
-        P.sommets += 6 * nb;
+        int nb = 0;
+        if (surEcran_) P.rect(carre.x, carre.y, carre.w, carre.h, hex(ECRAN_FOND));   // WFS-596 (RG-03) : dalle de l'écran, tout le cadre
+        else {
+            nb = ui::boutons::contourArrondi(bord, carre.x, carre.y, carre.w, carre.h, 14 * u);
+            dessin2d::halo(r, bord, nb, 10 * u, {0, 0, 0, 0.22f});
+            dessin2d::polygone(r, bord, nb, {hex(0x2B2D32, 0.80f), hex(0x2E2F31, 0.74f), carre.y, carre.y + carre.h});
+            P.sommets += 6 * nb;
+        }
+        const vec4 itin = hex(surEcran_ ? ECRAN_ITINERAIRE : CYAN_GUIDAGE);   // WFS-596 (RG-03) : pas de cyan sur l'écran de la voiture
         // abscisses de la route dans la fenêtre : de −0,5 à +1,5 fois la vue avant (les épingles et lacets reviennent dans le carré)
         const double sA = s0 - 0.5 * avant_ / M, sB = s0 + 1.5 * avant_ / M, ds = (sB - sA) / (ROUTE_N - 1);
         // WFS-557 (maquette 17) : seulement l'itinéraire (ni îlots, ni verdure, ni rues : abords() et rues() ne sont plus dessinés),
         // gaine grise de 15 et trait cyan de 5 avec une lueur
         const float ep = 5 * u, epC = 15 * u;
         for (int i = 0; i < ROUTE_N; i++) ecran_[i] = ecranDe(v, plan(t.point(sA + ds * i, 0)));
-        bandeDecoupee(P, ecran_.data(), ROUTE_N, v.x0, v.y0, v.x1, v.y1, epC, hex(0x56585D, 0.9f), true);   // gaine
-        bandeDecoupee(P, ecran_.data(), ROUTE_N, v.x0, v.y0, v.x1, v.y1, ep * 2, hex(ACCENT2, 0.25f), false);   // lueur cyan
+        bandeDecoupee(P, ecran_.data(), ROUTE_N, v.x0, v.y0, v.x1, v.y1, epC, surEcran_ ? hex(ECRAN_GAINE) : hex(0x56585D, 0.9f), true);   // gaine
+        if (!surEcran_) bandeDecoupee(P, ecran_.data(), ROUTE_N, v.x0, v.y0, v.x1, v.y1, ep * 2, hex(ACCENT2, 0.25f), false);   // lueur cyan
         // RG-02 : partie passée en clair, itinéraire devant le joueur en couleur ; arrivée : l'itinéraire s'arrête sur la ligne
         const double fin = c.duelFinish > 0 ? c.duelFinish : 0;
         const int iJ = std::clamp((int)((s0 - sA) / ds), 0, ROUTE_N - 2);
         vec2 tr[ROUTE_N + 2]; int m = 0;
         for (int i = 0; i <= iJ; i++) tr[m++] = ecran_[i];
         tr[m++] = v.joueurPx;
-        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(CYAN_GUIDAGE), false);
+        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, itin, false);
         m = 0; tr[m++] = v.joueurPx;
         int iFin = ROUTE_N;
         if (fin > 0 && fin < sB) iFin = std::clamp((int)std::ceil((fin - sA) / ds), iJ + 1, ROUTE_N);
         for (int i = iJ + 1; i < iFin; i++) tr[m++] = ecran_[i];
         if (fin > 0 && fin < sB) tr[m++] = ecranDe(v, plan(t.point(fin, 0)));
-        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(CYAN_GUIDAGE), false);
+        bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, itin, false);
         if (iFin < ROUTE_N) {   // au-delà de l'arrivée : route ordinaire
             m = 0; tr[m++] = ecranDe(v, plan(t.point(fin, 0)));
             for (int i = iFin; i < ROUTE_N; i++) tr[m++] = ecran_[i];
-            bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, hex(CYAN_GUIDAGE), false);
+            bandeDecoupee(P, tr, m, v.x0, v.y0, v.x1, v.y1, ep, itin, false);
         }
         g_etat.points = ROUTE_N;
         // checkpoint et arrivée (RG-02)
@@ -247,7 +316,7 @@ private:
         joueur(P, v.joueurPx, (float)(pl.heading - cap_), k);   // la voiture vers le haut ; seul l'écart au cap lissé reste
         guidage(P, r, g, c, t, carre, k);
         (void)pal;
-        dessin2d::contour(r, bord, nb, 1.2f * u, {1, 1, 1, 0.16f});   // liseré clair (WFS-557)
+        if (nb > 0) dessin2d::contour(r, bord, nb, 1.2f * u, {1, 1, 1, 0.16f});   // liseré clair (WFS-557) ; écran central : le cadre 3D
     }
 
     void preparer(Track& t) {
@@ -627,7 +696,7 @@ private:
     void checkpoint(Pinceau& P, vec2 p, vec2 dir, float k) {   // trait cyan en travers de la route
         const vec2 av = unitaire(dir), dr{-av.y, av.x};
         const vec2 a = fois(dr, CP_L * k / 2), b = fois(av, CP_W * k / 2);
-        const vec4 cy = hex(ACCENT2);
+        const vec4 cy = hex(surEcran_ ? ECRAN_CHECKPOINT : ACCENT2);   // WFS-596 (RG-03) : blanc sur l'écran central (pas de cyan)
         const UiVertex q[4] = {sv(moins(moins(p, a), b), cy, 1), sv(moins(plus(p, a), b), cy, 1), sv(plus(plus(p, a), b), cy, 1), sv(plus(moins(p, a), b), cy, 1)};
         P.quad(q); g_etat.objets++;
     }
@@ -725,6 +794,57 @@ void benchMiniCarte(Game& g, Renderer& r, const std::string& out) {
     if (ancienMoment) setenv("WFS_MOMENT", garde.c_str(), 1); else unsetenv("WFS_MOMENT");
     modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
     courseBenchRules(false);
+}
+
+// ---------------------------------------------------------------- WFS-596 : banc « carte-cockpit »
+// vue Cockpit : la carte sur l'écran central (Giulia, Model 3) ou dans le tiers droit du combiné (SF90), en Checkpoint, Course à 5
+// et Poursuite, de jour et de nuit ; puis la vue arrière (mini-carte du HUD inchangée) et une suite de 3 images en roulant
+void benchCarteCockpit(Game& g, Renderer& r, const std::string& out) {
+    const VueCamera vueAvant = vueCamera();
+    const bool regles = courseBenchRulesOn();
+    const char* ancienMoment = std::getenv("WFS_MOMENT");
+    const std::string garde = ancienMoment ? ancienMoment : "";
+    courseBenchRules(true);
+    double t = 900;
+    auto rouler = [&](int images) { for (int i = 0; i < images; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); } };
+    auto capture = [&](const std::string& nom) {
+        g.render(t += 0.02); g.render(t += 0.02);
+        r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : carte %s (%s), %d sommets, %d objets, %d signalement(s) ; %.2f km, %.0f km/h, mode %s, voiture %s",
+                nom.c_str(), g_etat.dessinee ? "dessinée" : "ABSENTE", g_etat.nuit ? "nuit" : "jour", g_etat.sommets, g_etat.objets,
+                g_etat.signaux, g.player().dist * M / 1000, g.player().kmh(), nomMode(modeCourse()), g.player().car->id);
+    };
+    struct Scene { const char* voiture; ModeCourse mode; bool nuit; };
+    const Scene scenes[] = {
+        {"giulia", ModeCourse::Checkpoint, false}, {"giulia", ModeCourse::Checkpoint, true}, {"giulia", ModeCourse::Course5, false},
+        {"giulia", ModeCourse::Poursuite, true},  {"model3", ModeCourse::Checkpoint, false}, {"model3", ModeCourse::Course5, true},
+        {"model3", ModeCourse::Poursuite, false}, {"sf90", ModeCourse::Checkpoint, false},  {"sf90", ModeCourse::Course5, true},
+        {"sf90", ModeCourse::Poursuite, false},
+    };
+    for (const Scene& s : scenes) {
+        setenv("WFS_MOMENT", s.nuit ? "nuit" : "jour", 1);
+        modeCourse() = s.mode; kmCourse5() = 4;
+        choisirVue(VueCamera::Cockpit);
+        if (!g.init(r, s.voiture, "ville")) { WFS_LOG("carte-cockpit : %s introuvable", s.voiture); continue; }
+        if (s.mode == ModeCourse::Course5) { g.allerA(Ecran::Menu); rouler(30); g.allerA(Ecran::Course); }
+        g.setAutopilot(true); g.camMode = 0;
+        rouler(60 * (s.mode == ModeCourse::Poursuite ? 25 : 14));   // poursuite : la police arrive
+        const char* mode = s.mode == ModeCourse::Course5 ? "course5" : s.mode == ModeCourse::Poursuite ? "poursuite" : "checkpoint";
+        const std::string base = std::string("carte-cockpit-") + s.voiture + "-" + mode + (s.nuit ? "-nuit" : "-jour");
+        capture(base);
+        if (std::string(s.voiture) == "giulia" && s.mode == ModeCourse::Checkpoint && !s.nuit) {
+            for (int i = 1; i <= 2; i++) { rouler(30); capture(base + "-suite-" + std::to_string(i)); }   // la carte tourne et avance
+            choisirVue(VueCamera::Poursuite);
+            rouler(6);
+            capture("carte-cockpit-vue-arriere-jour");   // mini-carte du HUD, inchangée
+        }
+        g.setAutopilot(false);
+        g.shutdown(); g_piste = nullptr;
+    }
+    if (ancienMoment) setenv("WFS_MOMENT", garde.c_str(), 1); else unsetenv("WFS_MOMENT");
+    modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
+    choisirVue(vueAvant);
+    courseBenchRules(regles);
 }
 
 } // namespace wfs

@@ -15,7 +15,6 @@
 #include "../render/vehicule_cockpit.h"       // WFS-197 : intérieurs par modèle
 #include "../render/retroviseurs.h"          // WFS-324 : rétroviseurs à reflet
 #include "../audio/engine_synth.h"           // WFS-197 : EngineModel (régime et rapport du combiné, comme le son)
-#include "../ui/minicarte.h"                 // WFS-197 (RG-05) : découpe de la carte (minicarte::decouper, lecture)
 #include "../world/meteo.h"                  // WFS-197 (RG-06) : pluieActive (lecture)
 #include "../ui/hud.h"    // WFS-429 : rangée des boutons à côté du score
 #include "../ui/text.h"
@@ -394,36 +393,16 @@ public:
 private:
     // nuit demandée : même source que l'ambiance de nuit et la pluie (WFS_MOMENT, fixé par Game au choix du moment ; meteo.cpp)
     static bool nuitDemandee() { const char* m = std::getenv("WFS_MOMENT"); return m && std::strcmp(m, "nuit") == 0; }
-    // WFS-197 : intérieur par modèle : carte de l'écran central (RG-05), valeurs du combiné (RG-04), essuie-glaces (RG-06)
+    // WFS-197 : intérieur par modèle : valeurs du combiné (RG-04), essuie-glaces (RG-06) ; carte de l'écran central : WFS-596
     void dessinerInterieur(Renderer& r, const GameView& g, const mat4& cam, const EtatCockpit& ck) {
-        const Player& pl = *g.player;
-        Track& t = *g.track;
-        float W, H; interieur_.tailleCarte(W, H);
-        route_.clear();
-        const TrackPoint pj = t.point(pl.dist, pl.playerX * RW);
-        const double cap = pj.th + pl.heading;
-        const vec2 joueur{(float)pj.x, (float)pj.z};
-        const float echelle = H / (float)(cockpit::CARTE_ARRIERE_M + cockpit::CARTE_AVANT_M), yJ = -H / 2 + H * cockpit::CARTE_JOUEUR_Y;
-        vec2 prec{};
-        const int n = (int)((cockpit::CARTE_ARRIERE_M + cockpit::CARTE_AVANT_M) / cockpit::CARTE_PAS_M);
-        for (int k = 0; k <= n; k++) {
-            const double s = pl.dist + (-cockpit::CARTE_ARRIERE_M + k * cockpit::CARTE_PAS_M) / M;
-            const TrackPoint p = t.point(s, 0);
-            const vec2 uv = cockpit::versVoiture({(float)p.x, (float)p.z}, joueur, cap);
-            const vec2 e{uv.x * echelle, yJ + uv.y * echelle};
-            if (k > 0) {
-                vec2 a = prec, b = e;
-                if (minicarte::decouper(a, b, -W / 2, -H / 2, W / 2, H / 2)) { route_.push_back(a); route_.push_back(b); }
-            }
-            prec = e;
-        }
+        const Player& pl = *g.player;   // WFS-596 : plus de tracé simplifié pour l'écran central (carte du HUD, minicarte.cpp)
         cockpit::EtatInterieur e;
         e.volant = ck.volant;
         e.v.kmh = cockpit::vitesseAffichee(pl.kmh());
         e.v.regime = moteur_.rpm; e.v.rapport = pl.reversing ? -1 : (e.v.kmh < 1 ? 0 : moteur_.gear);
         e.v.nitro = (float)pl.nitro; e.v.nuit = nuitDemandee();
         e.essuie = g_ckBalaisRepos ? 0.f : essuie_.angle(interieur_.def()->arc);
-        interieur_.dessiner(r, cam, e, route_, joueur, cap);
+        interieur_.dessiner(r, cam, e);
         g_ckInt = e; g_ckAppels = interieur_.appels(); g_ckOctets = interieur_.octets(); g_ckCar = interieur_.def()->car;
     }
 
@@ -431,7 +410,6 @@ private:
     Renderer* r_ = nullptr;   // WFS-324
     cockpit::EtatEssuie essuie_;
     EngineModel moteur_; EngineTargets cibles_;
-    std::vector<vec2> route_;
     Material sombre_, cuir_, alu_, cadranMat_, cyan_, orange_;
     Mesh statique_, cadran_, anneau_, aiguille_, jante_, branches_, repere_;
     int doigt_ = -1;
