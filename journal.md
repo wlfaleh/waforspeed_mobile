@@ -97,3 +97,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 12:03:57 — WFS-596 créé : mini-carte sur l'écran central en vue Cockpit (po-scrum-master)
 - Demande de l'utilisateur : « Créer une US spécifique mode cockpit pour mettre la même map dans l'écran central des voitures et l'enlever de l'écran de jeu ». **WFS-596** (P1, E5 + E10, ⏳ Prêt, `@dev`), 3e de la liste `@dev`.
 - Réutiliser `src/ui/minicarte.*` (WFS-173) et l'écran central de `vehicule_cockpit.*` (WFS-201 RG-05, carte simplifiée remplacée) ; mêmes fichiers que WFS-583 : le 2e fusionné se synchronise ; WFS-583 RG-03 renvoie la mini-carte à WFS-596. Pas de tâche `@cicd` (rien de cuit dans les paquets).
+
+### 2026-11-22 12:08:26 — WFS-597 créé : fond de l'écran de chargement, 5 maquettes (po-scrum-master)
+- Demande de l'utilisateur : image d'arrière-plan de l'écran de chargement avec l'esprit des voitures de course, 5 maquettes, rien d'autre ne change. **WFS-597** (P2, E8, ⏳ En attente du choix de l'utilisateur) ; exception explicite au blocage des menus de 11:50 UTC (fond seulement).
+- Maquettes faites par le PO (esquisses dessinées par le code, aucun téléchargement) : `regles-de-gestion/maquettes/WFS-597/proposition-1` à `5` (feux de départ, filé de nuit, gomme et fumée, vibreur au couchant, drapeau à damier).
