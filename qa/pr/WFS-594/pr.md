@@ -13,27 +13,31 @@ Agent : Claude, agent dev3d (01UY1Vv49f)
   - `shaders/sols.glsl` (sols) — **RG-05** : touffes d'herbe (5 à 30 cm) visibles jusqu'à ≈ 30 m et brins de près, **pelouse arrosée de la Ville** (option `gazon` : herbe verte de `materiaux.json`, rapport rouge / vert affiché 0,82), massifs de maquis (1 à 3 m) dans la garrigue de la Corniche, visibles de loin, gravillons et cailloux de la terre et des talus, grain de la roche, relief par dérivées écran (Mikkelsen 2010) ; **sable** de la Corniche (couleur mesurée de la palette gardée, rides de vent par l'ombrage effacées avant le moiré, creux des pas, bosses, grain, coquillages ronds de 1 à 2 cm, rares ; sable mouillé plus lisse) ; **neige fraîche** au sol de la carte d'hiver (albédo 0,80 à 0,88, congères et crêtes de vent en relief doux, grain en couleur seulement, creux un peu bleutés) au lieu de bandes blanches unies ; bande de terre et de gravier (30 à 80 cm) au pied du trottoir du sol de Game. Chaque échelle de bruit s'efface avant d'être plus fine que 4 pixels : ni moiré, ni points.
   - Textures **faites par le code** (RG-05) : aucune texture libre atteignable (Poly Haven et ambientCG bloqués par `regles-reseau.md`, on ne contourne pas) ; aucun fichier téléchargé.
   - `src/world/sols.*` : options du sol (16 sable, 32 neige, 64 bord de route, 128 gazon), `neigeCarte`, carte enneigée → sol naturel.
-  - Accroches annoncées au journal (≤ 10 lignes chacune) : `shaders/eclairage.glsl` (rétroréflexion de la peinture), `shaders/scene.frag` (normale passée au sol), `src/game/game.cpp`, `src/world/ville.cpp` (le sol de la Ville passe au sol texturé de Game), `src/world/plage.cpp` (partie « sable » : sable sec, mouillé et promenade), `src/world/decor_carte.*` (neige au sol), `src/render/bench_realisme.h` (mesure des lignes relue), `src/platform/desktop_main.cpp` (banc), `src/render/renderer.cpp` + `shaders/scene.frag` (banc seulement : `WFS_VUE_SURFACE=normales|rugosite`, vues de la planche des surfaces).
+  - Accroches annoncées au journal (≤ 10 lignes chacune) : `shaders/eclairage.glsl` (rétroréflexion de la peinture), `shaders/scene.frag` (normale passée au sol), `src/game/game.cpp`, `src/world/ville.cpp` (le sol de la Ville passe au sol texturé de Game), `src/world/plage.cpp` (partie « sable » : sable sec et mouillé ; la promenade dallée garde son matériau), `src/world/decor_carte.*` (neige au sol), `src/render/bench_realisme.h` (mesure des lignes relue), `src/platform/desktop_main.cpp` (banc), `src/render/renderer.cpp` + `shaders/scene.frag` (banc seulement : `WFS_VUE_SURFACE=normales|rugosite`, vues de la planche des surfaces).
   - Nouveau banc `routes-sols` (`src/render/route_sols_banc.cpp`) : Ville, Corniche, Neige, jour et nuit ; vues arrière, cockpit, rasante (2 m), bas-côté de près, Ville en Basse ; de jour, vues des normales et de la rugosité.
 - **Comment c'est vérifié** :
-  - Tests CPU : 159 réussis sur 159 (`bash tools/qa/tests_cpu.sh build`), dont `test_fidelite_routes` (26 / 26 mesures : largeur 15 cm, albédo 0,68, joints 1 m, pontage 0,55 ; constantes du shader = C++), `test_sols` (codes, constantes `sols.glsl` = C++, carte enneigée), `test_fidelite` (mesure des lignes relue).
+  - **Tests CPU** (commit **fb59e375**, build complet) : « tests CPU : 159 test(s) réussi(s) en 436 s » — journal complet : [`qa/pr/WFS-594/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-594/qa/pr/WFS-594/tests-cpu.log) ; dont `test_fidelite_routes` (26 / 26 mesures : largeur 15 cm, albédo 0,68, joints 1 m, pontage 0,55 ; constantes du shader = C++), `test_sols` (codes, constantes `sols.glsl` = C++, carte enneigée), `test_fidelite` (mesure des lignes relue).
   - Banc `routes-sols` en 1280 × 720 (lavapipe, rendu de la CI), avant (`main`) / après aux mêmes endroits, **avec les couches de validation Vulkan : 0 erreur** avant et après ; chaque image regardée, zooms ×2 dans la planche de détails.
   - **Rétroréflexion de nuit (RG-03)**, vue cockpit, tirets dans le faisceau des feux de croisement, rapport de luminance lignes / enrobé mesuré sur les PNG (99,5e centile / médiane, dans la zone de chaussée devant la voiture) :
     - Corniche (peu de lampadaires) : 1,59 (`main`) → **1,72**, malgré une peinture moins blanche (0,68 au lieu de 0,78) ;
     - Ville (éclairage public qui domine) : 1,58 → 1,53 (la peinture plus juste l'emporte ; la ligne de rive n'est plus pointillée, voir le zoom).
   - Parcours complet (RG-08) : banc `parcours` (accueil → choix → course → fin → retour au menu, vue Cockpit comprise) avec les couches de validation : 0 écart, 0 erreur de validation.
-  - Coût (RG-07) : banc `perf` (lavapipe, 1280 × 720, 120 images par carte), passe de scène en ms, `main` → branche (2 mesures) :
-    | Carte | Haute | Basse |
-    |---|---|---|
-    | Ville | 601 → 673 / 692 (+12 à +15 %) ; rapportée à la passe d'ombres (non modifiée, elle-même +5 à +11 % d'un run à l'autre) : +4 à +6 % | 322 → 314 / 325 (stable) |
-    | Corniche | 412 → 421 / 424 (+2 à +3 %) | 219 → 210 / 220 (stable) |
-    | Campagne | 417 → 407 / 413 (stable) | 242 → 244 / 241 (stable) |
-    | Grand Prix | 491 → 475 / 470 (stable) | 226 → 230 / 232 (stable) |
-    La hausse de la Ville en Haute vient du sol de la Ville, qui passe du bruit simple de `surfaceSol` au sol texturé : cailloux et roche ne sont plus calculés sur le pré plat (dernier commit). Basse : aucune hausse (RG-07). Le GPU logiciel est très bruité : la mesure sur téléphone reste à confirmer (banc `perf` de la CI de `main`).
+  - **Coût (RG-07), commit final** : banc `routes-sols` avec `WFS_RS_PERF=1` (même image rendue en 7 blocs de 20, médiane des blocs, passe de scène GPU, lavapipe 1280 × 720, Haute, jour), `main` (banc ajouté) et branche **alternés**, 2 tours (Ville et Corniche mesurées sur d2c6cf1f : la 3e version n'y change que la promenade, rendue comme sur `main`) :
+
+    | Carte, vue | `main` (tour 1 / 2) | branche (tour 1 / 2) | écart moyen |
+    |---|---|---|---|
+    | Ville, arrière | 392 / 383 ms | 397 / 406 ms | +3,6 % |
+    | Ville, cockpit | 508 / 501 ms | 503 / 542 ms | +3,6 % |
+    | Corniche, arrière | 398 / 379 ms | 393 / 411 ms | +3,5 % |
+    | Corniche, cockpit | 441 / 429 ms | 443 / 456 ms | +3,3 % |
+    | Neige, arrière (après allègement, dos à dos) | 292 / 307 ms | 293 / 303 ms | −0,5 % |
+    | Neige, cockpit (après allègement, dos à dos) | 385 / 374 ms | 372 / 376 ms | −1,4 % |
+
+    Tout reste sous le seuil de 5 %. La Neige était à +11 à +23 % avant l'allègement de cette 3e version : le sol enneigé ne calcule plus que la neige (avant : pré, talus et roche calculés puis recouverts), et la chaussée entièrement enneigée saute les fissures et rustines (invisibles). L'écart d'un tour à l'autre (jusqu'à 8 %) vient de la machine (GPU logiciel partagé) : seuls les tours alternés se comparent. Le banc `perf` de la CI de `main` le confirmera sur le rendu de la CI ; le téléphone, par l'utilisateur (🟡). Basse : inchangée (`ville-jour-basse`).
 - **Limites et risques connus** :
   - Textures par le code, pas de scans : de près, l'herbe reste un gazon sans brins en 3D (pas de géométrie d'herbe : hors ticket).
   - Neige : de jour, la neige claire reste presque unie (l'image sature) ; le relief doux se voit la nuit et dans la planche des normales.
-  - La bande de gravier ne se voit sur aucune carte jouable : la Ville a ses trottoirs plus larges, la Corniche et la Neige dessinent leurs propres bas-côtés (elle sert au sol de Game, Campagne et Grand Prix en pause). Le reste de la Corniche (promenade, sable) est texturé.
+  - La bande de gravier ne se voit sur aucune carte jouable : la Ville a ses trottoirs plus larges, la Corniche et la Neige dessinent leurs propres bas-côtés (elle sert au sol de Game, Campagne et Grand Prix en pause).
   - Coût mesuré sur lavapipe (GPU logiciel), pas sur téléphone : à confirmer par le banc `perf` de la CI de `main` et par l'utilisateur (🟡).
   - Hors périmètre (RG-09) : dents de scie du bord (WFS-577), flaques (WFS-157), reflets de nuit sur route mouillée (WFS-459), menus. Paquets des cartes à republier : WFS-595 (`@cicd`).
 
@@ -41,7 +45,7 @@ Agent : Claude, agent dev3d (01UY1Vv49f)
 
 Dossier : [`qa/pr/WFS-594`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-594/qa/pr/WFS-594) — banc `routes-sols`, 1280 × 720.
 
-Captures « avant » : `origin/main` = `02f262767475329c3cd389e4b20f6c952d8e9b6a` (code identique à `9fef06c0`, où elles ont été faites), compilé avec le banc `routes-sols` ajouté (le banc n'existe pas sur `main` : même code que `main` pour tout le reste, mêmes endroits, même graine). Captures « après » : branche synchronisée avec ce `main`, dernier code (2e revue : marquages, nuit, neige, sable, herbe et planches refaits).
+Captures « avant » : `origin/main` = `02f262767475329c3cd389e4b20f6c952d8e9b6a` (code identique à `9fef06c0`, où elles ont été faites), compilé avec le banc `routes-sols` ajouté (le banc n'existe pas sur `main` : même code que `main` pour tout le reste, mêmes endroits, même graine). Captures « après » : branche synchronisée avec ce `main` ; 3e version (revue du lead dev) : Corniche et Neige refaites sur fb59e375 (neige allégée, promenade non sablée), Ville inchangée depuis d2c6cf1f.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
