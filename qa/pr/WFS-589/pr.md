@@ -14,6 +14,10 @@
   - CI de branche (US technique) : bancs du matin #70 sur `feature/waforspeed-589` https://github.com/wlfaleh/waforspeed_mobile/actions/runs/45025551433 : **run entièrement vert** (26 jobs : tests CPU et licences, endurance et chauffe, realisme-1, realisme-2, complements-a/b/c, tous les groupes de captures, APK, émulateur) ; publications sautées (réservées à `main`). Après ce run : synchronisation avec `main` (WFS-597), conflit dans `verifier_licences.py` résolu en gardant les deux lignes, licences 0 manque et compilation refaites en local.
 - **Limites et risques** : aucun seuil changé, aucun banc retiré ni passé en avertissement. `chauffe_systeme.cpp` et `bench_passes.cpp` sont hors de la zone écrite dans les RG (desktop_main + tools/qa), mais ne touchent que le code des bancs (annoncé au journal). La capture « avant » du réglage Ultra vient du banc de `main` (Ultra non choisi), celle « après » du banc corrigé (Ultra choisi).
 
+## Tests CPU
+
+`bash tools/qa/tests_cpu.sh build` sur la tête de branche 38e431d (synchronisée avec `main`, WFS-597 compris) : **158 test(s) réussi(s) en 466 s**, 0 échec. Journal complet : [`qa/pr/WFS-589/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-589/qa/pr/WFS-589/tests-cpu.log).
+
 ## Captures pour le lead dev (7 paires)
 
 Dossier : [`qa/pr/WFS-589`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-589/qa/pr/WFS-589) — produit par `tools/qa/captures_pr.sh`.
