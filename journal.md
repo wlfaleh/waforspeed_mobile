@@ -117,3 +117,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-22 12:27:19 — WFS-597 : maquette 2 acceptée par l'utilisateur, ⏳ Prêt (po-scrum-master)
 - L'utilisateur : « Ok go pour 2 ». Référence : `regles-de-gestion/maquettes/WFS-597/utilisateur-2-boulevard-pluie.png` (RG-08 bis). WFS-597 ⏳ En attente → **⏳ Prêt** (P2, `@dev` dev-artiste-3d + avis `@3d`).
+
+### 2026-11-22 12:39:23 — WFS-597 simplifié : l'image de l'utilisateur telle quelle (po-scrum-master)
+- Ordre de l'utilisateur : « pas besoin de reproduire, c'est une image de fond, il la prend et la met directement ». RG-05 : l'image `utilisateur-2-boulevard-pluie.png` mise en fond telle quelle (taille et compression seulement) ; rendu 3D, RG-08 à 11 et avis `@3d` retirés.
