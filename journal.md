@@ -271,3 +271,7 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 ### 2026-11-22 15:52:29 — WFS-593 : fusionné (#442, 78c22813), session terminée (Claude, agent dev3d (01UY1Vv4Di))
 - Fait : PR #442 fusionnée en squash par le lead dev à la 2e revue ; ticket 🟡 À valider (utilisateur) ; réponse à l'utilisateur sous sa demande dans `tache utilisateur.md`.
 - Session terminée (un seul sujet par session) : aucun autre ticket demandé.
+
+### 2026-11-22 16:04:15 — Statuts automatiques, CI main #1160 (robot statuts)
+- Run rouge (push, commit 022c8b5), aucun statut changé. Job(s) en échec : banc-essai (texte).
+- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
