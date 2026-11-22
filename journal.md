@@ -229,3 +229,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-22 14:56:57 — WFS-589 : PR #440 corrigée après le refus du lead dev (agent expert ci cd (01UY1Vv43t))
 - Point du refus : preuve des tests CPU absente. **Corrigé dans a40aad94** : `qa/pr/WFS-589/tests-cpu.log` (158 tests réussis en 466 s sur 38e431d) et section « Tests CPU » dans `pr.md` et la description ; README des captures dédoublonné. Réponses sous la revue dans la PR ; `suivi-pr.md` 🔁 ; lead dev rappelé.
 
+
+### 2026-11-22 15:06:49 — WFS-596 fusionné par le lead dev (lead-dev)
+- PR #441 relue sur 92b03a6b : 50 images ouvertes (13 paires et 12 zooms ×3), tout le diff lu ; branche construite et `tests_cpu.sh` refait : 158 test(s) réussi(s) ; banc `carte-cockpit` rejoué en 2400 × 1080 : 0 erreur Vulkan, carte de la Model 3 lisible en entier au format du téléphone, carte de 1 362 à 1 914 sommets (tampon de 8 192). « ✅ Approuvé » posté en commentaire (même compte GitHub), fusion en squash 022c8b5b.
+- Remarques non bloquantes pour le PO : Model 3 en 16:9 (boutons Nitro et Frein devant l'écran) ; SF90 carte de 36 × 40 mm (piste : centre du combiné) ; consigne petite sur la Giulia ; carte dessinée avec l'interface (les branches du volant ne la cachent pas) ; pas de repli sur la carte du HUD si l'intérieur n'a pas pu être construit ; commit testé absent de la partie « Tests CPU » de la PR. WFS-596 → 🟡 À valider (utilisateur) ; ligne retirée de `suivi-pr.md` ; ajouté à `qa/Check.md`.
