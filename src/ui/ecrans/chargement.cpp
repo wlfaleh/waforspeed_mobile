@@ -3,6 +3,9 @@
 #include "chargement.h"
 #include <algorithm>
 #include <cmath>
+#include <future>
+#include <system_error>
+#include <vector>
 #include "../../core/log.h"
 #include "../../core/memoire.h"   // WFS-297 (RG-06)
 #include "../../game/traffic_system.h"   // WFS-297 : voitures du trafic chargées
@@ -140,31 +143,49 @@ static int etapeEnCours(float p) {
 namespace {
 Image g_fond{};
 bool g_fondEssaye = false;
+// image décodée sur un autre fil pendant que la police se construit (thread principal) : seuls les octets du JPEG, possédés par
+// la tâche, sont lus ; le résultat (pixels RGBA, possédés par stb) n'est repris qu'une fois, par terminerFond, sur le thread principal
+struct FondDecode { uint8_t* px = nullptr; int w = 0, h = 0; double duree = 0; };
+std::future<FondDecode> g_decodage;
 }
 
 bool fondPret() { return g_fond.view != VK_NULL_HANDLE; }
 
-// appelé hors d'une image en cours (début du chargement) : uiSetPhotos réécrit le jeu de descripteurs de l'interface
-static void chargerFond(Renderer& r) {
-    if (fondPret() || g_fondEssaye) return;
+// début du chargement : lecture du fichier (thread principal, comme tous les readAsset) et décodage lancé à côté
+static void lancerFond() {
+    if (fondPret() || g_fondEssaye || g_decodage.valid()) return;
     g_fondEssaye = true;   // un seul essai par chargement affiché : pas de relecture à chaque étape si le fichier manque
-    const double t0 = nowSeconds();
     std::vector<uint8_t> jpg;
     if (!readAsset(FICHIER_FOND_CHEMIN, jpg)) { WFS_WARN("chargement (WFS-597) : %s introuvable, fond d'avant gardé", FICHIER_FOND_CHEMIN); return; }
-    int w = 0, h = 0, n = 0;
-    uint8_t* px = stbi_load_from_memory(jpg.data(), (int)jpg.size(), &w, &h, &n, 4);
-    if (!px || w != FOND_LARGEUR || h != FOND_HAUTEUR) {
-        if (px) stbi_image_free(px);
+    try {
+        g_decodage = std::async(std::launch::async, [jpg = std::move(jpg)] {
+            FondDecode d; int n = 0; const double t0 = nowSeconds();
+            d.px = stbi_load_from_memory(jpg.data(), (int)jpg.size(), &d.w, &d.h, &n, 4);
+            d.duree = nowSeconds() - t0;
+            return d;
+        });
+    } catch (const std::system_error&) { WFS_WARN("chargement (WFS-597) : décodage du fond impossible (fil refusé), fond d'avant gardé"); }
+}
+
+// après la police : envoi à la carte graphique, hors d'une image en cours (uiSetPhotos réécrit le jeu de descripteurs de l'interface)
+static void terminerFond(Renderer& r) {
+    if (!g_decodage.valid()) return;
+    const double t0 = nowSeconds();
+    FondDecode d = g_decodage.get();
+    const double attente = nowSeconds() - t0;
+    if (!d.px || d.w != FOND_LARGEUR || d.h != FOND_HAUTEUR) {
+        if (d.px) stbi_image_free(d.px);
         WFS_WARN("chargement (WFS-597) : %s illisible ou pas en %d × %d, fond d'avant gardé", FICHIER_FOND_CHEMIN, FOND_LARGEUR, FOND_HAUTEUR);
         return;
     }
     // les photos des modes, si elles sont chargées (2e partie), rendent l'emplacement : elles reviennent à l'ouverture de leur écran
     if (modes_photos::pretes()) modes_photos::liberer(r);
-    g_fond = r.vk().uploadTexture(px, (uint32_t)w, (uint32_t)h, false);   // valeurs sRGB recopiées telles quelles (comme les modes)
-    stbi_image_free(px);
+    g_fond = r.vk().uploadTexture(d.px, (uint32_t)d.w, (uint32_t)d.h, false);   // valeurs sRGB recopiées telles quelles (comme les modes)
+    stbi_image_free(d.px);
     if (!fondPret()) { WFS_WARN("chargement (WFS-597) : fond refusé par la carte graphique, fond d'avant gardé"); return; }
     r.uiSetPhotos(g_fond);
-    WFS_LOG("chargement (WFS-597) : fond %d × %d chargé en %s s (%.1f Mo)", w, h, ui::decimal(nowSeconds() - t0, 3).c_str(), w * h * 4 / 1048576.0);
+    WFS_LOG("chargement (WFS-597) : fond %d × %d prêt (décodage %s s à côté de la police, attente %s s, envoi %s s, %.1f Mo)", d.w, d.h,
+            ui::decimal(d.duree, 3).c_str(), ui::decimal(attente, 3).c_str(), ui::decimal(nowSeconds() - t0 - attente, 3).c_str(), d.w * d.h * 4 / 1048576.0);
 }
 
 // après le fondu ou à l'arrêt du moteur ; hors d'une image en cours. L'emplacement n'est vidé que s'il est encore à nous.
@@ -335,10 +356,11 @@ void Chargement::debut(Renderer& r, double depuis) {
     libelle_ = "Préparation du moteur";
     t0_ = tEtape_ = nowSeconds();
     // première image tout de suite (fond + barre), puis police (≈ 0,1 à 0,9 s) et image complète à 0 %
-    if (!ui::fontReady()) image(r, p_, libelle_, false);
+    if (!ui::fontReady() || !fondPret()) image(r, p_, libelle_, false);   // WFS-597 : aussi au rechargement, avant le décodage du fond
     const double premiere = nowSeconds() - depuis;
-    chargerFond(r);   // WFS-597 (RG-06) : après la 1re image, avant l'écran complet
+    lancerFond();      // WFS-597 (RG-06) : après la 1re image ; décodé pendant la construction de la police
     ui::chargerPolice(r);
+    terminerFond(r);
     image(r, p_, libelle_, false);
     WFS_LOG("chargement : première image %s s après l'initialisation Vulkan, écran complet (police) %s s",
             ui::decimal(premiere, 3).c_str(), ui::decimal(nowSeconds() - depuis, 3).c_str());
