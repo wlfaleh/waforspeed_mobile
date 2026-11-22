@@ -102,7 +102,7 @@ void main() {
     } else if ((flags & F_WALK) != 0u) {
         surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
     } else if ((flags & F_GROUND) != 0u) {
-        if (pc.params.z >= 1.0) surfaceTerrain(base, rough, metal, vNrm); else surfaceSol(base, rough, metal);   // WFS-383 (accroche)
+        if (pc.params.z >= 1.0) surfaceTerrain(base, rough, metal, vNrm, N); else surfaceSol(base, rough, metal);   // WFS-383 (accroche) ; WFS-594 : relief (N)
     } else if ((flags & F_FACADE) != 0u) {
         surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }

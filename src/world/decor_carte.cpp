@@ -126,7 +126,8 @@ void toit(Geo& g, vec3 c, vec3 r, vec3 f, float L, float H, float W, vec2 uv) {
 
 // ---------------------------------------------------------------- système
 bool CarteDecor::solNaturel(int col) const {   // WFS-383
-    return col == C_VERGE || col == C_DITCH || col == C_FOREST || col == C_FARHILL || (col >= C_FIELD0 && col <= C_VINE_B) || col == C_GRASS || col == C_GRASS2;
+    return neigeSol_ || col == C_VERGE ||   // WFS-594 (accroche) : carte enneigée
+            col == C_DITCH || col == C_FOREST || col == C_FARHILL || (col >= C_FIELD0 && col <= C_VINE_B) || col == C_GRASS || col == C_GRASS2;
 }
 
 void CarteDecor::init(Renderer& r, const GameView& g) {
@@ -152,8 +153,8 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
     {   // WFS-383 : sol naturel : couleur de la bande gardée (champs), sauf en automne (couleurs mesurées du climat)
         sols::Climat c = sols::Climat::Tempere;
-        solActif_ = sols::climatCarte(g.map->id, c);
-        mats_[P_TERRE] = r.makeMaterial(sols::materiau(c, c != sols::Climat::Automne), &palTex_, nullptr, nullptr);
+        solActif_ = sols::climatCarte(g.map->id, c); neigeSol_ = sols::neigeCarte(g.map->id);   // WFS-594 (accroche)
+        mats_[P_TERRE] = r.makeMaterial(sols::materiau(c, sols::Options{.teinte = c != sols::Climat::Automne, .neige = neigeSol_}), &palTex_, nullptr, nullptr);   // WFS-594 (accroche) : neige au sol
     }
     // lampes : part propre (neonK du jeu web : 1 la nuit, 0,5 de jour)
     // WFS-225 (RG-01) : lampes allumées la nuit sur toutes les cartes (la campagne les avait éteintes : envFor lamps = false du web)

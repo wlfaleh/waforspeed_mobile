@@ -61,6 +61,7 @@ namespace wfs { int benchPortiqueCheckpoint(Game& g, Renderer& r, const std::str
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
 #include "../game/virages_banc.h"   // WFS-295 (accroche) : WFS_BANC=virages
+namespace wfs { int benchRoutesSols(Game& g, Renderer& r, const std::string& out, const std::string& racine); }   // WFS-594 (accroche) : WFS_BANC=routes-sols (src/render/route_sols_banc.cpp)
 namespace wfs { int benchSol(Game& g, Renderer& r, const std::string& out, const std::string& racine); }   // WFS-391 (accroche) : WFS_BANC=sol (src/game/sol_banc.cpp)
 #include "../world/pietons.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
@@ -286,6 +287,7 @@ int main(int argc, char** argv) {
     if (banc == "autocollants") { benchAutocollants(g, r, out); return finir(); }   // WFS-495 (accroche) : autocollants sur 3 voitures
     if (banc == "phares-optiques") { benchPharesOptiques(g, r, out); return finir(); }   // WFS-413 (accroche) : optiques avant de nuit   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
     if (banc == "route") { benchRoute(g, r, out); return finir(); }   // WFS-142 : chaussée sèche / mouillée (essai local)
+    if (banc == "routes-sols") { const int e = benchRoutesSols(g, r, out, g_root); finir(); return e > 0 ? 3 : 0; }   // WFS-594 (accroche) : routes et sols de près
     if (banc == "phares") { ui::chargerPolice(r); benchPhares(g, r, out); return finir(); }   // WFS-382 (accroche) : banc court des phares de nuit
     if (banc == "nuit") { benchNuit(g, r, out); benchFeuxFrein(g, r, out); benchRoute(g, r, out); benchCockpit(g, r, out, COCKPIT_LOT2A); conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs-*   // WFS-201 (accroche) : cockpit lot 2, 1re moitié   // WFS-109 : feux-frein-jour / -nuit, feux-recul   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)

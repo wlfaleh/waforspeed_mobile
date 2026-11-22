@@ -4,6 +4,7 @@
 // carte sans ligne : bandes unies comme avant, carte de Noël de WFS-346 comprise) et refus d'une ligne « sol » fausse.
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include "../src/core/carte_cuite.h"
 #include "../src/world/cartes_v2/carte_donnees.h"
@@ -25,6 +26,23 @@ int main() {
     VERIFIER(sols::code(sols::Climat::Automne, false, true) == 11.f);
     const Material m = sols::materiau(sols::Climat::Mediterraneen, false, true);
     VERIFIER(m.flags == MAT_GROUND && m.cutoff == 9.f && m.rough > 0.9f);
+    // ---- WFS-594 (RG-05) : options du sol : 16 × sable, 32 × neige, 64 × bord de route ; constantes du shader = C++
+    VERIFIER(sols::code(sols::Climat::Tempere, false, false, false, false, true) == 66.f);
+    {
+        const Material ms = sols::materiau(sols::Climat::Mediterraneen, sols::Options{.sable = true});
+        const Material mn = sols::materiau(sols::Climat::Tempere, sols::Options{.teinte = true, .neige = true});
+        VERIFIER(ms.flags == MAT_GROUND && ms.cutoff == 17.f && mn.flags == MAT_GROUND && mn.cutoff == 38.f && mn.rough > 0.9f);
+        FILE* f = std::fopen((std::string(WFS_SOURCE_DIR) + "/shaders/sols.glsl").c_str(), "rb");
+        std::string g;
+        if (f) { char b[4096]; size_t n; while ((n = std::fread(b, 1, sizeof b, f)) > 0) g.append(b, n); std::fclose(f); }
+        auto constante = [&](const char* nom) {
+            const size_t i = g.find(std::string(nom) + " = ");
+            return i == std::string::npos ? -1.0 : std::atof(g.c_str() + i + std::strlen(nom) + 3);
+        };
+        VERIFIER(std::fabs(constante("BORD_TROTTOIR_M") - sols::BORD_TROTTOIR_M) < 1e-4 && std::fabs(sols::BORD_TROTTOIR_M - (7.5f + 4.f)) < 1e-4f);
+        VERIFIER(std::fabs(constante("BANDE_GRAVIER_MIN_M") - sols::BANDE_GRAVIER_MIN_M) < 1e-4 && std::fabs(constante("BANDE_GRAVIER_MAX_M") - sols::BANDE_GRAVIER_MAX_M) < 1e-4);
+        VERIFIER(sols::BANDE_GRAVIER_MIN_M >= 0.3f && sols::BANDE_GRAVIER_MAX_M <= 0.8f);
+    }
 
     // ---- pli en V (talus de 45° de chaque côté) : 2 quads, 12 sommets → 6 ; normale du faîte verticale, des bords à 45°
     {
@@ -80,6 +98,7 @@ int main() {
         VERIFIER(cartes_v2::lireTrace(std::string(pn.bloc("trace")->donnees.begin(), pn.bloc("trace")->donnees.end()), n, e));
         VERIFIER(cartes_v2::lireTrace(std::string(pa.bloc("trace")->donnees.begin(), pa.bloc("trace")->donnees.end()), a, e));
         VERIFIER(cartes_v2::lireDecor(std::string(pn.bloc("decor")->donnees.begin(), pn.bloc("decor")->donnees.end()), n, e) && n.climatSol == 0);
+        VERIFIER(n.saison.neigeChaussee > 0);   // WFS-594 : carte enneigée : sol naturel couvert de neige (sols::neigeCarte), plus de bandes unies
         VERIFIER(cartes_v2::lireDecor(std::string(pa.bloc("decor")->donnees.begin(), pa.bloc("decor")->donnees.end()), a, e) && a.climatSol == 3);
     } else VERIFIER(false);
 

@@ -69,6 +69,10 @@ float abriRoute(const Abris& a, double yM);
 constexpr float BANDE_ROULEMENT_M = 0.9f, ECARTEMENT_ROUES_M = 1.572f;
 // M-04 : bordure de trottoir (Ville : granit) : 15 cm de haut (CURB_H de game.cpp et ville.cpp), largeur du bloc de granit 0,30 m
 constexpr float BORDURE_H_M = 0.15f, BORDURE_LARGEUR_M = 0.30f;
+// WFS-594 (RG-02 à RG-04) : mêmes valeurs dans route.glsl (test_fidelite_routes) :
+//   lignes de rive et de voie 15 cm (IISR, 7e partie : 2u, u = 7,5 cm), peinture blanche d'albédo 0,68 (0,6 à 0,75 : DA-realisme.md § 3),
+//   joints de la bordure T2 tous les 1 m (NF EN 1340 : éléments de 1 m), bitume coulé des pontages : 0,55 × l'enrobé voisin
+constexpr float LARGEUR_MARQUAGE_M = 0.15f, MARQUAGE_ALBEDO = 0.68f, JOINT_BORDURE_M = 1.0f, PONTAGE_ALB = 0.55f;
 
 // qualité du chargement (qualite::Niveau : 0 Basse … 3 Ultra), lue au début de chaque partie (Game::init) : taille chargée et
 // mode de lecture du shader (Ultra / Haute : pavage hexagonal, Moyenne : deux échelles, Basse : une lecture) ; WFS-206 : carte

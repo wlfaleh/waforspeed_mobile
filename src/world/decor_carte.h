@@ -142,6 +142,7 @@ protected:
     bool active_ = false, night_ = false;
     Track* track_ = nullptr;
     Material mats_[P_COUNT];
+    bool neigeSol_ = false;   // WFS-594 (accroche) : carte enneigée : toutes les bandes de sol vont au sol naturel couvert de neige
     bool solActif_ = false;   // WFS-383 : la carte a un climat de sol (cartes du code ; carte de données avec sa ligne « sol »)
     Image palTex_{}, leafTex_{}, routeTex_{};
     int lastDraws_ = 0;

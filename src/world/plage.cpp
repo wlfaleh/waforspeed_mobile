@@ -197,6 +197,7 @@ enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P
            P_TERRE,                    // WFS-383 : sol des collines, talus et rochers (sols.glsl ; part de roche de chaque sommet en uv.x)
            P_ALEP_TRONC, P_ALEP_AIG,   // WFS-383 (RG-03) : pins d'Alep : tronc et branches, aiguilles
            P_VITRE_ETAGE, P_VITRE_COMMERCE,   // WFS-410 (B1) : vitres des lieux, pièce de nuit du kit (étages 40 %, commerces 60 % allumés)
+           P_SABLE,                    // WFS-594 (accroche, RG-05) : sable sec et mouillé de la plage (sols.glsl : rides, grain, couleur de la palette)
            P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
@@ -561,6 +562,7 @@ public:
         mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
         // WFS-383 : un seul sol naturel ; la part de roche (zone « rochers ») est portée par chaque sommet (uv.x), sans limite de bande
         mats_[P_TERRE] = r.makeMaterial(sols::materiau(sols::Climat::Mediterraneen, false, true), nullptr, nullptr, nullptr);
+        mats_[P_SABLE] = r.makeMaterial(sols::materiau(sols::Climat::Mediterraneen, sols::Options{.sable = true}), &palTex_, nullptr, nullptr);   // WFS-594 (accroche)
         // WFS-380 : vraie eau (shaders/eau.glsl) : la couleur vient de la profondeur et du ciel, plus d'aplat #1e7fa8
         mats_[P_OCEAN] = r.makeMaterial(eau::materiau(eau::MODE_SURFACE, false), nullptr, nullptr, nullptr);
         mats_[P_NAPPE] = r.makeMaterial(eau::materiau(eau::MODE_NAPPE, true), nullptr, nullptr, nullptr);   // D5 : ressac sur le sable
@@ -2605,7 +2607,8 @@ public:
                     } else if (sol >= 0) {   // WFS-383 : sol naturel, part de roche de chaque sommet (uv.x)
                         const vec2 ua{partRoche(a, side, x.a), 0}, ub{partRoche(a, side, x.b), 0}, uc{partRoche(a + 1, side, y.b), 0}, ud{partRoche(a + 1, side, y.a), 0};
                         if (side > 0) quadUv(out[sol], A, B, C, Dd, ua, ub, uc, ud); else quadUv(out[sol], A, Dd, C, B, ua, ud, uc, ub);   // face vers le haut
-                    } else if (side > 0) quad(out[P_UNI], A, B, C, Dd, uvSol); else quad(out[P_UNI], A, Dd, C, B, uvSol);   // face vers le haut
+                    } else { const int pu = (x.col == C_SABLE || x.col == C_MOUILLE) ? P_SABLE : P_UNI;   // WFS-594 (accroche) : sable texturé
+                        if (side > 0) quad(out[pu], A, B, C, Dd, uvSol); else quad(out[pu], A, Dd, C, B, uvSol); }   // face vers le haut
                     u0 += l0; u1 += l1;
                 }
                 // mer : à altitude fixe au tracé 2 (la route monte jusqu'à 60 m au-dessus), jusqu'au bord permis

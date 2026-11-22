@@ -19,13 +19,25 @@ namespace sols {
 
 enum class Climat { Mediterraneen = 1, Tempere = 2, Automne = 3 };
 
-// code du sol lu par le shader (pc.params.z) : climat + 4 × teinte + 8 × rocheux
-constexpr float code(Climat c, bool teinte, bool rocheux) { return (float)((int)c + (teinte ? 4 : 0) + (rocheux ? 8 : 0)); }
+// code du sol lu par le shader (pc.params.z) : climat + 4 × teinte + 8 × rocheux ; WFS-594 (RG-05) : + 16 × sable (couleur de la palette
+// gardée, rides de vent, grain), + 32 × neige (neige fraîche au sol), + 64 × bord de route (uv.x = latéral en m : bande de terre et de
+// gravier de BANDE_GRAVIER_MIN_M à BANDE_GRAVIER_MAX_M au pied du trottoir de Game, qui finit à BORD_TROTTOIR_M de l'axe)
+struct Options { bool teinte = false, rocheux = false, sable = false, neige = false, bordRoute = false; };
+constexpr float code(Climat c, bool teinte, bool rocheux, bool sable = false, bool neige = false, bool bordRoute = false) {
+    return (float)((int)c + (teinte ? 4 : 0) + (rocheux ? 8 : 0) + (sable ? 16 : 0) + (neige ? 32 : 0) + (bordRoute ? 64 : 0));
+}
+constexpr float BORD_TROTTOIR_M = 11.5f;   // RW (7,5) + WALK_W (4) de game.cpp ; = shaders/sols.glsl (test_sols)
+constexpr float BANDE_GRAVIER_MIN_M = 0.3f, BANDE_GRAVIER_MAX_M = 0.8f;   // RG-05 : 30 à 80 cm ; = shaders/sols.glsl
 
 // matériau de sol : MAT_GROUND (pas d'ombre portée, pas de reflet, jamais retourné), rugosité 0,95 ; teinte = le pré prend la couleur
 // des sommets (texture de palette passée par l'appelant), sinon la couleur du climat ; rocheux = la pente lue est augmentée de 30° × uv.x du
 // sommet (part de roche de 0 à 1, posée par l'appelant : zone de rochers de la Corniche, roche dès 15°)
 Material materiau(Climat c, bool teinte = false, bool rocheux = false);
+// WFS-594 (RG-05) : matériau de sol avec les options (sable, neige, bord de route) ; mêmes drapeaux et rugosité que materiau()
+Material materiau(Climat c, const Options& o);
+// WFS-594 : neige au sol de la carte (cartes de données dont la saison couvre la chaussée de neige) : leurs bas-côtés passent au sol
+// naturel couvert de neige (avant : bandes blanches unies)
+bool neigeCarte(const char* carte);
 
 // lissage des normales d'un terrain fait de triangles séparés : sommets soudés (même position à 1 cm près, même uv), normale moyenne
 // pondérée par l'angle du coin, tournée vers le haut. Les sommets soudés sont fusionnés (moins de sommets à envoyer). Thread de travail possible.
@@ -33,7 +45,7 @@ void lisserNormales(std::vector<Vertex>& v, std::vector<uint32_t>& i);
 
 // climat des cartes du code (Ville, Campagne, Grand Prix : tempéré ; Corniche : méditerranéen) ; carte de données : sa ligne
 // « sol <mediterraneen|tempere|automne> » du bloc decor. Faux (c inchangé) : carte de données sans ligne « sol » (bandes unies
-// gardées, comme avant : carte de Noël de WFS-346 entre autres)
+// gardées, comme avant), sauf une carte enneigée (WFS-594 : tempéré, recouvert par la neige : neigeCarte)
 bool climatCarte(const char* carte, Climat& c);
 
 } // namespace sols

@@ -167,7 +167,11 @@ float feuCroisementRapide(vec3 w, vec3 D, float d, float range) {
 // WFS-382 (RG-01, accord du PO du 2026-11-10) : rétroréflexion de l'asphalte vers un conducteur placé derrière ses phares (EN 1436, R_L ;
 // avis expert-realisme-3d : k = 0,12 / sin α, de 1 à 7) ; feux du joueur seulement (spotCone.y = 1 : pénombre 1 posée par nuit.cpp), sol
 // horizontal sombre (s'efface sur la neige et les surfaces claires, qui diffusent comme Lambert : RG-07)
-float retroChaussee(int i, vec3 L, vec3 N, vec3 albedo) { return F.spotCone[i].z > 0.5 && F.spotCone[i].y > 0.99 && N.y > 0.9 ? mix(clamp(0.12 / max(L.y, 1e-3), 1.0, 7.0), 1.0, smoothstep(0.2, 0.4, dot(albedo, vec3(0.2126, 0.7152, 0.0722)))) : 1.0; }
+// WFS-594 (accroche, RG-03) : part de peinture routière au pixel (route.glsl, surfaceRoute) : ses billes de verre renvoient la lumière
+// des phares comme l'asphalte (même k) au lieu de diffuser comme une surface claire : la ligne reste ≈ 8 fois plus lumineuse que l'enrobé
+// (EN 1436 : R_L ≥ 100 mcd/m²/lx contre ≈ 15 pour l'enrobé sec)
+float g_retroMarquage = 0.0;
+float retroChaussee(int i, vec3 L, vec3 N, vec3 albedo) { return F.spotCone[i].z > 0.5 && F.spotCone[i].y > 0.99 && N.y > 0.9 ? mix(clamp(0.12 / max(L.y, 1e-3), 1.0, 7.0), 1.0, smoothstep(0.2, 0.4, dot(albedo, vec3(0.2126, 0.7152, 0.0722))) * (1.0 - g_retroMarquage)) : 1.0; }
 vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     float e0 = 0.0, e1 = 0.0, e2 = 0.0, k0 = 0.0, k1 = 0.0;   // 2 plus fortes : éclairement reçu (classement) et k approché déjà compté ; e2 : 3e

@@ -61,7 +61,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::chaussee(), m);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = route::creerMateriau(r, route::Revetement::BetonTrottoir, m);
     m.flags = MAT_GROUND; m.rough = 0.95f;
-    { sols::Climat c; groundMat_ = r.makeMaterial(sols::climatCarte(mapId, c) ? sols::materiau(c) : m, nullptr, nullptr, nullptr); }   // WFS-383 (accroche) : sol de la carte
+    { sols::Climat c; groundMat_ = r.makeMaterial(sols::climatCarte(mapId, c) ? sols::materiau(c, sols::Options{.bordRoute = true}) : m, nullptr, nullptr, nullptr); }   // WFS-383 (accroche) : sol de la carte ; WFS-594 : bande de gravier au bord
     conducteurs::preparer(r);   // WFS-73 (accroche) : homme / femme en pose assise
     plaque_joueur::preparer(r);   // WFS-483 (accroche) : plaque 3D du joueur
     plaques_autres::preparer(r, mapId);   // WFS-484 (accroche) : atlas des plaques des autres voitures (RG-05)
