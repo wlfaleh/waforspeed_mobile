@@ -108,7 +108,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy) | WFS-594 | Routes et sols réalistes de près (asphalte, marquages, trottoirs, herbe, terre, sable) | `feature/waforspeed-594`, poussée (dernier envoi 13:52 UTC) | 🔧 En cours : code et banc `routes-sols` faits, tests et captures en cours |
+| Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy) | WFS-594 | Routes et sols réalistes de près (asphalte, marquages, trottoirs, herbe, terre, sable) | `feature/waforspeed-594`, poussée (17:07 UTC) | 🔀 En PR #444 : avis de l'agent 3D puis lead dev |
 | Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | — | — | `feature/waforspeed-597` (fusionnée, #439, 528ed3b6) | ⏹️ session terminée (WFS-597 fusionné) |
 | Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg) | — | 10 % des personnes dans toutes les cartes (facteur commun, conducteurs et deux-roues inchangés) | `feature/waforspeed-593`, poussée | ⏹️ session terminée (WFS-593 fusionné, #442) |
 | Claude, agent dev3d (01UY1Vv2sH) (session_01UY1Vv2sHodzrS5FyXVX9uR) | WFS-596 | Vue Cockpit : la mini-carte du HUD sur l'écran central de la voiture, plus à l'écran (autres vues inchangées) | `feature/waforspeed-596`, poussée 2026-11-22 14:27 UTC | ⏹️ session terminée (WFS-596 fusionné, #441, 2026-11-22 15:07 UTC) |

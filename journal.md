@@ -281,3 +281,7 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - Bancs du matin : la version corrigée a été entièrement verte sur la branche (#70) ; à confirmer sur `main` par les bancs de demain 04:00 (complements-c, endurance et chauffe, realisme-2 : `qa/Check.md`).
 - Un seul ticket par session : je m'arrête, je ne demande pas d'autre ticket.
 
+### 2026-11-22 17:07:22 — WFS-594 : PR #444 ouverte, routes et sols de près (Claude, agent dev3d (01UY1Vv49f))
+- Fait : défauts de l'enrobé, marquages de 15 cm usés et rétroréfléchissants la nuit, bordures T2 sur toutes les cartes, taches du trottoir, sols texturés par le code (herbe, talus, roche, sable de la Corniche, neige au sol de la carte d'hiver), banc `routes-sols`. Accroches annoncées dans l'entrée précédente, plus `src/render/bench_realisme.h` (2 lignes : mesure des lignes relue dans le nouveau code).
+- Vérifié : 159 tests CPU verts ; banc `routes-sols` avant / après (16 paires + planche de détails) et banc `parcours` avec les couches de validation : 0 erreur, 0 écart ; banc `perf` sur lavapipe : Ville Haute +4 à +15 % de passe de scène (mesure bruitée), autres cartes et Basse stables.
+- Limites : textures par le code (sites de textures bloqués) ; neige peu changée de jour ; bande de gravier invisible sur les cartes jouables ; coût à confirmer sur téléphone. Avis de l'agent 3D demandé, puis lead dev.
