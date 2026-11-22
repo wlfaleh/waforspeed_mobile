@@ -192,6 +192,7 @@ private:
     double tempsEcran_ = -1;
     float wEcran_ = 0, hEcran_ = 0;
     std::vector<UiVertex> cacheEcran_;   // capacité ECRAN_SOMMETS réservée à init (aucune allocation en course)
+    EtatCarte etatEcran_;
 
     // ---- WFS-596 (RG-01, RG-03, RG-07) : la carte du HUD (carte(), mêmes calculs, mêmes signalements) dessinée dans le cadre
     // virtuel de l'écran, puis chaque sommet projeté en perspective sur l'écran central vu de l'œil (coins de carteEcranVue)
@@ -215,12 +216,13 @@ private:
             const std::span<UiVertex> pose = r.uiDepuis(debut);
             cacheEcran_.assign(pose.begin(), pose.begin() + (long)std::min(pose.size(), (size_t)ECRAN_SOMMETS));
             g_etat.sommets = P.sommets;
+            etatEcran_ = g_etat;   // comptes de l'image recalculée, gardés pour les images rejouées (journal du banc)
         } else {
+            g_etat = etatEcran_;
             for (size_t i = 0; i + 5 < cacheEcran_.size(); i += 6) {   // a, b, c, a, c, d → quadrilatère (a, b, c, d)
                 const UiVertex v[4] = {cacheEcran_[i], cacheEcran_[i + 1], cacheEcran_[i + 2], cacheEcran_[i + 5]};
                 r.uiQuad(v);
             }
-            g_etat.sommets = (int)cacheEcran_.size();
         }
         const float lum = vue.nuit ? ECRAN_NUIT : 1.f;
         for (UiVertex& v : r.uiDepuis(debut)) {
