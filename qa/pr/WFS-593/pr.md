@@ -27,7 +27,7 @@
 
 ## Tests CPU
 
-Commit testé : `cadc9336` (branche synchronisée avec main) ; journal complet : [`qa/pr/WFS-593/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-593/qa/pr/WFS-593/tests-cpu.log).
+Commit testé : `6bf36c5b` (branche synchronisée avec main) ; journal complet : [`qa/pr/WFS-593/tests-cpu.log`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-593/qa/pr/WFS-593/tests-cpu.log).
 
 ```
 [OK] test_apparition_pietons (0 s)
