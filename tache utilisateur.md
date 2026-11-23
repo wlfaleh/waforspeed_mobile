@@ -13,6 +13,9 @@ demande utilisateur :
 
 ## Demandes ouvertes
 
+- Vidéo « @po grave » : GT5 sur la Corniche (2026-11-23 13:34 UTC).
+( PO, 2026-11-23 13:36:24 UTC : vu image par image. **Défaut grave = la conduite** : à 30-57 km/h, un petit coup de volant fait pivoter la voiture de 30-45° et elle avance en crabe ; au freinage elle glisse de travers vers le trottoir, puis recule en tournant jusqu'à finir en travers de la route. → **WFS-600** (P1, **en tête de tous les tickets**) : la voiture doit suivre un arc comme une vraie, freiner droit et reculer sans tourner sur place, pour toutes les voitures. Autre défaut vu : la **skin Camouflage** de la GT5 au garage n'est **pas en course** (voiture verte unie) → **WFS-601** (P1, 1er de la liste `@dev`, sans toucher au garage bloqué). **À toi** : ouvre une session `@conduite` pour WFS-600 (et une `@dev` pour WFS-601) ; tu valideras ensuite sur ton téléphone. )
+
 - Écran de chargement : une image d'arrière-plan avec l'esprit des voitures de course, 5 propositions de maquette ; seulement l'image de fond, image simple, on garde l'existant (2026-11-22 12:08 UTC).
 ( PO, 2026-11-22 12:08:26 UTC : **WFS-597** créé (P2, ⏳ En attente de ton choix). Les 5 maquettes sont dans `regles-de-gestion/maquettes/WFS-597/` : 1. Feux de départ, 2. Filé de nuit, 3. Gomme et fumée, 4. Vibreur au coucher du soleil, 5. Drapeau à damier. **Réponds ici avec le numéro choisi** ; le ticket passe alors ⏳ Prêt pour une session `@dev`. )
 ( PO, 2026-11-22 12:12:00 UTC : compris, la 1re série était nulle. **2e série, faite avec les vraies images du jeu** (même dossier) : 1. En course, la Ville de nuit ; 2. Supercar SF-X sous la pluie ; 3. Circuit de nuit ; 4. Corniche de nuit ; 5. Départ en ville, SF-X de dos. L'image finale sera rendue par le jeu en pleine définition. Donne-moi le numéro. )

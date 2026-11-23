@@ -277,3 +277,9 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 ### 2026-11-23 12:15:12 — Archives automatiques (robot archives)
 - Journal : 9 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-21).
 - TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-555, WFS-564, WFS-496, WFS-503, WFS-589, WFS-408).
+
+### 2026-11-23 13:36:24 — Vidéo de l'utilisateur « grave » : WFS-600 et WFS-601 créés (po-scrum-master)
+- Vidéo du 2026-11-23 (15 s, garage → GT5 → Corniche) analysée image par image (1 et 4 images / s).
+- **ANO-318 (Bloquante)** : à 30-57 km/h en ligne droite, un coup de volant fait pivoter la caisse de 30-45° (avance en crabe) ; au freinage elle glisse de travers puis recule en tournant jusqu'à être perpendiculaire à la route. → **WFS-600** (P1, E3, `@conduite`, en tête de tous les tickets prêts). Le code de conduite (`player.*`, `roues.*`, `direction.*`) n'a pas changé ces derniers jours : défaut ancien, pas une régression d'hier.
+- **ANO-319 (Majeure)** : skin Camouflage de la GT5 au garage, voiture verte unie en course. → **WFS-601** (P1, E18 côté course seulement ; garage ⛔ non modifié).
+- Preuves : `regles-de-gestion/preuves/WFS-600/`. À noter : la GT5 vient d'un modèle CC BY-NC-SA (commentaire de `src/game/cars.h`) : à signaler au juriste avant la sortie publique.
