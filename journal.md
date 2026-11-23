@@ -7,51 +7,6 @@ fait / fichiers / vérification / limites. **Nouvelles entrées à la fin du fic
 Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé (Claude, session trafic)`.
 > **Archive (règle de l'utilisateur, 2026-11-06)** : ce fichier ne garde que les **2 derniers jours**. Les entrées plus anciennes sont dans `journal/archive/AAAA-MM-JJ.md` (un fichier par jour) ; ne les relire qu'en cas de besoin précis. Le PO déplace chaque jour les entrées de plus de 2 jours.
 
-### 2026-11-21 10:15:58 — Statuts automatiques, bancs du matin #62 (robot statuts)
-- Run rouge (schedule, commit 2ade8f9), aucun statut changé. Job(s) en échec : endurance et chauffe, tests CPU et licences, banc (realisme-2), banc (complements-c).
-- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
-
-### 2026-11-21 10:53:50 — Archives automatiques (robot archives)
-- Journal : 16 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-19).
-- TACHES.md : 1 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-569).
-
-### 2026-11-21 15:44:07 — WFS-590 attribué à Claude, agent dev3d (01UY1Vv5QX) : Début (po-scrum-master)
-- **Ticket** : WFS-590 (P1, E15 « Décors », ANO-317, KO de WFS-568) : caissons sur mâts retirés de l'affichage (collisions comprises, code gardé désactivé), puis enseignes bandeau et drapeau en façade des commerces (Ville, Corniche), sucette / colonne Morris facultatives en Ville, rien sur la Corniche. Règles : `regles-de-gestion/WFS-590.md`.
-- **Session** : Claude, agent dev3d (01UY1Vv5QX) (session_01UY1Vv5QXpZPb23RjZEJ4hP), nouvelle session `@dev`, aucun ticket avant ; n'est pas la session exclue 01UY1Vv3p8. Branche `feature/waforspeed-590`.
-- **Zone de code** : `src/world/enseignes.cpp`, enseignes de `src/world/ville.cpp`, `src/world/commerces.cpp`, enseignes de `src/world/plage.cpp`, `src/world/mobilier_ville.*`, bancs `carte-*-enseigne-*`.
-- **Plan court** : 1er commit = suppression de l'affichage (RG-00 a / RG-01) ; puis enseignes en façade aux mesures réelles (RG-02 à 06) avec 3 photos réelles libres (RG-08) ; captures ciblées jour / nuit ; avis « VALIDÉ » de l'agent 3D ; PR et lead dev ; 🟡 à valider par l'utilisateur.
-- **Bancs du matin #62 rouges** (endurance et chauffe, tests CPU et licences, realisme-2, complements-c) : rangés dans WFS-589 (P1, `@cicd`, ⏳ Prêt), aucune nouvelle US ; une nouvelle session `@cicd` est nécessaire.
-
-### 2026-11-21 16:40:41 — WFS-590 : PR #438 ouverte (Claude, agent dev3d (01UY1Vv5QX))
-- **Fait** : (1) caissons sur mâts retirés de l'affichage en Ville et sur la Corniche, collision de leur mât retirée (`ville::CAISSONS_SUR_MATS = false`, code gardé) ; **accroche de 5 lignes hors zone annoncée ici** : `src/world/ville_quartiers.h` (la constante) et `ville_quartiers.cpp` (collision sous condition), tirages inchangés. (2) Enseignes bandeau à plat en façade (Ville : tous les commerces ; Corniche : cafés, location de scooters), enseigne drapeau sur potence par commerce de la Ville, croix verte de pharmacie allumée la nuit ; de jour, plus aucune lettre allumée. Modèles partagés dans `enseignes.cpp` (`vie::enseigneBandeau`, `vie::enseigneDrapeau`, `vie::croixPharmacie`), pavés chanfreinés et tubes de `mobilier_ville`.
-- **Vérifié** : compilation, 156 tests CPU verts, 18 captures ciblées (`qa/pr/WFS-590/`) regardées ; rien n'est cuit dans un paquet `.wfcarte`.
-- **Pour le PO** : (a) **photos réelles de RG-08 impossibles** : `commons.wikimedia.org` et `upload.wikimedia.org` refusés par le proxy (403), aucun contournement ; mesures sourcées à la place (`qa/pr/WFS-590/references/README.md`, statut `a_confirmer`). (b) **Parcours complet** (`WFS_BANC=parcours`) : 1 écart « fin puis Menu → accueil → écran course », **déjà présent sur `main` 869082d4** (rejoué avec le binaire de `main`, même résultat) : pas causé par WFS-590, à ranger dans un ticket. (c) Sucette, colonne Morris et 4 × 3 mural (facultatifs) non posés ; « TURBO CAFÉ », « NUIT BLANCHE », « PNEUS 24/7 », « WAFORSPEED » n'ont pas de commerce : plus affichés.
-- **Suite** : avis de l'agent 3D (E15), puis lead dev.
-
-### 2026-11-21 16:53:14 — WFS-590 : PR #438 refusée par le lead dev (lead-dev)
-- **Revue** du commit `7fbdb129` : 26 captures ouvertes (rendu conforme à la demande : caissons sur mâts disparus en Ville et sur la Corniche, bandeaux et drapeaux en façade, rien d'allumé de jour), diff complet lu, branche construite et **156 tests CPU réussis** chez le lead dev ; avis agent 3D « VALIDÉ avec réserves » lu.
-- **Refus** (revue https://github.com/wlfaleh/waforspeed_mobile/pull/438#pullrequestreview-6006721622) : (1) **RG-01 non tenue** : `src/game/chocs_declaration.cpp:76` déclare toujours 2 poteaux invisibles par panneau de la Ville dans le registre des chocs du joueur (segments 389 et 4679 : 5015 obstacles contre 5011 sans la ligne) ; `CAISSONS_SUR_MATS` ne coupe que l'ancienne collision `Aide::Web` ; (2) aucun test CPU de la nouvelle logique ; (3) capture « Tests CPU » et `qa/pr/WFS-590/tests-cpu.log` absentes. Remarques : commentaires WFS-369 / WFS-356 déplacés dans `commerces.cpp`, capture « GARAGE 88 » à expliquer. Nouvel avis agent 3D « VALIDÉ » requis sur le prochain commit.
-- `TACHES.md` : WFS-590 → ↩️ Retour lead dev (PR #438) ; `track-agent.md` et `suivi-pr.md` à jour.
-
-### 2026-11-21 17:04:39 — WFS-590 : PR #438 corrigée après le refus du lead dev (Claude, agent dev3d (01UY1Vv5QX))
-- **Cause racine** : les caissons sur mâts avaient deux collisions ; je n'avais coupé que celle du plan (`ville_quartiers.cpp`, conduite d'avant), pas les 2 poteaux par panneau du registre des chocs (`src/game/chocs_declaration.cpp:76`), qui sert à la voiture du joueur : 4 poteaux invisibles (segments 389 et 4679).
-- **Corrigé dans a51c6a62** : **accroche hors zone de 3 lignes** dans `src/game/chocs_declaration.cpp` (poteaux seulement si `ville::CAISSONS_SUR_MATS`) ; nouveau test `test_enseignes_retirees` (échoue sans la correction, passe avec : 5011 obstacles au lieu de 5015) ; `qa/pr/WFS-590/tests-cpu.log` (157 tests verts) ; commentaires de `commerces.cpp` remis en place ; `pr.md` corrigé (collisions, « GARAGE 88 »).
-- **Suite** : nouvel avis de l'agent 3D sur dbf0cbf9, puis lead dev.
-
-### 2026-11-21 17:14:30 — WFS-590 fusionné par le lead dev (lead-dev)
-- **2e revue** de la PR #438 sur `dbf0cbf9` : les 3 défauts sont corrigés (poteaux du registre des chocs soumis à `ville::CAISSONS_SUR_MATS`, 5011 obstacles ; `test_enseignes_retirees`, qui passe, et qui échoue bien sans la correction, vérifié par le lead dev ; section « Tests CPU » et `tests-cpu.log`), et les commentaires de `commerces.cpp` sont remis en place. Construction sans avertissement ; **157 tests CPU** réussis chez le lead dev. Rendu inchangé depuis la 1re revue. Avis agent 3D « VALIDÉ » sur dbf0cbf9.
-- Approbation en commentaire (même compte GitHub) : https://github.com/wlfaleh/waforspeed_mobile/pull/438#pullrequestreview-6006863082 ; **fusion en squash 5311bfe6**.
-- `TACHES.md` : WFS-590 → 🟡 À valider (utilisateur) ; ligne retirée de `suivi-pr.md` ; `qa/Check.md` et `track-agent.md` à jour. Pour le PO (US de suite) : RG-08 (photos réelles), réserves de l'agent 3D (croix, lettres en relief), textes « TURBO CAFÉ », « NUIT BLANCHE », « PNEUS 24/7 » sans commerce, RG-04 / RG-05.
-
-### 2026-11-21 17:15:04 — WFS-590 : fin, session terminée (Claude, agent dev3d (01UY1Vv5QX))
-- PR #438 fusionnée en squash par le lead dev (5311bfe6), après une correction (poteaux invisibles du registre des chocs, test `test_enseignes_retirees`) ; avis agent 3D « VALIDÉ » sur dbf0cbf9. WFS-590 en 🟡 À valider (utilisateur) ; réponse écrite dans `tache utilisateur.md`.
-- **Pour le PO (US de suite)** : réserves de l'agent 3D et du lead dev : photos RG-08 (Wikimedia bloqué) et R581-60 / R581-61 `a_confirmer` ; croix de pharmacie d'un seul matériau, éteinte de jour (RG-06 à trancher) ; lettres imprimées à plat ; commerces « TURBO CAFÉ », « NUIT BLANCHE », « PNEUS 24/7 » à créer ou non ; RG-04 / RG-05 facultatifs non faits ; écart du parcours complet « fin puis Menu → accueil » déjà présent sur `main`.
-- Un seul ticket par session : je m'arrête, je ne demande pas d'autre ticket.
-
-### 2026-11-21 17:54:23 — Statuts automatiques, CI main #1158 (robot statuts)
-- Run rouge (push, commit 5311bfe), aucun statut changé. Job(s) en échec : banc-essai (texte).
-- Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
-
 ### 2026-11-22 10:27:44 — Statuts automatiques, bancs du matin #67 (robot statuts)
 - Run rouge (schedule, commit 1b1c3ac), aucun statut changé. Job(s) en échec : endurance et chauffe, tests CPU et licences, banc (realisme-2), banc (complements-c).
 - Tickets 🟣 contenus dans ce run : WFS-555, WFS-564, WFS-496, WFS-503, WFS-408.
@@ -318,3 +273,7 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 
 ### 2026-11-23 11:26:31 — Statuts automatiques, bancs du matin #73 (robot statuts)
 - Run vert (schedule, commit d143a9c) : WFS-555 ✅ (PR #425, e02540c), WFS-564 ✅ (PR #429, 5f38a6b), WFS-496 ✅ (PR #428, 5e656ac), WFS-503 ✅ (PR #427, cb7932d), WFS-589 ✅ (PR #440, 1d55a33), WFS-408 ✅ (PR #434, ba42aed).
+
+### 2026-11-23 12:15:12 — Archives automatiques (robot archives)
+- Journal : 9 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-21).
+- TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-555, WFS-564, WFS-496, WFS-503, WFS-589, WFS-408).
