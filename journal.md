@@ -277,3 +277,6 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 ### 2026-11-23 12:15:12 — Archives automatiques (robot archives)
 - Journal : 9 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-21).
 - TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-555, WFS-564, WFS-496, WFS-503, WFS-589, WFS-408).
+
+### 2026-11-23 13:29:09 — R20 : tester sur Switch 2 sans la boutique (smart-brainstorming)
+- Question de l'utilisateur ; réponse : impossible sur une console du commerce, seulement avec un kit de développement Nintendo (dossier, NDA) ; alternative proposée : PC Linux / Steam Deck à la manette. Détail : `recommandations-smart-brain.md` R20. Rien transmis au PO.

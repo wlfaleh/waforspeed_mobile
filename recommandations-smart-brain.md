@@ -960,3 +960,20 @@ Limites : maquettes de création (rendu web), pas le moteur ; à valider avant t
 | 19–33 | Planche des écrans complémentaires | toutes les images ci-dessus : `19-33-ecrans-complementaires.jpg` |
 
 Proposition seulement : aucun code, aucun ticket ; l'utilisateur choisit et demande au PO.
+
+## R20 — 2026-11-23 — Tester le jeu sur Switch 2 sans passer par la boutique (mode Diagnostic)
+- **Question de l'utilisateur** : « est-ce qu'il y a un moyen de tester le jeu sur Switch 2 sans passer par le market ? »
+- **Réponse courte** : sur une Switch 2 du commerce, **non** : la console ne lance que des logiciels signés par Nintendo (eShop ou cartouche). Le seul moyen légal est un **kit de développement Nintendo** (inscription sur le portail développeur de Nintendo, dossier accepté, NDA, kit payant). Le piratage de la console (homebrew, faille) est exclu : contraire aux conditions de Nintendo, risque de bannissement, et ce serait un contournement de protection.
+- **Constat (observé, R17)** : le moteur est en Vulkan comme la Switch, mais la console a son propre SDK sous NDA ; rien de ce SDK ne peut aller dans ce dépôt ni dans la CI GitHub actuelle ; le jeu n'a aujourd'hui aucun code Switch.
+
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| A01 | Plateforme | *observé* : `wfs_bench` tourne déjà sur PC Linux (CI) | Tester « comme une console » sur **PC Linux / Steam Deck** avec manette (R17 A01, A03) : même Vulkan, pas besoin de Nintendo | jouer à la manette sur grand écran | Moyen | Moyen | P2 | il faut d'abord une vraie fenêtre PC (R17) ; performance Switch 2 ≠ PC |
+| A02 | Plateforme | *observé* : accès Nintendo sur dossier | **Déposer un dossier** sur le portail développeur Nintendo quand Android sera sorti (vidéo du jeu, société) | — (préparation) | Moyen | Faible | P3 | souvent une société demandée ; délais ; règles à revérifier sur le site de Nintendo |
+| A03 | Technique | *observé* : SDK sous NDA | Si accepté : **dépôt privé séparé** pour la couche Switch, compilée hors GitHub Actions public | — | Élevé | Élevé | P3 | NDA ; licences des modèles 3D à vérifier pour la Switch (juriste) |
+
+### Top 3
+1. **A01** : seul test « grand écran + manette » possible tout de suite, sans Nintendo.
+2. **A02** : la porte officielle, après la sortie Android (gel des autres plateformes tant qu'Android n'est pas validé).
+3. **A03** : seulement si Nintendo dit oui.
+- **Prochaine étape** : aucune avant la validation Android ; si l'utilisateur le veut, il demande au PO une US « version PC jouable » (R17).
