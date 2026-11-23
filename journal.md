@@ -315,3 +315,6 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - WFS-595 (`@cicd`, publication des paquets) passe ⏳ Prêt (WFS-594 fusionné, #444, 2a4dbc8d) ; RG-00 à vérifier d'abord (contenu cuit changé ou non).
 - Créé **WFS-598** (P2, E9 + sols, `@dev` + avis `@3d`, pas la session 01UY1Vv49f) : réserves de l'agent 3D (lignes dans les phares vers un contraste de 3, neige de jour, herbe en volume, bande `C_PROM` de la Corniche en sable tassé) et remarques du lead dev (`fwidth(p)` avant la condition de neige, remise en place des réglages en double dans `route_sols_banc.cpp`). Hors ticket : fosses d'arbres plates (Ville), cylindres nus (Neige) → QA / WFS-369 à 378.
 - Créé **WFS-599** (`@cicd`, publication des paquets après WFS-598, ordre permanent du 2026-11-12), ⏳ En attente.
+
+### 2026-11-23 11:26:31 — Statuts automatiques, bancs du matin #73 (robot statuts)
+- Run vert (schedule, commit d143a9c) : WFS-555 ✅ (PR #425, e02540c), WFS-564 ✅ (PR #429, 5f38a6b), WFS-496 ✅ (PR #428, 5e656ac), WFS-503 ✅ (PR #427, cb7932d), WFS-589 ✅ (PR #440, 1d55a33), WFS-408 ✅ (PR #434, ba42aed).
