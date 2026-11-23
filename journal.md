@@ -283,3 +283,8 @@ PR #440 fusionnée en squash (ddc7ac62) à la 2e revue, sur a40aad94. Point corr
 - **ANO-318 (Bloquante)** : à 30-57 km/h en ligne droite, un coup de volant fait pivoter la caisse de 30-45° (avance en crabe) ; au freinage elle glisse de travers puis recule en tournant jusqu'à être perpendiculaire à la route. → **WFS-600** (P1, E3, `@conduite`, en tête de tous les tickets prêts). Le code de conduite (`player.*`, `roues.*`, `direction.*`) n'a pas changé ces derniers jours : défaut ancien, pas une régression d'hier.
 - **ANO-319 (Majeure)** : skin Camouflage de la GT5 au garage, voiture verte unie en course. → **WFS-601** (P1, E18 côté course seulement ; garage ⛔ non modifié).
 - Preuves : `regles-de-gestion/preuves/WFS-600/`. À noter : la GT5 vient d'un modèle CC BY-NC-SA (commentaire de `src/game/cars.h`) : à signaler au juriste avant la sortie publique.
+
+### 2026-11-23 20:03:05 — Correction du PO : ANO-319 mal lue, WFS-601 réécrit (po-scrum-master)
+- Remarque de l'utilisateur : « regarde la voiture choisie et la voiture en course ». Zooms en pleine définition : en course, la GT5 n'est pas celle du garage : verte unie, sans skin, **sans vitres** (on voit l'intérieur), **lunette arrière en trou noir**, modèle pauvre. Ma 1re lecture (« skin absente ») était incomplète : faute du PO.
+- ANO-319 passe **Bloquante** ; WFS-601 réécrit (même voiture qu'au garage, carrosserie fermée, 17 voitures vérifiées), **à égalité en tête avec WFS-600**.
+- Correction de mon entrée précédente : la GT5 (id `mustang`) est un modèle **Corvette C7 CC BY 4.0** (WFS-359) ; la mention CC BY-NC-SA de `cars.h` parle de l'ancien modèle. Pas de sujet de licence.

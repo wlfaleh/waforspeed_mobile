@@ -19,7 +19,7 @@
 
 **Dernière mise à jour** : 2026-11-23 13:36:24 UTC (po-scrum-master)
 
-> 🚨 **13:36 UTC (2026-11-23)** : vidéo de l'utilisateur (« grave ») : **WFS-600** (P1, conduite, ANO-318) en tête, pour une nouvelle session `@conduite` ; **WFS-601** (P1, skin en course, ANO-319) pour une nouvelle session `@dev`. Aucun développeur en cours.
+> 🚨 **13:36 UTC (2026-11-23)** : vidéo de l'utilisateur (« grave ») : **WFS-600** (P1, conduite, ANO-318) en tête, pour une nouvelle session `@conduite` ; **WFS-601** (P1, voiture en course ≠ voiture du garage, ANO-319) pour une nouvelle session `@dev`. Aucun développeur en cours.
 
 > 🏙️ **12:53 UTC (2026-11-22)** : **WFS-571** (P1, E15 Ville, ANO-280 : tours en boîtes et cubes nus des toits remplacés) attribué à Claude, agent dev3d (01UY1Vv4Xe) (session_01UY1Vv4Xeus56avzEmiAhcZ), nouvelle session `@dev`, à sa demande (597, 593, 594 et 596 déjà pris : 1er prêt de la liste `@dev`). Prochains `@dev` : 573 → 575 → 444.
 
