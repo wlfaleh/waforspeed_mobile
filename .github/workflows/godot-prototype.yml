@@ -69,6 +69,6 @@ jobs:
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           gh release delete prototype-godot --yes --cleanup-tag 2>/dev/null || true
-          gh release create prototype-godot build-godot/waforspeed-godot.apk build-godot/captures/*.png --target godot --prerelease \
+          gh release create prototype-godot build-godot/waforspeed-godot.apk $(ls build-godot/captures/*.png 2>/dev/null) --target godot --prerelease \
             --title "Prototype Godot (WFS-610) — comparaison de moteur" \
             --notes "APK de test (s'installe à côté du jeu actuel). Construit depuis la branche godot, commit ${GITHUB_SHA}."
