@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-24 17:27:45 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-24 22:06:16 UTC (po-scrum-master)
+
+> 🧪 **22:06 UTC (2026-11-24)** : épic **E25** « Prototype Godot » ; **WFS-610** (P1) au lead dev en renfort (01UY1Vv3au) sur ordre de l'utilisateur, branche `godot` (jamais fusionnée dans `main`).
 
 > 🖥️ **17:27 UTC (2026-11-24)** : épic **E24** « Version PC Windows » créée ; **WFS-602** (P1) confié en urgence au lead dev en renfort (01UY1Vv3au), branche `feature/waforspeed-602`.
 
@@ -112,7 +114,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) | WFS-602 | Lead dev en renfort : version PC Windows (fenêtre Vulkan, commandes, installateur NSIS) | `feature/waforspeed-602` (fusionnée, #445, b7552678) | ⏹️ session terminée (WFS-602 fusionné) |
+| Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) | WFS-610 | Lead dev en renfort (ordre de l'utilisateur) : prototype Godot 4 de comparaison (voiture, Ville, trafic, caméra, APK séparé) ; WFS-602 et 604 fusionnés, 609 sur sa branche | `godot` (pas encore poussée) | 🔧 En cours (WFS-610) |
 | Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy) |  | — | `feature/waforspeed-594` (fusionnée) | ⏹️ session terminée (WFS-594 fusionné, #444) |
 | Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | — | — | `feature/waforspeed-597` (fusionnée, #439, 528ed3b6) | ⏹️ session terminée (WFS-597 fusionné) |
 | Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg) | — | 10 % des personnes dans toutes les cartes (facteur commun, conducteurs et deux-roues inchangés) | `feature/waforspeed-593`, poussée | ⏹️ session terminée (WFS-593 fusionné, #442) |

@@ -25,6 +25,8 @@ de jeu tiers. Organisation type Jira / Scrum :
 | ✅ Terminé | CI de `main` verte sur le commit de la fusion (compilation, tests, APK) et captures du ticket regardées ; la recette QA de nuit reste dans la colonne QA |
 | ⛔ Bloqué | raison au Journal |
 
+> 🧪 **2026-11-24 22:06 UTC — ÉPIC E25 « Prototype Godot » (ordre de l'utilisateur)** : **WFS-610** (P1) 🔧 au lead dev en renfort (01UY1Vv3au), branche dédiée `godot`, dossier `godot/`, jamais fusionné dans `main`, aucune ligne du code actuel modifiée ; APK de test séparé à comparer sur le téléphone. Recommandation du PO (proposition) : geler les nouvelles fonctions jusqu'à la comparaison.
+
 > 🖥️ **2026-11-24 17:26 UTC — ÉPIC E24 « Version PC Windows » créée (demande de l'utilisateur, confiée en urgence au lead dev en renfort)** : WFS-602 à 608 ; installateur Windows, pas de Steam, pas d'achats sur PC, cross-play duel par le relais. **WFS-602** (P1) 🔧 au lead dev (01UY1Vv3au). La priorité Android reste : les tickets 603 à 608 attendent 602.
 
 > 🚨 **2026-11-23 13:36 UTC — VIDÉO DE L'UTILISATEUR (« grave ») : WFS-600 EN TÊTE DE TOUS LES TICKETS PRÊTS** : la voiture pivote et glisse en crabe au moindre coup de volant à 30-57 km/h, puis recule en tournant (ANO-318, Bloquante) → **WFS-600** (P1, prochaine session `@conduite`, avant WFS-584 et 394). **La voiture en course n'est pas celle choisie au garage** (GT5 Camouflage → verte unie, sans vitres, lunette arrière en trou noir ; ANO-319, Bloquante) → **WFS-601** (P1, **à égalité en tête**, 1er de la liste `@dev`). Règles : `regles-de-gestion/WFS-600.md`, `WFS-601.md`.
@@ -120,6 +122,7 @@ Journal à jour.
 | E22 | Score de chaque course, converti en étoiles | zones existantes : E3 (`src/game/score_course.*`, `profil_system.cpp`, `boutique.*`, `tests/**`, section `score_etoiles` de `configgame.*`), E5 / E8 (écran de fin des 4 modes, écran Profil) | Score par course (place, temps, conduite propre, 2 défis par mode) → 5 à 40 ★, détail en fin de course FR / EN, cadence du banc d'équilibrage gardée (`regles-de-gestion/E22-score.md`). Étape « score » de l'ordre de l'utilisateur. |
 | E23 | Interface R19 | zones existantes : E5 (`src/ui/**`, `shaders/ui*`), E8 (`src/ui/ecrans/**`) ; nouveaux `src/ui/verre.*`, `boutons.*`, `jauges.*` ; menu 3D (WFS-552) : `menu*`, `garage_decor.*`, modèles du parking | Écrans au modèle R19 choisi par l'utilisateur : verre dépoli, boutons Start/Stop, jauges fines, icônes, menu 3D SF-X dans le parking (`regles-de-gestion/E23-interface-r19.md`). |
 | E24 | Version PC Windows (installateur, sans Steam, sans achats, cross-play) | nouveaux `src/platform/windows_*.cpp`, bloc `WIN32` de `CMakeLists.txt`, `tools/pc/**` ; aucun changement du jeu Android | Jouer sur PC Windows avec les mêmes fonctions, installé par `WaForSpeed-Setup.exe`, duel contre Android par le relais (demande de l'utilisateur, 2026-11-24). |
+| E25 | Prototype Godot (comparaison de moteur) | `godot/**` sur la branche dédiée `godot` seulement ; aucune ligne du code actuel ; jamais fusionné dans `main` | Comparer un prototype Godot 4 au jeu actuel sur le téléphone de l'utilisateur (décision à l'utilisateur) |
 
 > Zones E9 à E13 créées le 2026-11-06 par le PO (axe Réalisme). Le ticket en cours WFS-144 (E4) garde ses droits sur ses fichiers jusqu'à sa fusion.
 
@@ -586,6 +589,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-606 | PC Windows : réglages graphiques PC (résolution, plein écran, qualité) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-606` |  |  |
 | P3 Moyenne | WFS-607 | [TECHNIQUE] CI Windows : construction de l'installateur | E24 | ⏳ En attente | | après WFS-602 ; `@cicd` | `feature/waforspeed-607` |  |  |
 | P3 Moyenne | WFS-608 | Équité du duel PC / téléphone (décision de l'utilisateur à prendre) | E24 | ⏳ En attente (décision utilisateur) | | après WFS-604 | `feature/waforspeed-608` |  |  |
+| P1 Urgent | WFS-610 | [PROTOTYPE] Godot 4 : voiture + route de la Ville + trafic + caméra, APK Android à comparer | E25 | 🔧 En cours | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) 2026-11-24, ordre de l'utilisateur | — | `godot` |  |  |
 
 ## Critères d'acceptation
 
