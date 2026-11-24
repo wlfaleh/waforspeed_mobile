@@ -5,7 +5,7 @@
 // (src/platform/manette.*, mêmes actions que la manette Android) ; la souris joue le doigt (clic = toucher).
 //   clavier : flèches, ZQSD ou WASD = volant / gaz / frein (et déplacement dans les menus) ; Entrée = valider ;
 //             Maj ou N = nitro ; C = changer de vue ; Échap = touche Retour du téléphone ; F11 = plein écran ; Alt+F4 = quitter
-// Hors de ce ticket (RG-06) : son (WFS-603), réseau et duel (WFS-604), téléchargement des paquets (WFS-605).
+// Duel en ligne par le relais : reseau_windows.cpp (WFS-604). Hors de WFS-602 : son (WFS-603), paquets (WFS-605).
 // Pas d'achats ni de publicité sur PC (RG-05).
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -43,6 +43,7 @@
 #include "retour_systeme.h"
 
 namespace wfs {
+namespace reseau { void installerReseauWindows(); }   // WFS-604 : reseau_windows.cpp (duel par WinHTTP)
 static std::string g_racine = "assets/";   // dossier assets/ à côté de WaForSpeed.exe (installé par l'installateur)
 bool readAsset(const std::string& path, std::vector<uint8_t>& out) {
     if (carte::lireDansPaquet(path, out)) { memoire::compteurs().octetsLus += (int64_t)out.size(); return true; }
@@ -221,6 +222,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE, LPSTR, int montrer) {
     carte::dossierPaquets() = joueur + "/paquets";
     SetEnvironmentVariableA("WFS_MOMENT", sauvegarde().tod.c_str()); _putenv_s("WFS_MOMENT", sauvegarde().tod.c_str());
     chargerXInput();
+    reseau::installerReseauWindows();   // WFS-604 : duel en ligne PC ↔ téléphone par le relais (TLS de Windows)
 
     WNDCLASSEXW wc{sizeof wc};
     wc.style = CS_HREDRAW | CS_VREDRAW; wc.lpfnWndProc = procedure; wc.hInstance = inst;
