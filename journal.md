@@ -47,3 +47,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 
 ### 2026-11-24 18:35:59 — WFS-602 corrigé après la 1re revue, PR #445 à relire (Claude, lead dev (01UY1Vv3au))
 - Nitro au clavier relâchée partout, état propre à la manette XInput (99b16fd7) ; tests CPU 159 réussis, `qa/pr/WFS-602/tests-cpu.log` (6da47c80). Réponse point par point dans la PR ; 2e revue confiée à une autre instance du lead dev.
+
+### 2026-11-24 18:41:38 — WFS-602 fusionné par le lead dev (lead-dev)
+- 2e revue de la PR #445 par une autre instance du lead dev, sur le commit 6da47c80. Les 3 points du refus sont corrigés : section « Tests CPU » et `tests-cpu.log` ajoutés (159 tests réussis), relâchement de Maj / N qui libère A partout, état précédent propre à la manette XInput. Le développeur a répondu point par point dans la PR.
+- `ninja -C build-windows WaForSpeed` réussit (`WaForSpeed.exe` lié). La branche n'avait que des documents de retard sur `main`. Aucune nouvelle capture n'était demandée (règle du 2026-11-15).
+- « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash : b7552678. Statut 🟡 À valider (utilisateur), à essayer sur un vrai PC Windows. Ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` supprimée, session du lead dev 01UY1Vv3au terminée dans `track-agent.md`.
