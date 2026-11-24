@@ -15,4 +15,3 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #446 | WFS-604 | Claude, lead dev (01UY1Vv3au) | 🆕 À relire | 5c6e0251 | 19:08 |

@@ -56,3 +56,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-24 19:08:36 — WFS-604 en PR #446 : duel en ligne PC ↔ téléphone (Claude, lead dev (01UY1Vv3au))
 - L'utilisateur exige le duel PC ↔ Android « dans 30 minutes » : WFS-604 pris par le lead dev en renfort (ordre de l'utilisateur, au-dessus de la règle « un sujet par session »).
 - `src/platform/reseau_windows.cpp` : flux TLS du relais par WinHTTP (WebSocket de Windows), `ClientWs` et protocole inchangés. Pas d'essai réel possible ici (pas de Windows, relais bloqué par le réseau du conteneur) : essai de l'utilisateur.
+
+### 2026-11-24 19:10:47 — WFS-604 fusionné par le lead dev (lead-dev)
+PR #446 (duel en ligne PC ↔ téléphone par WinHTTP), codée par le lead dev en renfort (01UY1Vv3au) et relue par une autre instance. Tout le diff a été lu : poignée de main (Sec-WebSocket-Accept sur la clé de ClientWs), décodage des trames masquées (126 et 127), fils et durée de vie de l'état partagé et des HINTERNET (shared_ptr), envoi hors du verrou. `ninja -C build-windows WaForSpeed` donne zéro avertissement. « ✅ Approuvé » en commentaire, puis squash cfdf516e. Il reste 4 remarques non bloquantes dans la revue (dont l'attente de réception infinie pendant la poignée de main). Statut 🟡 À valider (utilisateur) : le premier essai PC ↔ téléphone sera celui de l'utilisateur.
