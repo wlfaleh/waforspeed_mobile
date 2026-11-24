@@ -579,7 +579,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P4 Basse | WFS-441 | Bibliothèque branchée dans Ville, Campagne, Grand Prix, doublons retirés (@cartes) | E16 | ⛔ Bloqué par l'utilisateur |  | WFS-436 à 440 | `feature/waforspeed-441` |  |  |
 | P4 Basse | WFS-442 | Mesure finale du lot 1, QA, émulateur | E16 | ⛔ Bloqué par l'utilisateur |  | WFS-441 | `feature/waforspeed-442` |  |  |
 | P4 Basse | WFS-443 | [TECHNIQUE] Code des routes mis en commun : Corniche puis Ville (@cartes) | E16 | ⛔ Bloqué par l'utilisateur |  | WFS-435 + accord utilisateur | `feature/waforspeed-443` |  |  |
-| P1 Urgent | WFS-602 | PC Windows : fenêtre Vulkan, boucle, clavier / souris / manette, installateur NSIS (MinGW) | E24 | ↩️ Retour lead dev (PR #445) | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) 2026-11-24 | — | `feature/waforspeed-602` |  |  |
+| P1 Urgent | WFS-602 | PC Windows : fenêtre Vulkan, boucle, clavier / souris / manette, installateur NSIS (MinGW) | E24 | 🔀 En PR (PR #445) | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) 2026-11-24 | — | `feature/waforspeed-602` |  |  |
 | P2 Haute | WFS-603 | PC Windows : son (WASAPI) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-603` |  |  |
 | P2 Haute | WFS-604 | PC Windows : réseau TLS + duel cross-play PC ↔ Android (relais) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-604` |  |  |
 | P2 Haute | WFS-605 | PC Windows : téléchargement des paquets de cartes et sauvegarde | E24 | ⏳ En attente | | après WFS-602 ; `@cartes` | `feature/waforspeed-605` |  |  |

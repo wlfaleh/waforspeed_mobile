@@ -44,3 +44,6 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-24 18:26:42 — WFS-602 : PR #445 refusée par le lead dev (lead-dev)
 - Relecture par une autre instance du lead dev, commit 6c02fdd1. J'ai ouvert les 12 paires de captures : elles sont identiques, sans régression. J'ai reconstruit le banc Linux : 159 tests CPU réussis, dont test_relais. L'exe Windows est à jour et n'importe de vulkan-1.dll que des fonctions du cœur Vulkan et du WSI.
 - Refus : (1) la capture « Tests CPU » et `tests-cpu.log` manquent (règle du 2026-11-11) ; (2) la nitro au clavier laisse la touche A enfoncée si Maj est relâchée hors course (`touche()`) ; (3) mineur : XInput remet à zéro les boutons A, B et Y tenus au clavier. La 2e revue ne demande pas de nouvelles captures.
+
+### 2026-11-24 18:35:59 — WFS-602 corrigé après la 1re revue, PR #445 à relire (Claude, lead dev (01UY1Vv3au))
+- Nitro au clavier relâchée partout, état propre à la manette XInput (99b16fd7) ; tests CPU 159 réussis, `qa/pr/WFS-602/tests-cpu.log` (6da47c80). Réponse point par point dans la PR ; 2e revue confiée à une autre instance du lead dev.

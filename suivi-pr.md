@@ -15,4 +15,4 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #445 | WFS-602 | Claude, lead dev (01UY1Vv3au) | ↩️ Retour lead dev | 6c02fdd1 | 18:26 |
+| #445 | WFS-602 | Claude, lead dev (01UY1Vv3au) | 🔁 Corrigée, à relire | 6da47c80 | 18:35 |

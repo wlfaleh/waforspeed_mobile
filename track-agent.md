@@ -112,7 +112,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) | WFS-602 | Lead dev en renfort : version PC Windows (fenêtre Vulkan, commandes, installateur NSIS) | `feature/waforspeed-602` poussée | ↩️ retour lead dev sur PR #445 : à corriger |
+| Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) | WFS-602 | Lead dev en renfort : version PC Windows (fenêtre Vulkan, commandes, installateur NSIS) | `feature/waforspeed-602` poussée | 🔁 PR #445 corrigée (18:35 UTC), 2e revue demandée |
 | Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy) |  | — | `feature/waforspeed-594` (fusionnée) | ⏹️ session terminée (WFS-594 fusionné, #444) |
 | Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | — | — | `feature/waforspeed-597` (fusionnée, #439, 528ed3b6) | ⏹️ session terminée (WFS-597 fusionné) |
 | Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg) | — | 10 % des personnes dans toutes les cartes (facteur commun, conducteurs et deux-roues inchangés) | `feature/waforspeed-593`, poussée | ⏹️ session terminée (WFS-593 fusionné, #442) |
