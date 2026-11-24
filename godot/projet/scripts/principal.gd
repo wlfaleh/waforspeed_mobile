@@ -152,6 +152,8 @@ func _process(dt: float) -> void:
 		gaz = 1.0
 	if Input.is_key_pressed(KEY_DOWN) or Input.is_key_pressed(KEY_S):
 		frein = 1.0
+	if OS.get_environment("WFS_CAPTURE") != "":
+		gaz = 1.0   # captures de relecture : gaz tenu
 	joueur.gaz = gaz
 	joueur.frein = frein
 	if doigt_volant < 0:
@@ -186,7 +188,6 @@ func _physics_process(dt: float) -> void:
 	var dossier := OS.get_environment("WFS_CAPTURE")
 	if dossier == "":
 		return
-	joueur.gaz = 1.0
 	t_capture += dt
 	var instants := [3.0, 8.0, 14.0]
 	if captures_faites < instants.size() and t_capture >= instants[captures_faites]:
