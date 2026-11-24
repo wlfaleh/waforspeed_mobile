@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
-#include <sys/resource.h>   // WFS-348 : temps processeur du processus (lavapipe : le « GPU » est le processeur)
+#if !defined(_WIN32)   // WFS-602 (accroche) : banc Linux seulement
+#include <sys/resource.h>
+#endif   // WFS-348 : temps processeur du processus (lavapipe : le « GPU » est le processeur)
 #include <map>
 #include <memory>
 #include <string>
@@ -324,7 +326,11 @@ static void benchScene(Game& g, Renderer& r, const std::string& out) {
             double appels = 0, tri = 0;
             // temps processeur de tout le processus (fils de lavapipe compris) : moins sensible que l'horloge aux autres bancs
             // qui tournent sur la même machine (lavapipe calcule les pixels sur le processeur)
+#if defined(_WIN32)
+            auto cpuS = [] { return 0.0; };   // WFS-602 : pas de mesure processeur sur PC Windows
+#else
             auto cpuS = [] { rusage u{}; getrusage(RUSAGE_SELF, &u); return u.ru_utime.tv_sec + u.ru_utime.tv_usec * 1e-6 + u.ru_stime.tv_sec + u.ru_stime.tv_usec * 1e-6; };
+#endif
             const double c0 = cpuS();
             for (int i = 0; i < MESURE; i++) {
                 g.render(tt); tt += 1.0 / 60;

@@ -13,6 +13,9 @@
 #include "trace_cartes.h"   // WFS-136 (RG-07) : version du tracé
 
 #include <cerrno>
+#if defined(_WIN32)   // WFS-602 (accroche) : PC Windows, pas de réseau avant WFS-604 (le flux reste fermé, duel « Aucun réseau »)
+#define WFS_SANS_PRISES 1
+#else
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -20,7 +23,8 @@
 #include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#if !defined(__ANDROID__)
+#endif
+#if !defined(__ANDROID__) && !defined(_WIN32)
 #include <signal.h>
 #include <spawn.h>
 #include <sys/wait.h>
@@ -124,6 +128,9 @@ struct EtatTcp {
     std::atomic<bool> fin{false}, fermerApres{false};
 };
 void boucleTcp(std::shared_ptr<EtatTcp> e, const std::string& hote, int port) {
+#if defined(WFS_SANS_PRISES)
+    (void)hote; (void)port; e->etat = (int)Flux::Etat::Ferme; return;   // WFS-602 : réseau Windows dans WFS-604
+#else
     int fd = -1;
     addrinfo indices{}, *res = nullptr;
     indices.ai_family = AF_UNSPEC; indices.ai_socktype = SOCK_STREAM;
@@ -166,6 +173,7 @@ void boucleTcp(std::shared_ptr<EtatTcp> e, const std::string& hote, int port) {
     }
     close(fd);
     e->etat = (int)Flux::Etat::Ferme;
+#endif
 }
 class FluxTcp : public Flux {
 public:
@@ -480,14 +488,14 @@ void lienRecuEssai(const std::string& lien) { g_lienEssai = lien; }
 // ---------------------------------------------------------------- relais local
 RelaisLocal::~RelaisLocal() { arreter(); }
 void RelaisLocal::arreter() {
-#if !defined(__ANDROID__)
+#if !defined(__ANDROID__) && !defined(_WIN32)
     if (entree_ >= 0) { close(entree_); entree_ = -1; }
     if (pid_ > 0) { kill(pid_, SIGTERM); int st = 0; waitpid(pid_, &st, 0); pid_ = -1; }
 #endif
     port_ = 0;
 }
 bool RelaisLocal::demarrer(const std::string& script, const std::vector<std::string>& options) {
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(_WIN32)
     (void)script; (void)options; return false;
 #else
     arreter();
