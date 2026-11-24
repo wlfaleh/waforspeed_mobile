@@ -40,3 +40,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Accroches annoncées (sous `#if defined(_WIN32)`, rien ne change sur Android ni au banc Linux) : `src/render/vk.cpp` (12 lignes, surface Win32), `src/game/reseau_relais.cpp` (10 lignes, pas de prises avant WFS-604), `src/render/bench_perf.cpp` (6 lignes, `getrusage` Linux seulement).
 - Captures `menu1` : 39 paires identiques avant / après (12 gardées). Wine plante dans le conteneur : pas d'essai Windows ici, installateur envoyé à l'utilisateur pour essai (ticket 🟡 après fusion).
 - Outils installés dans le conteneur (apt, dépôts Ubuntu) : mingw-w64, nsis, glslc, libvulkan-dev, mesa-vulkan-drivers, wine64, xdotool.
+
+### 2026-11-24 18:26:42 — WFS-602 : PR #445 refusée par le lead dev (lead-dev)
+- Relecture par une autre instance du lead dev, commit 6c02fdd1. J'ai ouvert les 12 paires de captures : elles sont identiques, sans régression. J'ai reconstruit le banc Linux : 159 tests CPU réussis, dont test_relais. L'exe Windows est à jour et n'importe de vulkan-1.dll que des fonctions du cœur Vulkan et du WSI.
+- Refus : (1) la capture « Tests CPU » et `tests-cpu.log` manquent (règle du 2026-11-11) ; (2) la nitro au clavier laisse la touche A enfoncée si Maj est relâchée hors course (`touche()`) ; (3) mineur : XInput remet à zéro les boutons A, B et Y tenus au clavier. La 2e revue ne demande pas de nouvelles captures.
