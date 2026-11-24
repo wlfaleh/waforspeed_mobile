@@ -13,7 +13,7 @@
 #include "trace_cartes.h"   // WFS-136 (RG-07) : version du tracé
 
 #include <cerrno>
-#if defined(_WIN32)   // WFS-602 (accroche) : PC Windows, pas de réseau avant WFS-604 (le flux reste fermé, duel « Aucun réseau »)
+#if defined(_WIN32)   // WFS-602 (accroche) : PC Windows, pas de prises POSIX ; le duel passe par le flux TLS de reseau_windows.cpp (WFS-604)
 #define WFS_SANS_PRISES 1
 #else
 #include <fcntl.h>
@@ -129,7 +129,7 @@ struct EtatTcp {
 };
 void boucleTcp(std::shared_ptr<EtatTcp> e, const std::string& hote, int port) {
 #if defined(WFS_SANS_PRISES)
-    (void)hote; (void)port; e->etat = (int)Flux::Etat::Ferme; return;   // WFS-602 : réseau Windows dans WFS-604
+    (void)hote; (void)port; e->etat = (int)Flux::Etat::Ferme; return;   // WFS-602 : TCP brut inutile sous Windows (relais en TLS, WFS-604)
 #else
     int fd = -1;
     addrinfo indices{}, *res = nullptr;
