@@ -9,6 +9,10 @@
 #include "../core/gpu_logiciel.h"   // WFS-59
 #if defined(__ANDROID__)
 #include <android/native_window.h>
+#elif defined(_WIN32)   // WFS-602 (accroche) : PC Windows, window = HWND de la fenêtre du jeu
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <vulkan/vulkan_win32.h>
 #endif
 
 namespace wfs {
@@ -26,6 +30,8 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
         exts.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #if defined(__ANDROID__)
         exts.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#elif defined(_WIN32)
+        exts.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);   // WFS-602
 #elif defined(__APPLE__)
         exts.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);   // WFS-78 : iOS (MoltenVK), window = CAMetalLayer
 #endif
@@ -40,6 +46,12 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
         VkAndroidSurfaceCreateInfoKHR sci{VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR};
         sci.window = window;
         VK_OK(vkCreateAndroidSurfaceKHR(instance, &sci, nullptr, &surface));
+    }
+#elif defined(_WIN32)
+    if (!offscreen) {   // WFS-602 : surface de la fenêtre Windows
+        VkWin32SurfaceCreateInfoKHR sci{VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
+        sci.hinstance = GetModuleHandleW(nullptr); sci.hwnd = (HWND)(void*)window;
+        VK_OK(vkCreateWin32SurfaceKHR(instance, &sci, nullptr, &surface));
     }
 #elif defined(__APPLE__)
     if (!offscreen) {   // WFS-78 : surface Metal (calque de la vue iOS)

@@ -70,6 +70,23 @@ if(ANDROID)
   target_link_libraries(waforspeed native_app_glue android log vulkan aaudio)   # aaudio : son (WFS-10)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
   include(ios/ios.cmake)   # WFS-22 : application iOS (MoltenVK), voir ios/ios.cmake et .github/workflows/ios.yml
+elseif(WIN32)
+  # WFS-602 : version PC Windows (compilation croisée MinGW, tools/pc/mingw-w64.cmake ; installateur : tools/pc/construire_installateur.sh).
+  # WFS_VULKAN_INCLUDE : dossier qui contient vulkan/ (en-têtes seuls) ; vulkan-1.dll vient du pilote de la carte graphique.
+  set(WFS_VULKAN_INCLUDE "" CACHE PATH "Dossier des en-têtes Vulkan (contient vulkan/vulkan.h)")
+  set(VULKAN_IMPORT ${CMAKE_CURRENT_BINARY_DIR}/libvulkan-1.a)
+  add_custom_command(OUTPUT ${VULKAN_IMPORT}
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/pc/vulkan-1.sh ${WFS_VULKAN_INCLUDE} ${VULKAN_IMPORT}
+    COMMENT "Bibliothèque d'importation vulkan-1.dll")
+  add_custom_target(vulkan_import DEPENDS ${VULKAN_IMPORT})
+  add_executable(WaForSpeed WIN32 ${ENGINE_SOURCES} src/platform/windows_main.cpp tools/pc/waforspeed.rc)
+  add_dependencies(WaForSpeed shaders vulkan_import)
+  target_include_directories(WaForSpeed PRIVATE ${SHADER_OUT} ${WFS_VULKAN_INCLUDE})
+  target_compile_definitions(WaForSpeed PRIVATE NOMINMAX _USE_MATH_DEFINES)
+  target_compile_options(WaForSpeed PRIVATE ${WARN} -include ${CMAKE_CURRENT_SOURCE_DIR}/tools/pc/compat_windows.h)
+  # programme autonome : bibliothèques de MinGW liées dans le .exe (aucune DLL à livrer à côté)
+  target_link_options(WaForSpeed PRIVATE -static -static-libgcc -static-libstdc++)
+  target_link_libraries(WaForSpeed ${VULKAN_IMPORT} ws2_32)
 else()
   find_package(Vulkan REQUIRED)
   find_package(Threads REQUIRED)

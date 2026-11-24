@@ -9,3 +9,4 @@ tools/node_modules
 *.apk
 # WFS-220 (RG-05) : caches Python, jamais suivis
 __pycache__/
+build-windows/
