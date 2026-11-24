@@ -132,7 +132,10 @@ LRESULT CALLBACK procedure(HWND h, UINT m, WPARAM wp, LPARAM lp) {
         case WM_CLOSE: g_app.quitter = true; return 0;
         case WM_DESTROY: PostQuitMessage(0); return 0;
         case WM_SIZE: g_app.reduite = (wp == SIZE_MINIMIZED); g_app.tailleChangee = true; return 0;
-        case WM_KILLFOCUS: if (g_app.pret && g_app.game.ecran() == Ecran::Course) g_app.game.allerA(Ecran::Pause); return 0;
+        case WM_KILLFOCUS:   // fenêtre quittée (Alt+Tab) : touches relâchées (pas de gaz bloqué) et pause en course
+            for (WPARAM k : {(WPARAM)VK_UP, (WPARAM)VK_DOWN, (WPARAM)VK_LEFT, (WPARAM)VK_RIGHT, (WPARAM)VK_RETURN, (WPARAM)VK_SHIFT, (WPARAM)'C', (WPARAM)VK_BACK}) touche(k, false);
+            if (g_app.pret && g_app.game.ecran() == Ecran::Course) g_app.game.allerA(Ecran::Pause);
+            return 0;
         case WM_KEYDOWN: case WM_SYSKEYDOWN:
             if (wp == VK_F11 && !(lp & (1 << 30))) { basculerPleinEcran(); return 0; }
             if (wp == VK_F4 && (GetKeyState(VK_MENU) & 0x8000)) { g_app.quitter = true; return 0; }
