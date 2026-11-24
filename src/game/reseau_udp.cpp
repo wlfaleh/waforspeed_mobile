@@ -9,8 +9,18 @@
 #include <random>
 #include "../core/log.h"
 
-#if defined(_WIN32)
-// pas de cible Windows : la prise reste fermée (le duel affiche « Aucun réseau »)
+#if defined(_WIN32)   // WFS-609 : PC Windows, Winsock (duel sur le même Wi-Fi que le téléphone, sans serveur)
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#define WFS_SOCKETS 1
+#define WFS_WINSOCK 1
+namespace {
+struct Winsock { Winsock() { WSADATA d; WSAStartup(MAKEWORD(2, 2), &d); } };
+void winsock() { static Winsock w; }
+inline int fermerPrise(int fd) { return closesocket((SOCKET)fd); }
+}
 #else
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -20,6 +30,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #define WFS_SOCKETS 1
+namespace { inline int fermerPrise(int fd) { return close(fd); } }
 #endif
 
 namespace wfs::reseau {
@@ -58,6 +69,23 @@ std::vector<sockaddr_in> destinations(const Config& c) {
         return out;
     }
     ajoute(htonl(INADDR_BROADCAST), c.port);
+#if defined(WFS_WINSOCK)   // WFS-609 : diffusion de chaque carte réseau IPv4 active (adresse | ~masque)
+    ULONG taille = 16384; std::vector<unsigned char> tampon(taille);
+    auto* aa = (IP_ADAPTER_ADDRESSES*)tampon.data();
+    if (GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER, nullptr, aa, &taille) == ERROR_BUFFER_OVERFLOW) {
+        tampon.resize(taille); aa = (IP_ADAPTER_ADDRESSES*)tampon.data();
+        if (GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER, nullptr, aa, &taille) != NO_ERROR) aa = nullptr;
+    }
+    for (auto* x = aa; x; x = x->Next) {
+        if (x->OperStatus != IfOperStatusUp || x->IfType == IF_TYPE_SOFTWARE_LOOPBACK) continue;
+        for (auto* u = x->FirstUnicastAddress; u; u = u->Next) {
+            if (!u->Address.lpSockaddr || u->Address.lpSockaddr->sa_family != AF_INET || u->OnLinkPrefixLength == 0 || u->OnLinkPrefixLength > 30) continue;
+            const uint32_t ip = ntohl(((sockaddr_in*)u->Address.lpSockaddr)->sin_addr.s_addr);
+            const uint32_t masque = 0xFFFFFFFFu << (32 - u->OnLinkPrefixLength);
+            ajoute(htonl(ip | ~masque), c.port);
+        }
+    }
+#else
     ifaddrs* l = nullptr;
     if (getifaddrs(&l) == 0) {
         for (ifaddrs* i = l; i; i = i->ifa_next)
@@ -66,6 +94,7 @@ std::vector<sockaddr_in> destinations(const Config& c) {
                 ajoute(((sockaddr_in*)i->ifa_broadaddr)->sin_addr.s_addr, c.port);
         freeifaddrs(l);
     }
+#endif
     return out;
 }
 #endif
@@ -83,16 +112,28 @@ void verrou(bool prendre) {
 // ---------------------------------------------------------------- prise
 Prise::Prise(Config c) : c_(std::move(c)), id_(idAleatoire()) {
 #ifdef WFS_SOCKETS
+#if defined(WFS_WINSOCK)   // WFS-609
+    winsock();
+    const SOCKET sk = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    fd_ = sk == INVALID_SOCKET ? -1 : (int)sk;
+#else
     fd_ = socket(AF_INET, SOCK_DGRAM, 0);
+#endif
     if (fd_ < 0) { WFS_WARN("duel réseau : prise UDP impossible"); return; }
     const int un = 1;
-    setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &un, sizeof un);
-    setsockopt(fd_, SOL_SOCKET, SO_BROADCAST, &un, sizeof un);
+    setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, (const char*)&un, sizeof un);
+    setsockopt(fd_, SOL_SOCKET, SO_BROADCAST, (const char*)&un, sizeof un);
+#if defined(WFS_WINSOCK)
+    u_long nonBloquant = 1;
+    const bool okNb = ioctlsocket((SOCKET)fd_, FIONBIO, &nonBloquant) == 0;
+#else
     const int fl = fcntl(fd_, F_GETFL, 0);
+    const bool okNb = fl >= 0 && fcntl(fd_, F_SETFL, fl | O_NONBLOCK) >= 0;
+#endif
     sockaddr_in a{}; a.sin_family = AF_INET; a.sin_port = htons((uint16_t)c_.port); a.sin_addr.s_addr = htonl(INADDR_ANY);
-    if (fl < 0 || fcntl(fd_, F_SETFL, fl | O_NONBLOCK) < 0 || bind(fd_, (sockaddr*)&a, sizeof a) < 0) {
+    if (!okNb || bind(fd_, (sockaddr*)&a, sizeof a) < 0) {
         WFS_WARN("duel réseau : port UDP %d indisponible", c_.port);
-        close(fd_); fd_ = -1; return;
+        fermerPrise(fd_); fd_ = -1; return;
     }
     reseau_ = !c_.destinations.empty() || destinations(c_).size() > 1;   // au-delà de 255.255.255.255 : une vraie interface
     WFS_LOG("duel réseau : prise UDP ouverte sur le port %d (joueur %s), réseau local %s", c_.port, id_.c_str(), reseau_ ? "présent" : "absent");
@@ -100,7 +141,7 @@ Prise::Prise(Config c) : c_(std::move(c)), id_(idAleatoire()) {
 }
 Prise::~Prise() {
 #ifdef WFS_SOCKETS
-    if (fd_ >= 0) close(fd_);
+    if (fd_ >= 0) fermerPrise(fd_);
 #endif
 }
 double Prise::horlogeMs() const { return c_.horloge ? c_.horloge() : horlogeAppareil(); }
@@ -127,7 +168,7 @@ void Prise::pomper() {
     if (fd_ < 0) return;
     char buf[1024];
     for (int k = 0; k < 256; k++) {   // au plus 256 messages par image
-        const ssize_t n = recv(fd_, buf, sizeof buf, 0);
+        const int n = (int)recv(fd_, buf, sizeof buf, 0);
         if (n < 0) break;
         Recu r;
         if (!lire(std::string(buf, (size_t)n), r)) { ignores_++; continue; }   // message invalide : ignoré
@@ -146,7 +187,7 @@ void Prise::envoyer(const std::string& msg) {
     if (fd_ < 0 || msg.size() > duel::MSG_MAX) return;
     static thread_local std::vector<sockaddr_in> dest; static thread_local const Prise* pour = nullptr;
     if (pour != this || dest.empty()) { dest = destinations(c_); pour = this; }
-    for (const sockaddr_in& a : dest) sendto(fd_, msg.data(), msg.size(), 0, (const sockaddr*)&a, sizeof a);   // erreurs ignorées
+    for (const sockaddr_in& a : dest) sendto(fd_, msg.data(), (int)msg.size(), 0, (const sockaddr*)&a, sizeof a);   // erreurs ignorées
 #else
     (void)msg;
 #endif
