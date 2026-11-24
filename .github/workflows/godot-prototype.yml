@@ -51,6 +51,10 @@ jobs:
           sed -i 's/^ *//' ~/.config/godot/editor_settings-4.3.tres
       - name: Import du projet
         run: timeout 600 ./$GODOT --headless --path godot/projet --import || timeout 600 ./$GODOT --headless --path godot/projet --editor --quit
+      - name: Vérification des scripts (le jeu démarre 300 images sans erreur)
+        run: |
+          timeout 300 ./$GODOT --headless --path godot/projet --quit-after 300 2>&1 | tee lancement.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" lancement.log; then echo "::error::erreur de script"; exit 1; fi
       - name: Export de l'APK
         run: |
           mkdir -p build-godot

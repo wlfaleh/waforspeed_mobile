@@ -61,8 +61,8 @@ static func construire(parent: Node3D, tr: Trace) -> void:
 		_ajouter(troncon, enrobe, func(st): bande(st, tr, a, b, -w, w, 0.0, 0.0, 4.0))
 		# bordures : face verticale chanfreinée (2 cm) puis dessus, des deux côtés
 		_ajouter(troncon, beton, func(st):
-			for cote in [-1.0, 1.0]:
-				var x := w * cote
+			for cote: float in [-1.0, 1.0]:
+				var x: float = w * cote
 				if cote > 0:
 					bande(st, tr, a, b, x, x + 0.02, 0.0, BORDURE_H - 0.02, 1.0)
 					bande(st, tr, a, b, x + 0.02, x + TROTTOIR, BORDURE_H, BORDURE_H, 3.0)
