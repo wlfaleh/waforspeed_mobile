@@ -86,7 +86,7 @@ void touche(WPARAM vk, bool appui) {
         case VK_LEFT: case 'A': case 'Q': bouton(GAUCHE, appui); break;                       // volant à gauche
         case VK_RIGHT: case 'D': bouton(DROITE, appui); break;                                // volant à droite
         case VK_RETURN: bouton(A, appui); break;                                              // valider
-        case VK_SHIFT: case 'N': if (g_app.game.ecran() == Ecran::Course) bouton(A, appui); break;   // nitro
+        case VK_SHIFT: case 'N': if (!appui || g_app.game.ecran() == Ecran::Course) bouton(A, appui); break;   // nitro (relâché partout : A jamais bloqué)
         case 'C': bouton(Y, appui); break;                                                    // changer de vue
         case VK_BACK: bouton(B, appui); break;                                                // retour
         case VK_ESCAPE:   // = touche Retour du téléphone (pause en course, retour dans les menus ; menu principal : rien)
@@ -157,19 +157,21 @@ void chargerXInput() {
         if (HMODULE d = LoadLibraryW(nom)) { g_xinput = (FnXInput)(void*)GetProcAddress(d, "XInputGetState"); if (g_xinput) return; }
 }
 void lireXInput() {
-    static DWORD paquet = 0; static bool branchee = false; static double prochainEssai = 0;
+    static DWORD paquet = 0; static WORD precedent = 0; static bool branchee = false; static double prochainEssai = 0;
     if (!g_xinput || (!branchee && nowSeconds() < prochainEssai)) return;   // manette absente : un essai par seconde
     XINPUT_STATE s{};
-    if (g_xinput(0, &s) != ERROR_SUCCESS) { if (branchee) manette::deconnexion(); branchee = false; prochainEssai = nowSeconds() + 1; return; }
+    if (g_xinput(0, &s) != ERROR_SUCCESS) { if (branchee) manette::deconnexion(); branchee = false; precedent = 0; paquet = 0; prochainEssai = nowSeconds() + 1; return; }
     branchee = true;
     if (s.dwPacketNumber == paquet) return;
     paquet = s.dwPacketNumber;
     using namespace manette;
     const WORD b = s.Gamepad.wButtons;
-    auto btn = [&](Bouton x, WORD masque) { const bool v = (b & masque) != 0; if (v != etat().bouton[x]) bouton(x, v); };
+    // état propre à la manette (precedent) : seuls ses changements sont envoyés, les touches tenues au clavier sont gardées
+    auto btn = [&](Bouton x, WORD masque) { const bool v = (b & masque) != 0; if (v != ((precedent & masque) != 0)) bouton(x, v); };
     btn(A, XINPUT_GAMEPAD_A); btn(B, XINPUT_GAMEPAD_B); btn(X, XINPUT_GAMEPAD_X); btn(Y, XINPUT_GAMEPAD_Y);
     btn(START, XINPUT_GAMEPAD_START); btn(SELECT, XINPUT_GAMEPAD_BACK);
     btn(L1, XINPUT_GAMEPAD_LEFT_SHOULDER); btn(R1, XINPUT_GAMEPAD_RIGHT_SHOULDER);
+    precedent = b;
     const float croixX = (b & XINPUT_GAMEPAD_DPAD_RIGHT ? 1.f : 0.f) - (b & XINPUT_GAMEPAD_DPAD_LEFT ? 1.f : 0.f);
     const float croixY = (b & XINPUT_GAMEPAD_DPAD_DOWN ? 1.f : 0.f) - (b & XINPUT_GAMEPAD_DPAD_UP ? 1.f : 0.f);
     // Y de XInput vers le haut positif ; le module manette suit Android (vers le bas positif)
