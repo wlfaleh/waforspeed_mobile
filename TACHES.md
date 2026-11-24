@@ -25,6 +25,8 @@ de jeu tiers. Organisation type Jira / Scrum :
 | ✅ Terminé | CI de `main` verte sur le commit de la fusion (compilation, tests, APK) et captures du ticket regardées ; la recette QA de nuit reste dans la colonne QA |
 | ⛔ Bloqué | raison au Journal |
 
+> 🖥️ **2026-11-24 17:26 UTC — ÉPIC E24 « Version PC Windows » créée (demande de l'utilisateur, confiée en urgence au lead dev en renfort)** : WFS-602 à 608 ; installateur Windows, pas de Steam, pas d'achats sur PC, cross-play duel par le relais. **WFS-602** (P1) 🔧 au lead dev (01UY1Vv3au). La priorité Android reste : les tickets 603 à 608 attendent 602.
+
 > 🚨 **2026-11-23 13:36 UTC — VIDÉO DE L'UTILISATEUR (« grave ») : WFS-600 EN TÊTE DE TOUS LES TICKETS PRÊTS** : la voiture pivote et glisse en crabe au moindre coup de volant à 30-57 km/h, puis recule en tournant (ANO-318, Bloquante) → **WFS-600** (P1, prochaine session `@conduite`, avant WFS-584 et 394). **La voiture en course n'est pas celle choisie au garage** (GT5 Camouflage → verte unie, sans vitres, lunette arrière en trou noir ; ANO-319, Bloquante) → **WFS-601** (P1, **à égalité en tête**, 1er de la liste `@dev`). Règles : `regles-de-gestion/WFS-600.md`, `WFS-601.md`.
 
 > 🪧 **2026-11-22 19:41 UTC** : WFS-594 fusionné (#444) → **WFS-595** `@cicd` ⏳ Prêt ; créés **WFS-598** (P2, `@dev`, réserves de WFS-594, après la liste ci-dessous, pas la session 01UY1Vv49f) et **WFS-599** (`@cicd`, après 598).
@@ -117,6 +119,7 @@ Journal à jour.
 | E21 | Market (étoiles achetées, « sans pub », pub volontaire) | zones existantes, un ticket à la fois par zone : E3 (`src/game/**` market, livre des achats) + section `market` de `configgame.*`, E7 (`android/**`, `src/platform/*_android.cpp` facturation et pub), E8 (`src/ui/ecrans/**` écran Market, fin de course), Publication app (`store/**`) | Packs d'étoiles (bronze, argent, or, coffre, pack débutant), « sans pub », ×2 par vidéo volontaire 5 / jour, consentement RGPD, achats jamais crédités deux fois (`regles-de-gestion/E21-market.md`). Dernière étape de l'ordre identité → score → voitures et couleurs → cadeau → market. |
 | E22 | Score de chaque course, converti en étoiles | zones existantes : E3 (`src/game/score_course.*`, `profil_system.cpp`, `boutique.*`, `tests/**`, section `score_etoiles` de `configgame.*`), E5 / E8 (écran de fin des 4 modes, écran Profil) | Score par course (place, temps, conduite propre, 2 défis par mode) → 5 à 40 ★, détail en fin de course FR / EN, cadence du banc d'équilibrage gardée (`regles-de-gestion/E22-score.md`). Étape « score » de l'ordre de l'utilisateur. |
 | E23 | Interface R19 | zones existantes : E5 (`src/ui/**`, `shaders/ui*`), E8 (`src/ui/ecrans/**`) ; nouveaux `src/ui/verre.*`, `boutons.*`, `jauges.*` ; menu 3D (WFS-552) : `menu*`, `garage_decor.*`, modèles du parking | Écrans au modèle R19 choisi par l'utilisateur : verre dépoli, boutons Start/Stop, jauges fines, icônes, menu 3D SF-X dans le parking (`regles-de-gestion/E23-interface-r19.md`). |
+| E24 | Version PC Windows (installateur, sans Steam, sans achats, cross-play) | nouveaux `src/platform/windows_*.cpp`, bloc `WIN32` de `CMakeLists.txt`, `tools/pc/**` ; aucun changement du jeu Android | Jouer sur PC Windows avec les mêmes fonctions, installé par `WaForSpeed-Setup.exe`, duel contre Android par le relais (demande de l'utilisateur, 2026-11-24). |
 
 > Zones E9 à E13 créées le 2026-11-06 par le PO (axe Réalisme). Le ticket en cours WFS-144 (E4) garde ses droits sur ses fichiers jusqu'à sa fusion.
 
@@ -576,6 +579,13 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P4 Basse | WFS-441 | Bibliothèque branchée dans Ville, Campagne, Grand Prix, doublons retirés (@cartes) | E16 | ⛔ Bloqué par l'utilisateur |  | WFS-436 à 440 | `feature/waforspeed-441` |  |  |
 | P4 Basse | WFS-442 | Mesure finale du lot 1, QA, émulateur | E16 | ⛔ Bloqué par l'utilisateur |  | WFS-441 | `feature/waforspeed-442` |  |  |
 | P4 Basse | WFS-443 | [TECHNIQUE] Code des routes mis en commun : Corniche puis Ville (@cartes) | E16 | ⛔ Bloqué par l'utilisateur |  | WFS-435 + accord utilisateur | `feature/waforspeed-443` |  |  |
+| P1 Urgent | WFS-602 | PC Windows : fenêtre Vulkan, boucle, clavier / souris / manette, installateur NSIS (MinGW) | E24 | 🔧 En cours (lead dev en renfort) | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) 2026-11-24 | — | `feature/waforspeed-602` |  |  |
+| P2 Haute | WFS-603 | PC Windows : son (WASAPI) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-603` |  |  |
+| P2 Haute | WFS-604 | PC Windows : réseau TLS + duel cross-play PC ↔ Android (relais) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-604` |  |  |
+| P2 Haute | WFS-605 | PC Windows : téléchargement des paquets de cartes et sauvegarde | E24 | ⏳ En attente | | après WFS-602 ; `@cartes` | `feature/waforspeed-605` |  |  |
+| P3 Moyenne | WFS-606 | PC Windows : réglages graphiques PC (résolution, plein écran, qualité) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-606` |  |  |
+| P3 Moyenne | WFS-607 | [TECHNIQUE] CI Windows : construction de l'installateur | E24 | ⏳ En attente | | après WFS-602 ; `@cicd` | `feature/waforspeed-607` |  |  |
+| P3 Moyenne | WFS-608 | Équité du duel PC / téléphone (décision de l'utilisateur à prendre) | E24 | ⏳ En attente (décision utilisateur) | | après WFS-604 | `feature/waforspeed-608` |  |  |
 
 ## Critères d'acceptation
 

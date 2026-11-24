@@ -28,3 +28,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-24 13:32:21 — Archives automatiques (robot archives)
 - Journal : 58 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-22).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-24 17:27:45 — E24 « Version PC Windows » créée, WFS-602 au lead dev en renfort (po-scrum-master)
+- Demande de l'utilisateur (2026-11-24, session lead dev 01UY1Vv3au) : version PC Windows aux mêmes fonctions, installateur Windows (pas de Steam), pas d'achats sur PC au début, cross-play duel PC ↔ Android par le relais. Sujet urgent confié au lead dev (règle « lead dev en renfort »).
+- Épic **E24** (`regles-de-gestion/E24-version-pc.md`) : WFS-602 (P1, fenêtre + boucle + clavier / souris / manette + installateur MinGW / NSIS), 603 (son WASAPI), 604 (TLS + duel cross-play), 605 (paquets et sauvegarde, `@cartes`), 606 (réglages graphiques), 607 ([TECHNIQUE] CI Windows, `@cicd`), 608 (équité du duel, décision de l'utilisateur à prendre). 603 à 608 ⏳ En attente de 602.
+- **WFS-602** 🔧 attribué à Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8), branche `feature/waforspeed-602`, règles `regles-de-gestion/WFS-602.md`. Zone : `src/platform/windows_main.cpp` (nouveau), bloc `WIN32` de `CMakeLists.txt`, `tools/pc/**` ; aucun changement du jeu Android. PR relue et fusionnée par une autre instance du lead dev. Priorité Android maintenue pour les autres sessions.

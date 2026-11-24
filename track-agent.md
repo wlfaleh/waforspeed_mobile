@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-23 13:36:24 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-24 17:27:45 UTC (po-scrum-master)
+
+> 🖥️ **17:27 UTC (2026-11-24)** : épic **E24** « Version PC Windows » créée ; **WFS-602** (P1) confié en urgence au lead dev en renfort (01UY1Vv3au), branche `feature/waforspeed-602`.
 
 > 🚨 **13:36 UTC (2026-11-23)** : vidéo de l'utilisateur (« grave ») : **WFS-600** (P1, conduite, ANO-318) en tête, pour une nouvelle session `@conduite` ; **WFS-601** (P1, voiture en course ≠ voiture du garage, ANO-319) pour une nouvelle session `@dev`. Aucun développeur en cours.
 
@@ -110,6 +112,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
+| Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) | WFS-602 | Lead dev en renfort : version PC Windows (fenêtre Vulkan, commandes, installateur NSIS) | `feature/waforspeed-602`, pas encore poussée | 🔧 En cours (attribué 17:27 UTC) |
 | Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy) |  | — | `feature/waforspeed-594` (fusionnée) | ⏹️ session terminée (WFS-594 fusionné, #444) |
 | Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | — | — | `feature/waforspeed-597` (fusionnée, #439, 528ed3b6) | ⏹️ session terminée (WFS-597 fusionné) |
 | Claude, agent dev3d (01UY1Vv4Di) (session_01UY1Vv4DiuxbNaC43HNZKKg) | — | 10 % des personnes dans toutes les cartes (facteur commun, conducteurs et deux-roues inchangés) | `feature/waforspeed-593`, poussée | ⏹️ session terminée (WFS-593 fusionné, #442) |
