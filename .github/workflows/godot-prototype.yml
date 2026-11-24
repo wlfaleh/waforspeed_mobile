@@ -1,0 +1,74 @@
+# WaForSpeed — prototype Godot (WFS-610, épic E25) : APK de comparaison de moteur, construit seulement sur la branche « godot »
+# (décision de l'utilisateur, 2026-11-24 : Godot tourne sur GitHub, pas dans l'environnement des agents). N'existe pas sur main :
+# ne touche ni à build.yml ni aux bancs du matin. Godot 4.3 officiel (MIT), empreintes SHA-512 vérifiées avant usage.
+name: Prototype Godot (WFS-610)
+on:
+  push:
+    branches: [godot]
+    paths: ['godot/**', '.github/workflows/godot-prototype.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: godot-prototype
+  cancel-in-progress: true
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GODOT: Godot_v4.3-stable_linux.x86_64
+      SHA_GODOT: fd52bb4ba8acc30ca5accd1c566d470ad7282f891ccc0995dfafabcf92bcf76280ce182bf9d80ebd885f3ed2165d01e1fc3f2928436b15498dfbd98656c2a45a
+      SHA_MODELES: 476366caf0fd45a8f24136cf9cf1dc0bc2b96f7c82d53e5f82200b55aefd07b286d283fd6f1ce29e0de70648c5a51d3b12f96c6d4fafd4e8c4878ecda6406d6a
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: Godot 4.3 et modèles d'export (empreintes vérifiées)
+        run: |
+          B=https://github.com/godotengine/godot/releases/download/4.3-stable
+          curl -sSL -o godot.zip $B/$GODOT.zip
+          curl -sSL -o modeles.tpz $B/Godot_v4.3-stable_export_templates.tpz
+          echo "$SHA_GODOT  godot.zip" | sha512sum -c
+          echo "$SHA_MODELES  modeles.tpz" | sha512sum -c
+          unzip -q godot.zip && chmod +x $GODOT
+          mkdir -p ~/.local/share/godot/export_templates/4.3.stable
+          unzip -q modeles.tpz -d /tmp/modeles && mv /tmp/modeles/templates/* ~/.local/share/godot/export_templates/4.3.stable/
+      - name: Clé de signature de test et réglages Android de Godot
+        run: |
+          keytool -genkeypair -v -keystore $HOME/debug.keystore -storepass android -alias androiddebugkey -keypass android \
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          mkdir -p ~/.config/godot
+          cat > ~/.config/godot/editor_settings-4.3.tres <<EOT
+          [gd_resource type="EditorSettings" format=3]
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/debug_keystore = "$HOME/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          EOT
+          sed -i 's/^ *//' ~/.config/godot/editor_settings-4.3.tres
+      - name: Import du projet
+        run: timeout 600 ./$GODOT --headless --path godot/projet --import || timeout 600 ./$GODOT --headless --path godot/projet --editor --quit
+      - name: Export de l'APK
+        run: |
+          mkdir -p build-godot
+          ./$GODOT --headless --path godot/projet --export-debug "Android" $PWD/build-godot/waforspeed-godot.apk
+          ls -la build-godot
+      - name: Captures (rendu logiciel, à titre indicatif)
+        continue-on-error: true
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb mesa-vulkan-drivers >/dev/null
+          mkdir -p build-godot/captures
+          WFS_CAPTURE=$PWD/build-godot/captures timeout 300 xvfb-run -s "-screen 0 1280x720x24" ./$GODOT --path godot/projet --rendering-driver vulkan --resolution 1280x720 || true
+          ls -la build-godot/captures
+      - uses: actions/upload-artifact@v4
+        with: { name: prototype-godot, path: build-godot/ }
+      - name: Publication (Release « prototype-godot »)
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release delete prototype-godot --yes --cleanup-tag 2>/dev/null || true
+          gh release create prototype-godot build-godot/waforspeed-godot.apk build-godot/captures/*.png --target godot --prerelease \
+            --title "Prototype Godot (WFS-610) — comparaison de moteur" \
+            --notes "APK de test (s'installe à côté du jeu actuel). Construit depuis la branche godot, commit ${GITHUB_SHA}."

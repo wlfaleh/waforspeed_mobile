@@ -178,3 +178,22 @@ func _process(dt: float) -> void:
 		images = 0
 		t_mesure = 0.0
 		pire = 0.0
+
+# ---- captures pour la relecture (banc GitHub) : WFS_CAPTURE=<dossier> : gaz tenu, images à 3 s, 8 s et 14 s, puis fin
+var t_capture := 0.0
+var captures_faites := 0
+func _physics_process(dt: float) -> void:
+	var dossier := OS.get_environment("WFS_CAPTURE")
+	if dossier == "":
+		return
+	joueur.gaz = 1.0
+	t_capture += dt
+	var instants := [3.0, 8.0, 14.0]
+	if captures_faites < instants.size() and t_capture >= instants[captures_faites]:
+		captures_faites += 1
+		var n := captures_faites
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png("%s/godot-%d.png" % [dossier, n])
+		print("capture %d : %d km/h, %s" % [n, int(joueur.vitesse * 3.6), mesure.text])
+		if n == instants.size():
+			get_tree().quit()
