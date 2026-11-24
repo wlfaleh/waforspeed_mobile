@@ -581,7 +581,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P4 Basse | WFS-443 | [TECHNIQUE] Code des routes mis en commun : Corniche puis Ville (@cartes) | E16 | ⛔ Bloqué par l'utilisateur |  | WFS-435 + accord utilisateur | `feature/waforspeed-443` |  |  |
 | P1 Urgent | WFS-602 | PC Windows : fenêtre Vulkan, boucle, clavier / souris / manette, installateur NSIS (MinGW) | E24 | 🟡 À valider (utilisateur) (PR #445) | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) 2026-11-24 | — | `feature/waforspeed-602` |  |  |
 | P2 Haute | WFS-603 | PC Windows : son (WASAPI) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-603` |  |  |
-| P2 Haute | WFS-604 | PC Windows : réseau TLS + duel cross-play PC ↔ Android (relais) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-604` |  |  |
+| P1 Urgent | WFS-604 | PC Windows : réseau TLS + duel cross-play PC ↔ Android (relais) | E24 | 🔀 En PR (PR #446) | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) 2026-11-24, renfort sur ordre de l'utilisateur | après WFS-602 | `feature/waforspeed-604` |  |  |
 | P2 Haute | WFS-605 | PC Windows : téléchargement des paquets de cartes et sauvegarde | E24 | ⏳ En attente | | après WFS-602 ; `@cartes` | `feature/waforspeed-605` |  |  |
 | P3 Moyenne | WFS-606 | PC Windows : réglages graphiques PC (résolution, plein écran, qualité) | E24 | ⏳ En attente | | après WFS-602 | `feature/waforspeed-606` |  |  |
 | P3 Moyenne | WFS-607 | [TECHNIQUE] CI Windows : construction de l'installateur | E24 | ⏳ En attente | | après WFS-602 ; `@cicd` | `feature/waforspeed-607` |  |  |

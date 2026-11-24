@@ -52,3 +52,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - 2e revue de la PR #445 par une autre instance du lead dev, sur le commit 6da47c80. Les 3 points du refus sont corrigés : section « Tests CPU » et `tests-cpu.log` ajoutés (159 tests réussis), relâchement de Maj / N qui libère A partout, état précédent propre à la manette XInput. Le développeur a répondu point par point dans la PR.
 - `ninja -C build-windows WaForSpeed` réussit (`WaForSpeed.exe` lié). La branche n'avait que des documents de retard sur `main`. Aucune nouvelle capture n'était demandée (règle du 2026-11-15).
 - « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash : b7552678. Statut 🟡 À valider (utilisateur), à essayer sur un vrai PC Windows. Ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` supprimée, session du lead dev 01UY1Vv3au terminée dans `track-agent.md`.
+
+### 2026-11-24 19:08:36 — WFS-604 en PR #446 : duel en ligne PC ↔ téléphone (Claude, lead dev (01UY1Vv3au))
+- L'utilisateur exige le duel PC ↔ Android « dans 30 minutes » : WFS-604 pris par le lead dev en renfort (ordre de l'utilisateur, au-dessus de la règle « un sujet par session »).
+- `src/platform/reseau_windows.cpp` : flux TLS du relais par WinHTTP (WebSocket de Windows), `ClientWs` et protocole inchangés. Pas d'essai réel possible ici (pas de Windows, relais bloqué par le réseau du conteneur) : essai de l'utilisateur.
