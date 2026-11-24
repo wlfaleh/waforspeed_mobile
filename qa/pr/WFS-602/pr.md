@@ -26,6 +26,20 @@ Une version PC Windows du jeu, livrée par un **installateur** (pas de Steam), a
 - `WaForSpeed-Setup.exe` construit par `makensis` (96 Mo). Le contenu est listé dans `qa/pr/WFS-602/installateur.md`.
 - Les fichiers modifiés se recompilent sans erreur ni avertissement pour le banc Linux. Les captures avant / après du banc PC (`menu1`, 1280 × 720) montrent que le jeu n'a pas changé.
 
+## Tests CPU
+`bash tools/qa/tests_cpu.sh build` sur le commit `f745acee` (branche synchronisée avec `main`) ; journal complet : `qa/pr/WFS-602/tests-cpu.log`.
+```
+[OK] test_ville_sol (2 s)
+[OK] test_virages_fleches (1 s)
+[OK] test_voitures_retirees (0 s)
+tests CPU : 159 test(s) réussi(s) en 444 s
+```
+
+## Corrections après la 1re revue du lead dev
+- Nitro au clavier : Maj / N relâchent `A` sur tous les écrans (plus d'appui Entrée perdu à l'écran de fin) — commit 99b16fd7.
+- Manette XInput : état précédent propre à la manette, seuls ses changements sont envoyés (A, B, Y tenus au clavier gardés ; remis à zéro à la déconnexion) — commit 99b16fd7.
+- Section « Tests CPU » et `tests-cpu.log` ajoutés.
+
 ## Limites et risques
 - **Pas d'essai sur un vrai Windows dans ce conteneur** : Wine 9 plante ici dès son démarrage (« free(): invalid pointer », même sur `cmd /c echo`). Le comportement réel de la fenêtre, du clavier et de l'installateur est donc **à valider par l'utilisateur** sur son PC (ticket 🟡 après la fusion). L'installateur lui a été envoyé.
 - Installateur **non signé** : Windows affiche « Windows a protégé votre ordinateur » (« Informations complémentaires » → « Exécuter quand même »).
