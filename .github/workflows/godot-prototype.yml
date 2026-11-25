@@ -1,6 +1,6 @@
 # WaForSpeed — prototype Godot (WFS-610, épic E25) : APK de comparaison de moteur, construit seulement sur la branche « godot »
 # (décision de l'utilisateur, 2026-11-24 : Godot tourne sur GitHub, pas dans l'environnement des agents). N'existe pas sur main :
-# ne touche ni à build.yml ni aux bancs du matin. Godot 4.3 officiel (MIT), empreintes SHA-512 vérifiées avant usage.
+# ne touche ni à build.yml ni aux bancs du matin. Godot 4.4.1 officiel (shaders sans à-coup au premier dessin) (MIT), empreintes SHA-512 vérifiées avant usage.
 name: Prototype Godot (WFS-610)
 on:
   push:
@@ -17,29 +17,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      GODOT: Godot_v4.3-stable_linux.x86_64
-      SHA_GODOT: fd52bb4ba8acc30ca5accd1c566d470ad7282f891ccc0995dfafabcf92bcf76280ce182bf9d80ebd885f3ed2165d01e1fc3f2928436b15498dfbd98656c2a45a
-      SHA_MODELES: 476366caf0fd45a8f24136cf9cf1dc0bc2b96f7c82d53e5f82200b55aefd07b286d283fd6f1ce29e0de70648c5a51d3b12f96c6d4fafd4e8c4878ecda6406d6a
+      GODOT: Godot_v4.4.1-stable_linux.x86_64
+      SHA_GODOT: ef4e76880a514257175544952c61191106fdef3095b909bafed9fcbeb230c3e5533920a0f3012882dd4bbde83028a67549825794e2d2c3cf76eba7918b71370e
+      SHA_MODELES: 8f461c7d6e91a0fbabfc95b1e4ca70ff1732c6f2920956a16b086ec2a85b5f7e238baf4dbce60dcc5630fae3bcb9a1fa2ae2027b92cb495c02d082705715e441
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '17' }
-      - name: Godot 4.3 et modèles d'export (empreintes vérifiées)
+      - name: Godot 4.4.1 et modèles d'export (empreintes vérifiées)
         run: |
-          B=https://github.com/godotengine/godot/releases/download/4.3-stable
+          B=https://github.com/godotengine/godot/releases/download/4.4.1-stable
           curl -sSL -o godot.zip $B/$GODOT.zip
-          curl -sSL -o modeles.tpz $B/Godot_v4.3-stable_export_templates.tpz
+          curl -sSL -o modeles.tpz $B/Godot_v4.4.1-stable_export_templates.tpz
           echo "$SHA_GODOT  godot.zip" | sha512sum -c
           echo "$SHA_MODELES  modeles.tpz" | sha512sum -c
           unzip -q godot.zip && chmod +x $GODOT
-          mkdir -p ~/.local/share/godot/export_templates/4.3.stable
-          unzip -q modeles.tpz -d /tmp/modeles && mv /tmp/modeles/templates/* ~/.local/share/godot/export_templates/4.3.stable/
+          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          unzip -q modeles.tpz -d /tmp/modeles && mv /tmp/modeles/templates/* ~/.local/share/godot/export_templates/4.4.1.stable/
       - name: Clé de signature de test et réglages Android de Godot
         run: |
           keytool -genkeypair -v -keystore $HOME/debug.keystore -storepass android -alias androiddebugkey -keypass android \
             -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           mkdir -p ~/.config/godot
-          cat > ~/.config/godot/editor_settings-4.3.tres <<EOT
+          cat > ~/.config/godot/editor_settings-4.4.tres <<EOT
           [gd_resource type="EditorSettings" format=3]
           [resource]
           export/android/android_sdk_path = "$ANDROID_HOME"
@@ -48,7 +48,7 @@ jobs:
           export/android/debug_keystore_user = "androiddebugkey"
           export/android/debug_keystore_pass = "android"
           EOT
-          sed -i 's/^ *//' ~/.config/godot/editor_settings-4.3.tres
+          sed -i 's/^ *//' ~/.config/godot/editor_settings-4.4.tres
       - name: Import du projet
         run: timeout 600 ./$GODOT --headless --path godot/projet --import || timeout 600 ./$GODOT --headless --path godot/projet --editor --quit
       - name: Vérification des scripts (le jeu démarre 300 images sans erreur)

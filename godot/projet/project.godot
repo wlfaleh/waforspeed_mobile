@@ -1,10 +1,10 @@
-; WaForSpeed — prototype Godot 4.3 (WFS-610) : comparaison de moteur. Rendu « Mobile » (Vulkan), le même que vise un téléphone.
+; WaForSpeed — prototype Godot 4.4.1 (WFS-610) : comparaison de moteur. Rendu « Mobile » (Vulkan), le même que vise un téléphone.
 config_version=5
 
 [application]
 config/name="WaForSpeed Godot (prototype)"
 run/main_scene="res://principal.tscn"
-config/features=PackedStringArray("4.3", "Mobile")
+config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icone.png"
 
 [display]
@@ -24,8 +24,12 @@ common/physics_ticks_per_second=60
 [rendering]
 renderer/rendering_method="mobile"
 renderer/rendering_method.mobile="mobile"
-anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/msaa_3d=0
+scaling_3d/mode=1
+scaling_3d/scale=0.75
+mesh_lod/lod_change/threshold_pixels=2.0
 textures/default_filters/anisotropic_filtering_level=2
 lights_and_shadows/directional_shadow/size=2048
-lights_and_shadows/directional_shadow/soft_shadow_filter_quality=2
+; allègement (essai du téléphone, 12 img/s) : 3D en 75 % de la définition puis FSR 1, pas de MSAA, ombre unique, sans halo
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=0
 textures/vram_compression/import_etc2_astc=true

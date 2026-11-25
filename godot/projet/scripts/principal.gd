@@ -58,8 +58,7 @@ func _environnement() -> void:
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.tonemap_exposure = 1.0
-	env.glow_enabled = true
-	env.glow_intensity = 0.4
+	env.glow_enabled = false   # halo coûteux sur téléphone
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.7, 0.76, 0.84)
 	env.fog_density = 0.0012
@@ -72,8 +71,8 @@ func _environnement() -> void:
 	soleil.light_energy = 1.15
 	soleil.light_color = Color(1.0, 0.96, 0.9)
 	soleil.shadow_enabled = true
-	soleil.directional_shadow_max_distance = 90.0
-	soleil.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	soleil.directional_shadow_max_distance = 50.0
+	soleil.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	add_child(soleil)
 
 func _hud() -> void:
@@ -92,7 +91,7 @@ func _hud() -> void:
 	mesure.add_theme_constant_override("outline_size", 6)
 	couche.add_child(mesure)
 	var aide := Label.new()
-	aide.text = "Prototype Godot 4.3 — gauche : volant (glisser)   droite : FREIN | GAZ"
+	aide.text = "Prototype Godot 4.4.1 — gauche : volant (glisser)   droite : FREIN | GAZ"
 	aide.anchor_top = 1.0
 	aide.anchor_bottom = 1.0
 	aide.position = Vector2(24, -40)
