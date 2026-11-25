@@ -166,7 +166,7 @@ func _process(dt: float) -> void:
 	# caméra de course : derrière et au-dessus, suit en douceur (ressort exponentiel), champ qui s'ouvre avec la vitesse
 	var arriere := Trace.avant_de(joueur.cap) * -(6.2 + absf(joueur.vitesse) * 0.03)
 	var cible := joueur.position + arriere + Vector3(0, 2.1, 0)
-	cam_pos = cam_pos.lerp(cible, 1.0 - exp(-dt * 8.0))
+	cam_pos = cam_pos.lerp(cible, 1.0 - exp(-dt * 16.0))   # retard ≈ v / 16 : la voiture reste grande à haute vitesse
 	camera.position = cam_pos
 	camera.look_at(joueur.position + Trace.avant_de(joueur.cap) * 4.0 + Vector3(0, 1.0, 0), Vector3.UP)
 	camera.fov = lerpf(62.0, 74.0, clampf(absf(joueur.vitesse) / 70.0, 0.0, 1.0))
