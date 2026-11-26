@@ -7,47 +7,6 @@ fait / fichiers / vérification / limites. **Nouvelles entrées à la fin du fic
 Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé (Claude, session trafic)`.
 > **Archive (règle de l'utilisateur, 2026-11-06)** : ce fichier ne garde que les **2 derniers jours**. Les entrées plus anciennes sont dans `journal/archive/AAAA-MM-JJ.md` (un fichier par jour) ; ne les relire qu'en cas de besoin précis. Le PO déplace chaque jour les entrées de plus de 2 jours.
 
-### 2026-11-24 13:32:21 — Archives automatiques (robot archives)
-- Journal : 58 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-22).
-- TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
-
-### 2026-11-24 17:27:45 — E24 « Version PC Windows » créée, WFS-602 au lead dev en renfort (po-scrum-master)
-- Demande de l'utilisateur (2026-11-24, session lead dev 01UY1Vv3au) : version PC Windows aux mêmes fonctions, installateur Windows (pas de Steam), pas d'achats sur PC au début, cross-play duel PC ↔ Android par le relais. Sujet urgent confié au lead dev (règle « lead dev en renfort »).
-- Épic **E24** (`regles-de-gestion/E24-version-pc.md`) : WFS-602 (P1, fenêtre + boucle + clavier / souris / manette + installateur MinGW / NSIS), 603 (son WASAPI), 604 (TLS + duel cross-play), 605 (paquets et sauvegarde, `@cartes`), 606 (réglages graphiques), 607 ([TECHNIQUE] CI Windows, `@cicd`), 608 (équité du duel, décision de l'utilisateur à prendre). 603 à 608 ⏳ En attente de 602.
-- **WFS-602** 🔧 attribué à Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8), branche `feature/waforspeed-602`, règles `regles-de-gestion/WFS-602.md`. Zone : `src/platform/windows_main.cpp` (nouveau), bloc `WIN32` de `CMakeLists.txt`, `tools/pc/**` ; aucun changement du jeu Android. PR relue et fusionnée par une autre instance du lead dev. Priorité Android maintenue pour les autres sessions.
-
-### 2026-11-24 18:12:10 — WFS-602 en PR #445 : version PC Windows, 1re étape (Claude, lead dev (01UY1Vv3au))
-- `WaForSpeed.exe` (MinGW-w64, depuis Linux) : fenêtre Win32, surface Vulkan Win32, clavier / souris / manette XInput par le module manette, CGU et chargement comme Android ; sauvegarde dans `%APPDATA%\WaForSpeed`.
-- `WaForSpeed-Setup.exe` (NSIS, 96 Mo) : Program Files, raccourci bureau, menu Démarrer, désinstallation ; sans les voitures retirées (WFS-404). Construction : `bash tools/pc/construire_installateur.sh`.
-- Accroches annoncées (sous `#if defined(_WIN32)`, rien ne change sur Android ni au banc Linux) : `src/render/vk.cpp` (12 lignes, surface Win32), `src/game/reseau_relais.cpp` (10 lignes, pas de prises avant WFS-604), `src/render/bench_perf.cpp` (6 lignes, `getrusage` Linux seulement).
-- Captures `menu1` : 39 paires identiques avant / après (12 gardées). Wine plante dans le conteneur : pas d'essai Windows ici, installateur envoyé à l'utilisateur pour essai (ticket 🟡 après fusion).
-- Outils installés dans le conteneur (apt, dépôts Ubuntu) : mingw-w64, nsis, glslc, libvulkan-dev, mesa-vulkan-drivers, wine64, xdotool.
-
-### 2026-11-24 18:26:42 — WFS-602 : PR #445 refusée par le lead dev (lead-dev)
-- Relecture par une autre instance du lead dev, commit 6c02fdd1. J'ai ouvert les 12 paires de captures : elles sont identiques, sans régression. J'ai reconstruit le banc Linux : 159 tests CPU réussis, dont test_relais. L'exe Windows est à jour et n'importe de vulkan-1.dll que des fonctions du cœur Vulkan et du WSI.
-- Refus : (1) la capture « Tests CPU » et `tests-cpu.log` manquent (règle du 2026-11-11) ; (2) la nitro au clavier laisse la touche A enfoncée si Maj est relâchée hors course (`touche()`) ; (3) mineur : XInput remet à zéro les boutons A, B et Y tenus au clavier. La 2e revue ne demande pas de nouvelles captures.
-
-### 2026-11-24 18:35:59 — WFS-602 corrigé après la 1re revue, PR #445 à relire (Claude, lead dev (01UY1Vv3au))
-- Nitro au clavier relâchée partout, état propre à la manette XInput (99b16fd7) ; tests CPU 159 réussis, `qa/pr/WFS-602/tests-cpu.log` (6da47c80). Réponse point par point dans la PR ; 2e revue confiée à une autre instance du lead dev.
-
-### 2026-11-24 18:41:38 — WFS-602 fusionné par le lead dev (lead-dev)
-- 2e revue de la PR #445 par une autre instance du lead dev, sur le commit 6da47c80. Les 3 points du refus sont corrigés : section « Tests CPU » et `tests-cpu.log` ajoutés (159 tests réussis), relâchement de Maj / N qui libère A partout, état précédent propre à la manette XInput. Le développeur a répondu point par point dans la PR.
-- `ninja -C build-windows WaForSpeed` réussit (`WaForSpeed.exe` lié). La branche n'avait que des documents de retard sur `main`. Aucune nouvelle capture n'était demandée (règle du 2026-11-15).
-- « ✅ Approuvé » posté en commentaire (même compte GitHub), puis fusion en squash : b7552678. Statut 🟡 À valider (utilisateur), à essayer sur un vrai PC Windows. Ligne ajoutée à `qa/Check.md`, ligne de `suivi-pr.md` supprimée, session du lead dev 01UY1Vv3au terminée dans `track-agent.md`.
-
-### 2026-11-24 19:08:36 — WFS-604 en PR #446 : duel en ligne PC ↔ téléphone (Claude, lead dev (01UY1Vv3au))
-- L'utilisateur exige le duel PC ↔ Android « dans 30 minutes » : WFS-604 pris par le lead dev en renfort (ordre de l'utilisateur, au-dessus de la règle « un sujet par session »).
-- `src/platform/reseau_windows.cpp` : flux TLS du relais par WinHTTP (WebSocket de Windows), `ClientWs` et protocole inchangés. Pas d'essai réel possible ici (pas de Windows, relais bloqué par le réseau du conteneur) : essai de l'utilisateur.
-
-### 2026-11-24 19:10:47 — WFS-604 fusionné par le lead dev (lead-dev)
-PR #446 (duel en ligne PC ↔ téléphone par WinHTTP), codée par le lead dev en renfort (01UY1Vv3au) et relue par une autre instance. Tout le diff a été lu : poignée de main (Sec-WebSocket-Accept sur la clé de ClientWs), décodage des trames masquées (126 et 127), fils et durée de vie de l'état partagé et des HINTERNET (shared_ptr), envoi hors du verrou. `ninja -C build-windows WaForSpeed` donne zéro avertissement. « ✅ Approuvé » en commentaire, puis squash cfdf516e. Il reste 4 remarques non bloquantes dans la revue (dont l'attente de réception infinie pendant la poignée de main). Statut 🟡 À valider (utilisateur) : le premier essai PC ↔ téléphone sera celui de l'utilisateur.
-
-### 2026-11-24 22:06:16 — E25 « Prototype Godot » créée, WFS-610 au lead dev en renfort (po-scrum-master)
-- Ordre de l'utilisateur (2026-11-24, session lead dev 01UY1Vv3au) : jeu jugé « catastrophique » (pas fluide, ralentissements, qualité, voiture mal visible, voitures qui apparaissent brusquement, bugs) ; « Lance le prototype Godot sans toucher le code actuel, crée une branche spécifique godot ». Règle « pas de moteur tiers » levée **pour ce prototype de comparaison seulement**.
-- Épic **E25** ; **WFS-610** (P1) `[PROTOTYPE] Godot 4 : voiture + route de la Ville + trafic + caméra de course, APK Android à comparer`, règles `regles-de-gestion/WFS-610.md` (RG-01 dossier `godot/` sur la branche `godot`, jamais fusionné, aucune ligne du code actuel ; RG-02 Godot 4 stable MIT, modèles et données réutilisés sans les modifier ; RG-03 mesures images/s, à-coups, pas de pop, lisibilité ; RG-04 APK séparé, autre nom de paquet ; RG-05 décision à l'utilisateur). Pas de PR : relecture de la branche par une autre instance du lead dev.
-- **WFS-610** 🔧 attribué à Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8), ordre direct de l'utilisateur. Numéro 609 sauté : déjà utilisé par la branche `feature/waforspeed-609` du lead dev (duel Wi-Fi PC, non inscrit dans `TACHES.md`, à régulariser).
-- Recommandation du PO (proposition, pas imposée) : geler les nouvelles fonctions du jeu actuel tant que la comparaison n'est pas faite ; les corrections bloquantes continuent. Décision à l'utilisateur.
-
 ### 2026-11-25 12:38:34 — Archives automatiques (robot archives)
 - Journal : 4 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-23).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
@@ -55,3 +14,7 @@ PR #446 (duel en ligne PC ↔ téléphone par WinHTTP), codée par le lead dev e
 ### 2026-11-26 11:27:10 — Statuts automatiques, bancs du matin #85 (robot statuts)
 - Run rouge (schedule, commit f41caa2), aucun statut changé. Job(s) en échec : banc (texte), banc (ecrans-2400), publication-captures.
 - Tickets 🟣 contenus dans ce run : aucun.
+
+### 2026-11-26 12:15:31 — Archives automatiques (robot archives)
+- Journal : 9 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-24).
+- TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
