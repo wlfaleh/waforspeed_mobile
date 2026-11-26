@@ -51,3 +51,7 @@ PR #446 (duel en ligne PC ↔ téléphone par WinHTTP), codée par le lead dev e
 ### 2026-11-25 12:38:34 — Archives automatiques (robot archives)
 - Journal : 4 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-23).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-26 11:27:10 — Statuts automatiques, bancs du matin #85 (robot statuts)
+- Run rouge (schedule, commit f41caa2), aucun statut changé. Job(s) en échec : banc (texte), banc (ecrans-2400), publication-captures.
+- Tickets 🟣 contenus dans ce run : aucun.
