@@ -43,3 +43,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Rapport du banc du téléphone (WFS-420, S21 FE, Ville Basse 45 %) sur l'APK d'essai 611-613 : nuit 42,5 ms (avant 62), jour 24,1 ms ; l'utilisateur : « une catastrophe », « essaie d'améliorer plus ». Coût restant dans les matières des pixels, famille inconnue ; 7 essais lents (≈ 70 ms) inexpliqués.
 - **WFS-614** [TECHNIQUE] P1, E4 : trois interrupteurs de couleur unie (sols, décor, voitures), mesurés par le banc ; fréquence réelle de l'écran et plafond img/s par essai dans le rapport. Règles : `regles-de-gestion/WFS-614.md`.
 - Attribué à Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2), ordre de l'utilisateur (tout dans cette session). Branche `feature/waforspeed-614` partie de `feature/waforspeed-613`. ⛔ Pas de PR ni de fusion avant la levée du blocage ; ensuite 🟡 À valider (utilisateur).
+
+### 2026-11-27 17:59:17 — WFS-614 : APK de diagnostic, CI lancée sur la branche (Claude, lead dev (01UY1Vv1NH))
+- Suite du banc du téléphone de l'utilisateur (S21 FE, 17:14) : nuit 42,5 ms (avant 62), jour 24,1 ms (40 img/s) ; coût restant dans les matières (couleur unie : GPU 37 → 12 ms) ; 7 essais dans un état lent inexpliqué (≈ 70 ms).
+- `feature/waforspeed-614` (6ce0c43f, contient 611 à 613) : 3 interrupteurs « couleur unie » par famille (sols, décor, voitures) mesurés par le banc automatique (34 essais), fréquence réelle de l'écran, plafond et cadence écrits pour chaque essai ; tests CPU 162 / 162.
+- Lancement à la main de `build.yml` (US technique) : run #1168 (46044033746) ; APK publié dans la Release `apercu-waforspeed-614` à 17:51 UTC. Aucune PR, aucune fusion (blocage de l'utilisateur).
