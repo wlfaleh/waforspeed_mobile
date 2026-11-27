@@ -68,7 +68,7 @@ public:
         if (g_ipsT >= 1) { g_ips = (float)(g_ipsN / g_ipsT); g_ipsT = 0; g_ipsN = 0; }
         if (!actif_) return;
         const ecrans::Reglages& R = ecrans::reglages();
-        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; g_auto.palier = 0; r_->echelleDynamique(1.f); g_cadence = {}; qualite::cadenceCourse = 60; }   // WFS-262 : cadence remise à 60   // changé dans les réglages (WFS-246 : palier, zone dessinée)
+        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; g_auto.palier = 0; r_->echelleDynamique(1.f); g_cadence = {}; qualite::cadenceCourse = qualite::cadenceCible(); }   // WFS-262 : cadence remise à 60   // changé dans les réglages (WFS-246 : palier, zone dessinée)
         g_auto.choixJoueur = R.qualiteChoisie;
         const Course* c = activeCourse();
         const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing();
@@ -144,7 +144,7 @@ private:
     bool sceneCourse_ = false; uint32_t pipelinesDebut_ = 0, pipelinesVus_ = 0;
     // WFS-246 (RG-06) : durées d'image de la course ; fichier rendu-mesure.txt toutes les 5 s de course, ligne au journal à la fin
     void mesurer(double dt, bool enCourse) {
-        if (enCourse && !g_enCoursePrec) { g_cadence = {}; qualite::cadenceCourse = 60; }   // WFS-262 : chaque course part à 60
+        if (enCourse && !g_enCoursePrec) { g_cadence = {}; qualite::cadenceCourse = qualite::cadenceCible(); }   // WFS-262 : chaque course part à 60
         if (enCourse) {
             g_mesure.ajouter((float)(dt * 1000));
             if ((g_statsT += dt) >= 1) { g_statsT = 0; g_stats1s = g_mesure.stats(); }

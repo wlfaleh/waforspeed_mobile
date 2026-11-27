@@ -89,7 +89,17 @@ inline float atanRapide(float y, float x) {
     if (x < 0) r = 3.14159274f - r;
     return y < 0 ? -r : r;
 }
-inline float budgetMs(int n) { return n == BASSE ? 16.7f : 22.f; }
+// WFS-611 (moteur 40 img/s) : fréquence la plus haute de l'écran (Hz), donnée par JeuActivity (Display.getSupportedModes) ;
+// 60 sur le banc PC et sous Android tant qu'elle n'est pas connue. Sur un écran 120 Hz (S21 FE), la course vise 40 img/s :
+// 120 / 3, chaque image reste exactement 3 rafraîchissements (25 ms), comme Asphalt 8 sur le même téléphone. À 60 Hz, la
+// synchro FIFO ne permet que 60, 30 ou 20 img/s (une image de 21 ms est affichée 33 ms) : la course garde 60.
+inline float frequenceEcranMax = 60.f;
+constexpr int CADENCE_120HZ = 40;
+inline bool ecran120() { return frequenceEcranMax >= 119.f; }
+inline int cadenceCible() { return ecran120() ? CADENCE_120HZ : 60; }
+// budget de l'image du niveau : 16,7 ms en Basse, 22 ms en Moyenne / Haute ; WFS-611 : 24 ms à tous les niveaux quand la course
+// vise 40 img/s (25 ms par image, 1 ms de marge pour le processeur) : la résolution dynamique monte jusqu'à remplir ce budget
+inline float budgetMs(int n) { return cadenceCible() == CADENCE_120HZ ? 24.f : (n == BASSE ? 16.7f : 22.f); }
 inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 (clé qualite.plancher_moyenne) : plus lue depuis WFS-246
 inline float plancher(int n) { return n == BASSE ? ECHELLE_MIN_BASSE : ECHELLE_MIN; }   // WFS-353 : 45 % en Basse
 inline float echelleRendu(int n, float dynamique) {
@@ -175,7 +185,7 @@ struct Cadence {
         return ips != avant;
     }
 };
-inline int cadenceCourse = 60;   // plafond des images/s en course (chauffe::plafondIps)
+inline int cadenceCourse = 60;   // plafond des images/s en course (chauffe::plafondIps) ; WFS-611 : cadenceCible() au début de chaque course
 inline bool cadenceAuto = false;  // WFS-262 : passage automatique à 30 permis (faux tant que l'utilisateur n'a pas dit oui)
 
 // texte du fichier rendu-mesure.txt (et de la feuille de partage), ligne courte des Réglages ; vides avant toute mesure
