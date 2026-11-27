@@ -73,7 +73,7 @@ vec4 couleurMateriau() { return pc.color.w < -0.5 ? vec4(pc.color.rgb, 1.0) : pc
 // WFS-488 : pièce d'origine NON peinte (toit noir ou carbone pris dans les garnitures noires : Corsa, M4, Range Rover Sport, Brezza) :
 // avec une couleur 2, ses pixels marqués deviennent de la peinture (couleur 2, vernis), sans carte de normales ; finition de la
 // carrosserie dans pc.params.z = 4 + métal × 100 (entier) + rugosité (< 1) ; pixels non marqués : aspect d'origine
-bool peinture2Piece(uint flags) { return (flags & F_PAINT) == 0u && pc.color.w < -0.5 && marquePeinture2(); }
+bool peinture2Piece(uint flags) { return !aF(flags, F_PAINT) && pc.color.w < -0.5 && marquePeinture2(); }
 void finitionPeinture2(inout float metal, inout float rough) { float v = pc.params.z - 4.0; metal = floor(v) / 100.0; rough = fract(v); }
 // peinture : couche de vernis par-dessus (reflets du ciel et du soleil). WFS-490 : rugosité du vernis rV (0,03 = brillant, aspect
 // d'avant), force du vernis kV (0 = pas de vernis : mat, chromé ; la lumière de nuit de la chaussée reste reçue) et couleur qui

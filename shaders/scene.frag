@@ -28,25 +28,25 @@ const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F
 #include "sols.glsl"        // WFS-383 : sols des cartes (pré, terre, roche selon la pente)
 
 void main() {
-    uint flags = uint(pc.params.w + 0.5);
+    uint flags = uint(pc.params.w + 0.5) & MASQUE_FAMILLE;   // moteur 40 img/s : drapeaux de la famille du pipeline
     // finesse de la pièce (WFS-42) : seulement pour les voitures (emissive.w sert à la demi-largeur de route sinon)
-    bool fine = pc.emissive.w > 0.0 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u;
+    bool fine = pc.emissive.w > 0.0 && !aF(flags, (F_ROAD | F_WALK | F_GROUND));
     // WFS-134 (RG-12) : fondu entre la voiture complète et sa version allégée (56 à 64 m) : tramage écran 4×4 complémentaire
     // (emissive.w = −(1 + t) : pixel gardé si seuil < t ; −(3 + t) : gardé si seuil ≥ t)
-    if (pc.emissive.w < -0.5 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) {
+    if (pc.emissive.w < -0.5 && !aF(flags, (F_ROAD | F_WALK | F_GROUND))) {
         fonduLod();
     }
     // WFS-16 : passe de reflet (vue miroir de la chaussée) : rien de ce qui est sous le plan
     if (!SANS_DISCARD && F.nuitA.w > 0.5 && vWorld.y < F.nuitB.x - 0.05) discard;   // WFS-222 : SANS_DISCARD (common.glsl)
-    if ((flags & F_ADD) != 0u) {   // WFS-09 : halo des feux et des lampadaires (TEXS.radial du jeu web, mélange additif)
+    if (aF(flags, F_ADD)) {   // WFS-09 : halo des feux et des lampadaires (TEXS.radial du jeu web, mélange additif)
         outColor = haloLumiere();
         return;
     }
-    if ((flags & F_POOL) != 0u) {   // WFS-09 : tache des phares sur la route (beamTex('pool') de js/cars/models.js)
+    if (aF(flags, F_POOL)) {   // WFS-09 : tache des phares sur la route (beamTex('pool') de js/cars/models.js)
         outColor = tachePhares();
         return;
     }
-    if ((flags & F_SHADOW) != 0u) {   // ombre de contact : rectangle aux bords très doux
+    if (aF(flags, F_SHADOW)) {   // ombre de contact : rectangle aux bords très doux
         outColor = ombreContact();
         return;
     }
@@ -61,53 +61,53 @@ void main() {
     // WFS-263 (RG-01) : part « légère » du pixel : 0 jusqu'à 60 m, 1 au-delà de 70 m (fondu sur 10 m, aucune ligne visible) ;
     // voitures, route, transparents, vitres d'immeuble : toujours complets. Variante LEGER (objet entier au-delà de 70 m) : 1
     const uint F_COMPLET = F_PAINT | F_GLASS | F_WHEEL | F_TAIL | F_HEAD | F_FANTOME | F_ROAD | F_BLEND | F_INTERIEUR;
-    float kL = LEGER ? 1.0 : ((flags & F_COMPLET) != 0u ? 0.0 : smoothstep(60.0, 70.0, length(F.camPos.xyz - vWorld)));
-    bool vtint = (flags & F_VTINT) != 0u;   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces
+    float kL = LEGER ? 1.0 : (aF(flags, F_COMPLET) ? 0.0 : smoothstep(60.0, 70.0, length(F.camPos.xyz - vWorld)));
+    bool vtint = aF(flags, F_VTINT);   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces
     // pièces double face. Route, trottoirs et bas-côtés : normales déjà orientées vers le haut à la construction, mais
     // triangles enroulés dans l'autre sens → ne pas retourner (sinon le sol ne recevait ni soleil ni ombre, WFS-07)
     // passe de reflet (WFS-16) : la vue miroir inverse le sens des faces
     bool face = gl_FrontFacing != (F.nuitA.w > 0.5);
-    if (!face && !vtint && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
+    if (!face && !vtint && !aF(flags, (F_ROAD | F_WALK | F_GROUND))) N = -N;
     vec4 base = texture(texColor, vUv) * couleurMateriau();   // WFS-488 (accroche) : alpha gardé si pc.color.w porte une couleur 2
     // WFS-100 (RG-03, ANO-28) : carrosserie = couleur de peinture choisie × 1, sans la texture de couleur du modèle
     // (js/cars/models.js : color.set(paint), carte de couleur retirée) ; vitres, feux, jantes et logos gardent leur texture
-    const bool peint2 = peinture2Piece(flags);   // WFS-488 (accroche) : toit d'origine non peint, repeint en couleur 2
+    const bool peint2 = (MASQUE_FAMILLE & F_PAINT) != 0u && peinture2Piece(flags);   // moteur 40 img/s : voitures seulement   // WFS-488 (accroche) : toit d'origine non peint, repeint en couleur 2
     if (peint2) flags = (flags | F_PAINT) & ~F_HASNORMAL;
-    if ((flags & F_PAINT) != 0u) base = couleurPeinture();   // WFS-488 (accroche) : couleur 2 du toit et des rétros (vehicule.glsl)
+    if (aF(flags, F_PAINT)) base = couleurPeinture();   // WFS-488 (accroche) : couleur 2 du toit et des rétros (vehicule.glsl)
     // WFS-324 : glace de rétroviseur à reflet (F_EMTEX et params.z = −2, retroviseurs.h) : la texture est l'image du reflet (lumière
     // HDR de la scène), renvoyée × la réflexion de la glace (emissive) ; ni lumière diffuse, ni reflet du ciel (fin du shader)
-    bool retro = (flags & F_EMTEX) != 0u && pc.params.z < -1.5;
+    bool retro = aF(flags, F_EMTEX) && pc.params.z < -1.5;
     vec3 refletRetro = vec3(0.0);
     if (retro) { refletRetro = base.rgb * pc.emissive.rgb; base.rgb = vec3(0.0); }
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
-    const int finition = (flags & F_PAINT) != 0u ? lireFinition(metal) : 0;   // WFS-490 (accroche) : finition de la peinture (vehicule.glsl)
+    const int finition = aF(flags, F_PAINT) ? lireFinition(metal) : 0;   // WFS-490 (accroche) : finition de la peinture (vehicule.glsl)
     if (skinPixel != 0) base.rgb = habillage(base.rgb, skinPixel);   // WFS-492 (accroche) : skin du joueur, sous la finition et le vernis
-    if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
+    if (aF(flags, F_HASMR)) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
     if (peint2) finitionPeinture2(metal, rough);   // WFS-488 (accroche) : finition de la carrosserie
     if (kL < 1.0) {   // WFS-263 : relief de la carte de normales seulement en deçà de 70 m (fondu de 60 à 70 m)
         vec3 Ng = N;
-        if ((flags & F_HASNORMAL) != 0u && (flags & F_TANGENTE) != 0u && dot(vTan.xyz, vTan.xyz) > 0.25)   // WFS-149 (RG-04)
+        if (aF(flags, F_HASNORMAL) && aF(flags, F_TANGENTE) && dot(vTan.xyz, vTan.xyz) > 0.25)   // WFS-149 (RG-04)
             N = perturbTangente(N, vTan, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
-        else if ((flags & F_HASNORMAL) != 0u) N = perturb(N, vWorld, vUv, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
+        else if (aF(flags, F_HASNORMAL)) N = perturb(N, vWorld, vUv, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
         if (kL > 0.0) N = normalize(mix(N, Ng, kL));
     }
-    if (!SANS_DISCARD && (flags & F_MASK) != 0u && base.a < pc.params.z) discard;   // WFS-222
+    if (!SANS_DISCARD && aF(flags, F_MASK) && base.a < pc.params.z) discard;   // WFS-222
 
     // ---------- surfaces procédurales (uv = mètres : x latéral, y le long de la route) ----------
     bool wetRoad = false;   // WFS-16 : chaussée mouillée ; WFS-142 (RG-01) : seulement quand il pleut
     float flaque = 0.0;     // WFS-142 : part de flaque d'eau au pixel (0 à 1)
-    if ((flags & F_ROAD) != 0u) {
+    if (aF(flags, F_ROAD)) {
         surfaceRoute(base, rough, metal, N, wetRoad, flaque);
-    } else if ((flags & F_WALK) != 0u) {
+    } else if (aF(flags, F_WALK)) {
         surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
-    } else if ((flags & F_GROUND) != 0u) {
+    } else if (aF(flags, F_GROUND)) {
         if (pc.params.z >= 1.0) surfaceTerrain(base, rough, metal, vNrm, N); else surfaceSol(base, rough, metal);   // WFS-383 (accroche) ; WFS-594 : relief (N)
-    } else if ((flags & F_FACADE) != 0u) {
+    } else if (aF(flags, F_FACADE)) {
         surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }
     float eauEcume = 0.0, eauAlpha = 1.0;   // WFS-380 : eau (vagues, couleur selon la profondeur, écume)
-    if ((flags & F_EAU) != 0u) eauEcume = surfaceEau(base, rough, metal, N, V, eauAlpha);
+    if (aF(flags, F_EAU)) eauEcume = surfaceEau(base, rough, metal, N, V, eauAlpha);
 
     vec3 L = normalize(F.sunDir.xyz);
     vec3 H = normalize(V + L);
@@ -123,7 +123,7 @@ void main() {
     float detailK = 1.0;   // part du pixel réellement couverte par la pièce (1 = pièce plus large qu'un pixel)
     if (fine) detailK = clamp(pc.emissive.w / max(length(fwidth(vWorld)), 1e-6), 0.0, 1.0);
     // opaque : pas d'alpha → les reflets (soleil, ciel, vernis) sont atténués par la couverture ; transparent : alpha × couverture
-    float specK = (flags & F_BLEND) == 0u ? detailK : 1.0;
+    float specK = !aF(flags, F_BLEND) ? detailK : 1.0;
     // WFS-490 (accroche) : couleur, métal, rugosité ; une carrosserie couvre toujours le pixel (specK = 1 : les caisses très denses,
     // classées « très fines » par erreur, perdaient leurs reflets, cf. WFS-460) ; brillant : inchangé
     if (finition != 0) { finitionSurface(finition, base.rgb, metal, rough); specK = 1.0; }
@@ -131,7 +131,7 @@ void main() {
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
     if (wetRoad) f0 = vec3(mix(0.04, 0.02, flaque));   // WFS-142 (RG-03) : eau des flaques f0 = 0,02
-    if ((flags & F_EAU) != 0u) f0 = vec3(mix(0.02, 0.04, eauEcume));   // WFS-380 (RG-02) : eau f0 = 0,02 (écume 0,04)
+    if (aF(flags, F_EAU)) f0 = vec3(mix(0.02, 0.04, eauEcume));   // WFS-380 (RG-02) : eau f0 = 0,02 (écume 0,04)
     vec3 Fs = F_Schlick(f0, VoH);
     vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
@@ -139,7 +139,7 @@ void main() {
     float ombre = sunShadow(vWorld, N);
     vec3 col = diff * sun * NoL * ombre + min(spec * sun * NoL * ombre, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
     col += spotLights(vWorld, N, V, albedo, f0, metal, a, vtint);   // WFS-45 (aucun si spotN = 0)
-    if ((flags & F_EAU) != 0u && int(pc.params.z + 0.5) == 0) col += eauRefletsLampes(vWorld, N, V, a) * (1.0 - eauEcume);   // WFS-380 (RG-02)
+    if (aF(flags, F_EAU) && int(pc.params.z + 0.5) == 0) col += eauRefletsLampes(vWorld, N, V, a) * (1.0 - eauEcume);   // WFS-380 (RG-02)
 
     // lumière ambiante : ciel (hémisphère) + reflets de l'environnement
     vec3 R = reflect(-V, N);
@@ -150,12 +150,12 @@ void main() {
     if (vtint) Fe = vec3(0.0);   // pas de reflet du ciel sur les cartes vues en rasant ou de dos
     // WFS-142 (RG-04) : chaussée : Fresnel plafonné à 0,25 (0,4 dans les flaques), même en vue rasante (caméra basse de course :
     // NoV ≈ 0,05 au loin donnait Fe ≈ 0,78, un reflet presque total sur toute la route lointaine)
-    if ((flags & F_ROAD) != 0u) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
+    if (aF(flags, F_ROAD)) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
     // le disque du soleil ne se reflète nettement que sur les surfaces lisses (sinon tache blanche sur la route)
     // pièces fines (WFS-42) : le ciel reflété, et surtout le disque du soleil (60 x l'intensité), suivent la rugosité
     // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
     float roughEnv = fine ? max(rough, sqrt(a)) : rough;
-    if ((flags & F_EAU) != 0u) roughEnv = min(roughEnv, 0.12);   // WFS-380 (D1) : le ciel reflété au loin reste clair (pas de bande sombre)
+    if (aF(flags, F_EAU)) roughEnv = min(roughEnv, 0.12);   // WFS-380 (D1) : le ciel reflété au loin reste clair (pas de bande sombre)
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
     // WFS-263 (RG-01) : version légère de l'ambiance et du reflet (au-delà de 60 m), mélangée sur le fondu
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
@@ -168,15 +168,15 @@ void main() {
         if (F.iblA.x < 0.5) {
             env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
             // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
-            if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
+            if (aF(flags, F_PAINT)) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
         }
         iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
     }
     if (kL > 0.0) { skyAmb = mix(skyAmb, skyAmbL, kL); env = mix(env, envL, kL); Fe = mix(Fe, FeL, kL); specOcc = mix(specOcc, specOccL, kL); }
-    if ((flags & F_EAU) != 0u) { Fe = f0 + (1.0 - f0) * pow(1.0 - NoV, 5.0); specOcc = 1.0; }   // WFS-380 (D1) : Fresnel de l'eau entier
+    if (aF(flags, F_EAU)) { Fe = f0 + (1.0 - f0) * pow(1.0 - NoV, 5.0); specOcc = 1.0; }   // WFS-380 (D1) : Fresnel de l'eau entier
     // WFS-269 (accroche) : occlusion du décor fixe précalculée au chargement (eclairage_precalcule.h), rangée dans la longueur de
     // la normale : ambiance et reflet du ciel seulement (le soleil, les lampes et les phares restent directs)
-    if ((flags & F_AO) != 0u && !vtint) { float aoPre = clamp(length(vNrm), 0.0, 1.0); skyAmb *= aoPre; env *= aoPre; }
+    if (aF(flags, F_AO) && !vtint) { float aoPre = clamp(length(vNrm), 0.0, 1.0); skyAmb *= aoPre; env *= aoPre; }
     if (wetRoad && F.nuitA.z > 0.5) {
         // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran.
         // WFS-142 (RG-04) : il ne REMPLACE plus le reflet du ciel (avant : env = reflet, l'image nette de la rue sur toute la
@@ -204,29 +204,29 @@ void main() {
     // WFS-490 (accroche) : chrome (miroir) : sous l'horizon, la chaussée réelle (la sonde ne la contient pas : qa/pr/WFS-490/
     // preuve-sonde-brute-gt86.jpg), au-dessus le reflet de la sonde entier (vehicule.glsl, chausseeReflechie)
     if (finition == FIN_CHROME) env = mix(env, chausseeReflechie(sun), smoothstep(0.02, -0.05, R.y));
-    float kMesure = ((flags & F_ROAD) != 0u && F.nuitB.w < 0.0) ? 0.0 : 1.0;   // WFS-142 (RG-08) : WFS_REFLETS=0, route sans reflet
+    float kMesure = (aF(flags, F_ROAD) && F.nuitB.w < 0.0) ? 0.0 : 1.0;   // WFS-142 (RG-08) : WFS_REFLETS=0, route sans reflet
     col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK * kMesure;   // WFS-100 RG-01 / RG-02
 
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
-    if ((flags & F_PAINT) != 0u) {
+    if (aF(flags, F_PAINT)) {
         vernisFinition(finition, col, R, sun, NoV, NoH, NoL, aaKernel, specK, N, H, ombre, albedo, f0);   // WFS-490 (accroche) ; brillant : vernisPeinture
     }
     float alpha = base.a * detailK;   // pièce transparente plus fine qu'un pixel : couverture partielle (WFS-42)
-    if ((flags & F_EAU) != 0u) alpha = eauAlpha;   // WFS-380 (RG-04) : sillage et éclaboussure en dentelle
-    if ((flags & F_GLASS) != 0u) {
+    if (aF(flags, F_EAU)) alpha = eauAlpha;   // WFS-380 (RG-04) : sillage et éclaboussure en dentelle
+    if (aF(flags, F_GLASS)) {
         vitre(col, alpha, albedo, skyAmb, R, sun, NoV, NoH, NoL);
     }
-    if ((flags & F_INTERIEUR) != 0u) col += interieurFenetre(N, V, skyAmb) * (vec3(1.0) - Fe);   // WFS-161 (accroche) : pièce derrière la vitre
+    if (aF(flags, F_INTERIEUR)) col += interieurFenetre(N, V, skyAmb) * (vec3(1.0) - Fe);   // WFS-161 (accroche) : pièce derrière la vitre
     else if (retro) col = refletRetro;   // WFS-324 : reflet du rétroviseur, déjà en lumière de la scène (pas de facteur des lumières
                                          // artistiques) ; la face avant du verre renvoie la même vue (pas le ciel de la sonde : il voilait la glace)
-    else col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0)) * F.iblB.w;   // WFS-134 : émission × texture ; WFS-151 (RG-06)
+    else col += pc.emissive.rgb * ((aF(flags, F_EMTEX)) ? base.rgb : vec3(1.0)) * F.iblB.w;   // WFS-134 : émission × texture ; WFS-151 (RG-06)
     col += skinEmission * F.iblB.w;   // WFS-493 (accroche) : filets de la skin Néon nuit, la nuit (vehicule.glsl) ; 0 sinon
     // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
-    if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
+    if (aF(flags, F_WHEEL)) col = max(col, albedo * 0.08);
 
     // WFS-594 (accroche, banc seulement : WFS_VUE_SURFACE) : planche des surfaces procédurales : normale (0,5 + 0,5 × N) ou rugosité, au
     // lieu de la couleur, pour la chaussée, le trottoir et le sol ; ramenée par l'exposition (lisible après la passe finale)
-    if (F.nuitB.w < -1.5 && (flags & (F_ROAD | F_WALK | F_GROUND)) != 0u) {
+    if (F.nuitB.w < -1.5 && aF(flags, (F_ROAD | F_WALK | F_GROUND))) {
         // normale : gris neutre + inclinaison × 4 (x en rouge, z en bleu) ; rugosité : 0 noir à 1 blanc ; ≈ gris moyen après l'exposition
         vec3 v = F.nuitB.w < -2.5 ? vec3(rough) : clamp(vec3(0.5 + 4.0 * N.x, 0.5, 0.5 + 4.0 * N.z), 0.0, 1.0);
         outColor = vec4(v * 0.3 / max(F.misc.x, 1e-6), 1.0);
@@ -241,9 +241,9 @@ void main() {
     if (any(isnan(col)) || any(isinf(col))) col = vec3(0.0);
     // WFS-134 (RG-07, ANO-60) : fantôme du record : teinte cyan #00E5FF à 30 %, translucide (α 0,45), un peu lumineux
     // pour rester visible de nuit
-    if ((flags & F_FANTOME) != 0u) {
+    if (aF(flags, F_FANTOME)) {
         outColor = fantome(col, alpha);
         return;
     }
-    outColor = vec4(col, ((flags & F_BLEND) != 0u) ? alpha : 1.0);
+    outColor = vec4(col, (aF(flags, F_BLEND)) ? alpha : 1.0);
 }

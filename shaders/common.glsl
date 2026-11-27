@@ -6,6 +6,14 @@ layout(constant_id = 0) const bool SANS_DISCARD = false;
 // WFS-263 (RG-01) : LEGER = vrai pour la variante légère de scene.frag (décor dont le point le plus proche est à plus de 70 m) :
 // sans carte de normales, une seule lecture de la sonde (cube dominant) au lieu de trois ; faux par défaut
 layout(constant_id = 1) const bool LEGER = false;
+// Moteur 40 img/s : MASQUE_FAMILLE = drapeaux de matériau que ce pipeline sait dessiner (tous par défaut). Le moteur choisit,
+// pour chaque objet, le plus petit pipeline dont le masque contient tous les drapeaux de son matériau : le pilote retire au
+// chargement tout le code des autres familles (route, eau, peinture, vitres…). Le shader complet (≈ 20 000 instructions)
+// gardait sinon les registres du pire cas pour chaque pixel : beaucoup moins de pixels en vol sur un GPU mobile (Adreno, Mali).
+// Même image au pixel près : un matériau n'a jamais un drapeau absent du masque de son pipeline.
+layout(constant_id = 2) const uint MASQUE_FAMILLE = 0xFFFFFFFFu;
+// vrai si le matériau porte un des drapeaux f ; faux à la compilation quand la famille du pipeline n'en a aucun
+bool aF(uint flags, uint f) { return (MASQUE_FAMILLE & f) != 0u && (flags & f) != 0u; }
 layout(set = 0, binding = 0) uniform Frame {
     mat4 viewProj;
     mat4 invViewProj;

@@ -13,7 +13,7 @@ void surfaceSol(inout vec4 base, inout float rough, inout float metal) {
 void teinteVegetation(inout vec4 base, bool vtint, uint flags) {
     if (vtint) base.rgb *= length(vNrm);
     // alpha découpé : la couverture est conservée dans les mipmaps lointains (le feuillage ne s'éclaircit pas au loin)
-    if (vtint && (flags & F_MASK) != 0u) base.a *= 1.0 + max(textureQueryLod(texColor, vUv).x, 0.0) * 0.25;
+    if (vtint && aF(flags, F_MASK)) base.a *= 1.0 + max(textureQueryLod(texColor, vUv).x, 0.0) * 0.25;
 }
 
 // ---------------------------------------------------------------- WFS-161 (ST-3, RG-03) : intérieurs derrière les vitres

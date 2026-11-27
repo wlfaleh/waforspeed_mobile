@@ -11,6 +11,7 @@
 #include "../core/math.h"
 #include "../game/roues.h"   // WFS-60 : RoueModele, RouesPose
 #include "masquage.h"   // WFS-82 : masquage hors champ et au loin
+#include "familles_pipeline.h"   // moteur 40 img/s : shader de scène spécialisé par famille d'objets
 #include "eclairage_ombres.h"   // WFS-227 : cascades d'ombre du soleil
 #include "passe_scene.h"   // WFS-425 : passe de scène, copie de la scène ×1
 #include "eclairement_voiture.h"   // WFS-423 : éclairement de la chaussée autour des voitures (CPU, Basse)
@@ -396,6 +397,13 @@ private:
     // WFS-263 (RG-01) : variante légère de scene.frag (LEGER), faces arrière retirées ou non ; legerPipeline_ : prochaine makePipeline
     VkPipeline opaqueLeger_ = VK_NULL_HANDLE, opaqueLegerDouble_ = VK_NULL_HANDLE;
     bool legerPipeline_ = false, legerActif_ = true;
+    // moteur 40 img/s : mêmes pipelines opaques, spécialisés par famille (familles_pipeline.h) ; indice 0 inutilisé (= opaque_ etc.).
+    // masquePipeline_ : constante MASQUE_FAMILLE de la prochaine makePipeline ; famillesActives_ faux au banc (WFS_FAMILLES=0)
+    VkPipeline famOpaque_[famille_pipeline::NOMBRE]{}, famCull_[famille_pipeline::NOMBRE]{}, famLeger_[famille_pipeline::NOMBRE]{},
+               famLegerDouble_[famille_pipeline::NOMBRE]{}, famDecoupe_[famille_pipeline::NOMBRE]{};
+    uint32_t masquePipeline_ = 0xFFFFFFFFu;
+    bool famillesActives_ = true;
+    void detruireFamilles();
     int cullPipeline_ = 0;
     bool facesArriere_ = true;   // retrait actif (WFS_FACES=0 au banc : désactivé, pour comparer)
     VkPipeline skyApres_ = VK_NULL_HANDLE;   // WFS-222 : ciel dessiné après les opaques, test de profondeur (pixels vides seulement)
