@@ -740,9 +740,16 @@ void Renderer::refletPass(VkCommandBuffer cb) {
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refSky_);
     vkCmdDraw(cb, 3, 1, 0, 0);
     constexpr uint32_t SANS = MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_SHADOWBLOB | MAT_POOL;
-    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refOpaque_);
-    for (const Pending& p : opaqueQ_) if (p.osOfs < 0 && !(p.mat->flags & SANS) && (p.vis & VIS_REFLET)) flushDraw(p);   // WFS-82
     VkPipeline lie = VK_NULL_HANDLE;
+    for (const Pending& p : opaqueQ_) {
+        if (p.osOfs >= 0 || (p.mat->flags & SANS) || !(p.vis & VIS_REFLET)) continue;   // WFS-82
+        // WFS-611 : shader spécialisé de la famille de l'objet
+        const int fam = famillesActives_ ? famille_pipeline::choisir((uint32_t)(p.pc.params.w + 0.5f), p.famille == FAM_VOITURES) : 0;
+        const VkPipeline voulu = fam && refFam_[fam] ? refFam_[fam] : refOpaque_;
+        if (voulu != lie) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
+        flushDraw(p);
+    }
+    lie = VK_NULL_HANDLE;
     for (const Pending& p : transparent_) {
         if ((p.mat->flags & SANS) || !(p.vis & VIS_REFLET)) continue;   // WFS-82
         const VkPipeline voulu = (p.mat->flags & MAT_ADD) ? refAdd_ : refBlend_;
@@ -892,6 +899,12 @@ void Renderer::createPipelines() {
     // WFS-16 : passe de reflet (1 échantillon)
     const VkSampleCountFlagBits s1 = VK_SAMPLE_COUNT_1_BIT;
     refOpaque_ = makePipeline(sv, sf, 1, false, false, true, true, refletPass_, s1, sceneLayout_);
+    // WFS-611 : opaques de la passe de reflet dans le shader spécialisé de leur famille (même image, shader plus court)
+    for (int f = 1; f < famille_pipeline::NOMBRE; f++) {
+        masquePipeline_ = famille_pipeline::MASQUES[f];
+        refFam_[f] = makePipeline(sv, sf, 1, false, false, true, true, refletPass_, s1, sceneLayout_);
+    }
+    masquePipeline_ = 0xFFFFFFFFu;
     refBlend_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_);
     refSky_ = makePipeline(kv, kf, 0, false, false, false, false, refletPass_, s1, sceneLayout_);
     refAdd_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_, false, 2);
@@ -1990,6 +2003,7 @@ void Renderer::shutdown() {
         if (p) vkDestroyPipeline(d, p, nullptr);
     copieX1_.detruire(d);   // WFS-425 : pipeline, jeu, disposition et shaders de la copie ×1
     detruireFamilles();   // moteur 40 img/s
+    for (VkPipeline& p : refFam_) { if (p) vkDestroyPipeline(d, p, nullptr); p = VK_NULL_HANDLE; }   // WFS-611 : passe de reflet
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
     vk_->destroy(quadIb_);
     if (refletPass_) vkDestroyRenderPass(d, refletPass_, nullptr);
