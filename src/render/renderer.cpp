@@ -185,11 +185,11 @@ bool Renderer::init(VkCtx& vk) {
     lci.bindingCount = 3; lci.pBindings = mb;   // WFS-100 : 0 = image source, 1 = bloom (passe finale) / niveau inférieur (remontée) ; WFS-612 : 2 = halo (passe finale)
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &postLayout_));
 
-    VkDescriptorPoolSize sizes[3] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16 + 48 + 12 + 32},   // WFS-612 : 3e image des jeux du bloom et du halo   // WFS-151 : + 3 × 4 jeux de l'image
+    VkDescriptorPoolSize sizes[3] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16 + 48 + 12 + 32},   // WFS-151 : + 3 × 4 jeux de l'image ; WFS-612 : 3e image des jeux du bloom et du halo
                                      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 4}};   // WFS-63 : palettes d'os
     VkDescriptorPoolCreateInfo pci{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    pci.maxSets = 1024 + 16 + 16 + 2;   // WFS-612 : + 2 sets du halo ; pci.poolSizeCount = 3; pci.pPoolSizes = sizes;   // WFS-100 : + 16 sets du bloom
+    pci.maxSets = 1024 + 16 + 16 + 2; pci.poolSizeCount = 3; pci.pPoolSizes = sizes;   // WFS-100 : + 16 sets du bloom ; WFS-612 : + 2 sets du halo
     VK_OK(vkCreateDescriptorPool(d, &pci, nullptr, &pool_));
     ETAPE_RENDU("descripteurs");
 
