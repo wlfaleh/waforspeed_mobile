@@ -38,3 +38,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-27 16:35:17 — WFS-611 / 612 / 613 bloqués par l'utilisateur (Claude, lead dev (01UY1Vv1NH))
 - Ordre de l'utilisateur : « Je merge pas et bloque les PRs. J'ai commencé le test, il y a des trucs bizarres. J'ai lancé le test auto, je te renvoie le rapport dès qu'il finit. »
 - Aucune PR ouverte, aucune fusion ; statut des trois tickets : ⛔ Bloqué par l'utilisateur (APK d'essai `apercu-waforspeed-613`, run #1167). Aucun lead dev (passage de l'heure compris) n'ouvre ni ne fusionne de PR pour ces tickets avant le rapport de l'utilisateur et sa levée du blocage.
+
+### 2026-11-27 17:26:16 — WFS-614 créé et attribué au lead dev (01UY1Vv1NH) (po-scrum-master)
+- Rapport du banc du téléphone (WFS-420, S21 FE, Ville Basse 45 %) sur l'APK d'essai 611-613 : nuit 42,5 ms (avant 62), jour 24,1 ms ; l'utilisateur : « une catastrophe », « essaie d'améliorer plus ». Coût restant dans les matières des pixels, famille inconnue ; 7 essais lents (≈ 70 ms) inexpliqués.
+- **WFS-614** [TECHNIQUE] P1, E4 : trois interrupteurs de couleur unie (sols, décor, voitures), mesurés par le banc ; fréquence réelle de l'écran et plafond img/s par essai dans le rapport. Règles : `regles-de-gestion/WFS-614.md`.
+- Attribué à Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2), ordre de l'utilisateur (tout dans cette session). Branche `feature/waforspeed-614` partie de `feature/waforspeed-613`. ⛔ Pas de PR ni de fusion avant la levée du blocage ; ensuite 🟡 À valider (utilisateur).
