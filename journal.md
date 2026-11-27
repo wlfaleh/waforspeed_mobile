@@ -34,3 +34,7 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Branche `feature/waforspeed-613` (a207e551) : WFS-613 + reprise de WFS-611 et WFS-612 + synchronisation avec main ; compilation locale du moteur et tests test_familles_pipeline, test_halo_reduit, test_tuiles_lumieres OK.
 - Lancement à la main de `build.yml` (US techniques : CI de branche permise, une à la fois) : run #1167 (46025288758) ; il vérifie compilation, tests, bancs et APK ; APK dans la Release `apercu-waforspeed-613`.
 - Mesures déjà faites au banc PC : WFS-612 passe finale 54,6 → 22,9 ms (lavapipe), écart moyen ≤ 0,0014 niveau ; WFS-613 10 / 10 captures identiques au pixel près, 71 % des couples (tuile, lumière) écartés.
+
+### 2026-11-27 16:35:17 — WFS-611 / 612 / 613 bloqués par l'utilisateur (Claude, lead dev (01UY1Vv1NH))
+- Ordre de l'utilisateur : « Je merge pas et bloque les PRs. J'ai commencé le test, il y a des trucs bizarres. J'ai lancé le test auto, je te renvoie le rapport dès qu'il finit. »
+- Aucune PR ouverte, aucune fusion ; statut des trois tickets : ⛔ Bloqué par l'utilisateur (APK d'essai `apercu-waforspeed-613`, run #1167). Aucun lead dev (passage de l'heure compris) n'ouvre ni ne fusionne de PR pour ces tickets avant le rapport de l'utilisateur et sa levée du blocage.
