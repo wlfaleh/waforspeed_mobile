@@ -69,6 +69,7 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     private static native void nativeLangue(String code);
     // WFS-611 : fréquence la plus haute de l'écran (Hz) : 120 sur le S21 FE ; le jeu demande alors 120 Hz (40 img/s possibles au lieu de 30)
     private static native void nativeFrequenceEcran(float hzMax);
+    private static native void nativeFrequenceActuelle(float hz);   // WFS-614 (RG-03) : fréquence réelle de l'écran, à chaque changement
     private final HashSet<Integer> manettes = new HashSet<>();
     private String derniersEncarts = "";   // WFS-129 : dernières marges écrites au journal
     private InputManager entrees;
@@ -317,6 +318,17 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         final String rapport = prendreRapportPrecedent();
         super.onCreate(etat);
         if (rapport != null) proposerRapport(rapport);
+        try {   // WFS-614 (RG-03) : fréquence réelle de l'écran au départ et à chaque changement (le banc du téléphone l'écrit par essai)
+            final android.hardware.display.DisplayManager dm = (android.hardware.display.DisplayManager) getSystemService(DISPLAY_SERVICE);
+            nativeFrequenceActuelle(getWindowManager().getDefaultDisplay().getRefreshRate());
+            dm.registerDisplayListener(new android.hardware.display.DisplayManager.DisplayListener() {
+                @Override public void onDisplayAdded(int id) {}
+                @Override public void onDisplayRemoved(int id) {}
+                @Override public void onDisplayChanged(int id) {
+                    if (id == android.view.Display.DEFAULT_DISPLAY) nativeFrequenceActuelle(getWindowManager().getDefaultDisplay().getRefreshRate());
+                }
+            }, null);
+        } catch (RuntimeException e) { Log.w("WaForSpeed", "ECRAN fréquence actuelle illisible : " + e); }
         setVolumeControlStream(AudioManager.STREAM_MUSIC);   // WFS-132 (RG-07) : boutons de volume sur le son du jeu
         final boolean testMaj = depart != null && depart.getBooleanExtra("wfs_maj_test", false) && apkDeTest();
         verifierMiseAJour(rapport != null, testMaj);   // WFS-132 (RG-01 à RG-06)

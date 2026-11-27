@@ -20,7 +20,7 @@ constexpr double CHAUFFE_S = 30, MESURE_S = 60;   // RG-02
 constexpr uint32_t GRAINE = 0x5eed1u;              // RG-01 : graine du trafic (celle de la course solo)
 constexpr double PART_MIN = 0.90;                  // RG-03 : part du temps GPU total expliquée par les passes
 constexpr double SEUIL_CHAUFFE = 5;                 // % : contrôle final plus lent que la référence d'au moins cela = le téléphone a chauffé
-constexpr int N_INTERRUPTEURS = 12;                // diag::N_INTERRUPTEURS (vérifié par reglages_banc.cpp)
+constexpr int N_INTERRUPTEURS = 15;                // diag::N_INTERRUPTEURS (vérifié par reglages_banc.cpp)
 
 inline bool actif = false;   // RG-06 : vrai seulement pendant le banc (qualité automatique figée, mesures)
 inline double dureeChauffe = CHAUFFE_S, dureeMesure = MESURE_S;   // banc PC seulement : durées raccourcies (WFS_BANC_TEL_DUREES)

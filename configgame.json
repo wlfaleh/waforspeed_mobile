@@ -108,7 +108,10 @@
     "resolution_30": 0,
     "couleur_unie": 0,
     "sans_decor": 0,
-    "distance_demi": 0
+    "distance_demi": 0,
+    "unie_sols": 0,
+    "unie_decor": 0,
+    "unie_voitures": 0
   },
   "paquets": {
     "adresse_liste": "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json"

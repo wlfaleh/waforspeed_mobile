@@ -404,6 +404,9 @@ private:
                refFam_[famille_pipeline::NOMBRE]{};   // passe de reflet (route mouillée), opaques par famille
     uint32_t masquePipeline_ = 0xFFFFFFFFu;
     bool famillesActives_ = true;
+    // WFS-614 (banc du téléphone) : couleur unie sur une seule famille d'objets (sols, décor ou voitures) ; faux dans le jeu
+    bool uniePar_ = false;
+    bool unieFamille(const Pending& p) const;
     void detruireFamilles();
     int cullPipeline_ = 0;
     bool facesArriere_ = true;   // retrait actif (WFS_FACES=0 au banc : désactivé, pour comparer)

@@ -946,6 +946,14 @@ static_assert(fp::PEINTURE == MAT_PAINT && fp::MELANGE == MAT_BLEND && fp::FEU_A
               fp::EMISSION_TEXTURE == MAT_EMTEX && fp::TANGENTE == MAT_TANGENTE && fp::INTERIEUR == MAT_INTERIEUR && fp::FACADE == MAT_FACADE &&
               fp::OCCLUSION == MAT_AO && fp::EAU == MAT_EAU, "familles_pipeline.h : drapeaux différents de MatFlags");
 
+// WFS-614 (banc du téléphone) : l'objet est-il dans la famille dont l'interrupteur « couleur unie » est allumé ? Sols : route,
+// trottoirs, bas-côtés ; voitures : tout ce qui est dessiné comme une voiture (caisse, vitres, roues, feux) ; décor : le reste
+bool Renderer::unieFamille(const Pending& p) const {
+    const uint32_t f = p.mat ? p.mat->flags : 0u;
+    const bool voiture = p.famille == FAM_VOITURES, sol = !voiture && (f & (MAT_ROAD | MAT_WALK | MAT_GROUND));
+    return voiture ? diag::actif(diag::UNIE_VOITURES) : sol ? diag::actif(diag::UNIE_SOLS) : diag::actif(diag::UNIE_DECOR);
+}
+
 // moteur 40 img/s : pipelines par famille détruits (changement de MSAA, préchauffage, arrêt) ; GPU à l'arrêt sur eux
 void Renderer::detruireFamilles() {
     if (!vk_ || !vk_->device) return;
@@ -1384,6 +1392,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     eclairementCpu_ = qualiteBasse && u.misc.y > 0.5f;
     if (diag::actif(diag::SANS_PLUIE)) u.nuitA.y = 0;              // pas de flaques (les gouttes : src/world/meteo.cpp)
     u.spotN.w = diag::actif(diag::COULEUR_UNIE) ? 1.f : 0.f;      // shader « couleur unie » (scene.frag, scene_skin.frag)
+    uniePar_ = diag::actif(diag::UNIE_SOLS) || diag::actif(diag::UNIE_DECOR) || diag::actif(diag::UNIE_VOITURES);   // WFS-614
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     if (refletsOn_) {
         FrameUBO m = u;
@@ -1915,7 +1924,7 @@ void Renderer::endFrame() {
                                : fam ? (d ? famDecoupe_[fam] : leger ? (cull ? famLeger_[fam] : famLegerDouble_[fam]) : cull ? famCull_[fam] : famOpaque_[fam])
                                      : (d ? opaqueDecoupe_ : leger ? (cull ? opaqueLeger_ : opaqueLegerDouble_) : cull ? opaqueCull_ : opaque_);   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
-        flushDraw(p);
+        if (uniePar_ && unieFamille(p)) { Pending q = p; q.pc.nuit.w = 2.f; flushDraw(q); } else flushDraw(p);   // WFS-614 (banc)
     }
     if (!rendu221) {
         vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skyApres_);
@@ -1932,7 +1941,7 @@ void Renderer::endFrame() {
             const int fam = famillesActives_ ? famille_pipeline::choisir((uint32_t)(p.pc.params.w + 0.5f), p.famille == FAM_VOITURES) : 0;
             const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : fam ? famBlend_[fam] : blend_;
             if (voulu != lieT) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lieT = voulu; }
-            flushDraw(p);
+            if (uniePar_ && !(p.mat->flags & (MAT_POOL | MAT_ADD)) && unieFamille(p)) { Pending q = p; q.pc.nuit.w = 2.f; flushDraw(q); } else flushDraw(p);   // WFS-614 (banc)
         }
     }
     passes::dansScene(*this, r.cb, EtapeRendu::Transparents);   // WFS-150

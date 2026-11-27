@@ -79,6 +79,11 @@ extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeFre
     if (hz >= 30.f && hz <= 500.f) qualite::frequenceEcranMax = hz;
     WFS_LOG("Écran : jusqu'à %.1f Hz", (double)hz);
 }
+// WFS-614 (RG-03) : fréquence réelle de l'écran à cet instant (au départ, puis à chaque changement : économie d'énergie, 60 / 120 Hz)
+extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeFrequenceActuelle(JNIEnv*, jclass, jfloat hz) {
+    if (hz >= 1.f && hz <= 500.f) qualite::frequenceEcranActuelle.store(hz, std::memory_order_relaxed);
+    WFS_LOG("Écran : %.1f Hz en ce moment", (double)hz);
+}
 
 struct App {
     VkCtx vk; Renderer renderer; Game game;

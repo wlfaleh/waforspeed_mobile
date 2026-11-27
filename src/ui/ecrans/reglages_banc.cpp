@@ -159,6 +159,11 @@ void finirEssai(Renderer& r, bool interrompu) {
     res.chauffeDebut = g_chauffeDebut; res.chauffeFin = chauffe::statut();
     res.temperatureDebut = g_tempDebut; res.temperatureFin = banc_tel::temperatureBatterie();
     res.rendu = qualite::ligneRendu();
+    {   // WFS-614 (RG-03) : fréquence réelle de l'écran et plafond d'images/s pendant l'essai (état lent du 2026-11-27 à expliquer)
+        const float hz = qualite::frequenceEcranActuelle.load(std::memory_order_relaxed);
+        res.rendu += " · écran " + (hz > 0 ? banc_tel::virgule(hz, 0) + " Hz" : std::string("? Hz")) + " (max " + banc_tel::virgule(qualite::frequenceEcranMax, 0) +
+                     ") · plafond " + std::to_string(chauffe::plafondCourant()) + " img/s · cadence " + std::to_string(qualite::cadenceCourse);
+    }
     WFS_LOG("banc du téléphone (WFS-420) : essai %zu/%zu %s, %s : %s", g_index + 1, g_deroule.size(), res.essai.nuit ? "nuit" : "jour", res.nom.c_str(),
             res.images.images ? (std::to_string(res.images.images) + " images, médiane " + banc_tel::virgule(res.images.mediane) + " ms, 95 % " +
                                  banc_tel::virgule(res.images.p95) + " ms, GPU " + (res.gpuMesure ? banc_tel::virgule(res.gpuTotal, 2) : std::string("—")) + " ms").c_str() : "aucune image");
@@ -334,7 +339,7 @@ void dessinerProtocole(Renderer& r, float W, float H, float k) {
     {
         const double minutes = banc_tel::deroule().size() * (banc_tel::dureeChauffe + banc_tel::dureeMesure) / 60.0;
         ligne(r, x0, y, lw, 12 * k, "Chaque essai : " + banc_tel::virgule(banc_tel::dureeChauffe, 0) + " s de chauffe puis " + banc_tel::virgule(banc_tel::dureeMesure, 0) +
-                                    " s de mesure ; 28 essais, environ " + banc_tel::virgule(minutes, 0) + " minutes. Ne touche pas l'écran ; « Arrêter » garde les essais finis.", hex(MUTED), 16 * k);
+                                    " s de mesure ; " + std::to_string(banc_tel::deroule().size()) + " essais, environ " + banc_tel::virgule(minutes, 0) + " minutes. Ne touche pas l'écran ; « Arrêter » garde les essais finis.", hex(MUTED), 16 * k);
     }
     ligne(r, x0, y, lw, 12 * k, "Résultats : tableau à l'écran et fichier diagnostic-AAAA-MM-JJ-hhmm.txt, avec un bouton « Partager ».", hex(MUTED), 16 * k);
     const std::string js = interrupteursJson();

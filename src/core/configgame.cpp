@@ -110,6 +110,9 @@ std::vector<Champ> champs(ConfigJeu& c) {
         {"diagnostic.couleur_unie", T::Entier, &c.diagnostic.coupe[9], 0, 1, "0 / 1", "diagnostic : shader couleur unie (coût des triangles seul)"},
         {"diagnostic.sans_decor", T::Entier, &c.diagnostic.coupe[10], 0, 1, "0 / 1", "diagnostic : décor coupé (route, sol et voitures gardés)"},
         {"diagnostic.distance_demi", T::Entier, &c.diagnostic.coupe[11], 0, 1, "0 / 1", "diagnostic : distance d'affichage divisée par 2"},
+        {"diagnostic.unie_sols", T::Entier, &c.diagnostic.coupe[12], 0, 1, "0 / 1", "diagnostic : couleur unie sur la route et les sols seulement"},   // WFS-614
+        {"diagnostic.unie_decor", T::Entier, &c.diagnostic.coupe[13], 0, 1, "0 / 1", "diagnostic : couleur unie sur le décor seulement"},              // WFS-614
+        {"diagnostic.unie_voitures", T::Entier, &c.diagnostic.coupe[14], 0, 1, "0 / 1", "diagnostic : couleur unie sur les voitures seulement"},       // WFS-614
         {"paquets.adresse_liste", T::Adresse, c.paquets.adresseListe, 12, ADRESSE_MAX, "caractères", "adresse https de la liste des paquets de cartes (cartes.json)"},   // WFS-306
         {"confidentialite_url", T::Adresse, c.confidentialiteUrl, 0, ADRESSE_MAX, "caractères", "adresse https de la politique de confidentialité (écran Crédits) ; vide : ligne cachée"},   // WFS-406 (RG-06)
     };

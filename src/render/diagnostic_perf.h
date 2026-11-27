@@ -25,6 +25,9 @@ enum Interrupteur : int {
     COULEUR_UNIE,      // shader « couleur unie » : chaque objet de sa couleur de base, sans texture ni lumière
     SANS_DECOR,        // décor coupé (bâtiments, végétation, mobilier) ; route, sol, trottoirs et voitures gardés
     DISTANCE_DEMI,     // distance d'affichage ÷ 2 (tous les objets, route comprise)
+    UNIE_SOLS,         // WFS-614 : couleur unie seulement sur la route, les trottoirs et les sols (coût de leurs matières)
+    UNIE_DECOR,        // WFS-614 : couleur unie seulement sur le décor (bâtiments, végétation, mobilier)
+    UNIE_VOITURES,     // WFS-614 : couleur unie seulement sur les voitures
     N_INTERRUPTEURS
 };
 
@@ -47,6 +50,9 @@ inline constexpr Info INFOS[N_INTERRUPTEURS] = {
     {"couleur_unie", "Shader couleur unie", "unie", false},
     {"sans_decor", "Décor coupé", "-décor", false},
     {"distance_demi", "Distance d'affichage ÷ 2", "dist/2", false},
+    {"unie_sols", "Couleur unie : route et sols", "unie-sols", false},        // WFS-614
+    {"unie_decor", "Couleur unie : décor", "unie-décor", false},              // WFS-614
+    {"unie_voitures", "Couleur unie : voitures", "unie-voitures", false},     // WFS-614
 };
 
 // vrai si l'interrupteur est allumé (menu caché OU configgame.json)

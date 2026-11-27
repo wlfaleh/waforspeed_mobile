@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     {
         ConfigJeu c; lireConfig(defauts, "défauts", c);
         bool zeros = true; for (int v : c.diagnostic.coupe) zeros = zeros && v == 0;
-        cas("WFS-419 : 12 interrupteurs de diagnostic à 0 par défaut", zeros && defauts.find("\"sans_ombres\": 0") != std::string::npos);
+        cas("WFS-419 / WFS-614 : 15 interrupteurs de diagnostic à 0 par défaut", zeros && defauts.find("\"sans_ombres\": 0") != std::string::npos);
         ConfigJeu d; const BilanConfig b = lireConfig(remplacer(defauts, "\"sans_ombres\": 0", "\"sans_ombres\": 1"), "diag", d);
         cas("WFS-419 : diagnostic.sans_ombres = 1 lu", b.erreurs == 0 && d.diagnostic.coupe[3] == 1);
         ConfigJeu e; const BilanConfig b2 = lireConfig(remplacer(defauts, "\"sans_ombres\": 0", "\"sans_ombres\": 2"), "diag hors bornes", e);

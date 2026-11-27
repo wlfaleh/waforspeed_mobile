@@ -52,7 +52,8 @@ void main() {
     }
     // WFS-419 : diagnostic « couleur unie » (spotN.w = 1, éteint par défaut) : couleur de base de l'objet, sans texture ni
     // lumière, pour séparer le coût des triangles de celui des pixels ; un léger relief (normale) garde la scène lisible
-    if (F.spotN.w > 0.5) {
+    // WFS-614 : pc.nuit.w = 2 : couleur unie pour cet objet seulement (interrupteurs « couleur unie » par famille, banc seulement)
+    if (F.spotN.w > 0.5 || pc.nuit.w > 1.5) {
         outColor = vec4(pc.color.rgb * (0.55 + 0.45 * abs(normalize(vNrm).y)), 1.0);
         return;
     }

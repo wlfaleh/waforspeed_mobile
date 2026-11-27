@@ -4,6 +4,7 @@
 // inférieur une seule fois (« Graphismes rapides pour plus de fluidité »), sauf si le joueur a choisi lui-même.
 // Calcul seul (aucun appel Vulkan) : testé par tests/test_qualite.cpp.
 #pragma once
+#include <atomic>   // WFS-614
 #include <cstdint>
 #include <string>
 #include "../core/configgame.h"   // WFS-128
@@ -95,6 +96,9 @@ inline float atanRapide(float y, float x) {
 // 30 (à 60 Hz, la synchro FIFO ne permet que 60, 30 ou 20 img/s). 40 img/s est le plancher visé, jamais un plafond.
 inline float frequenceEcranMax = 60.f;
 inline bool ecran120() { return frequenceEcranMax >= 119.f; }
+// WFS-614 (RG-03) : fréquence RÉELLE de l'écran (Display.getRefreshRate, donnée par JeuActivity à chaque changement de l'écran) ;
+// 0 tant qu'elle n'est pas connue (banc PC). Écrite par le thread de l'interface Android, lue par le banc du téléphone.
+inline std::atomic<float> frequenceEcranActuelle{0.f};
 inline float budgetMs(int n) { return n == BASSE ? 16.7f : 22.f; }
 inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 (clé qualite.plancher_moyenne) : plus lue depuis WFS-246
 inline float plancher(int n) { return n == BASSE ? ECHELLE_MIN_BASSE : ECHELLE_MIN; }   // WFS-353 : 45 % en Basse
