@@ -23,3 +23,8 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 ### 2026-11-27 12:00:59 — Archives automatiques (robot archives)
 - Journal : 1 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-25).
 - TACHES.md : 0 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md`.
+
+### 2026-11-27 14:23:57 — Ordre de l'utilisateur : suite de WFS-611 dans la même session ; WFS-612 et WFS-613 créés (po-scrum-master)
+- Ordre de l'utilisateur (2026-11-27, session du lead dev 01UY1Vv1NH) : « Tu dois tout faire tout les tâche créer par le po dans cette sesssion tu dois les faires dans cette session ». Plus récent que la règle « un seul sujet par session », il passe avant elle pour cette session.
+- Créés (RG-05 de WFS-611), [TECHNIQUE] P1, E4, zone `src/render/**`, `shaders/**`, `tests/**`, `CMakeLists.txt` : **WFS-612** (glow de `post.frag` sur image réduite) et **WFS-613** (lumières de nuit de `eclairage.glsl` limitées par tuile / objet, portée bornée). Règles : `regles-de-gestion/WFS-612.md`, `regles-de-gestion/WFS-613.md`. WFS-609 sauté (branche déjà présente).
+- Attribués à Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2), « 📋 Prêt (suite de WFS-611, même session) », après la fusion de WFS-611 ; fusion par une autre instance du lead dev ; 🟡 À valider (utilisateur) après fusion.

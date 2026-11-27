@@ -17,7 +17,9 @@
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
 
-**Dernière mise à jour** : 2026-11-27 10:30:38 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-27 14:23:57 UTC (po-scrum-master)
+
+> 🚀 **14:23 UTC (2026-11-27)** : ordre de l'utilisateur (« tout faire dans cette session ») : la suite de WFS-611, **WFS-612** (glow sur image réduite) puis **WFS-613** (lumières de nuit), va à la même session du lead dev (01UY1Vv1NH).
 
 > 🚀 **10:30 UTC (2026-11-27)** : **WFS-611** (P1, E4, moteur 40 img/s minimum, objectif 60) au lead dev en renfort (01UY1Vv1NH) sur ordre de l'utilisateur, branche `feature/waforspeed-611`.
 
@@ -116,7 +118,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2) | WFS-611 | Lead dev en renfort (ordre de l'utilisateur) : moteur à 40 img/s minimum (objectif 60), shader de scène par famille d'objets, écran en 120 Hz | `feature/waforspeed-611`, 2026-11-27 10:30 | 🔧 En cours (WFS-611) |
+| Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2) | WFS-611 | Lead dev en renfort (ordre de l'utilisateur) : moteur à 40 img/s minimum (objectif 60) ; puis, dans la même session (ordre de l'utilisateur du 2026-11-27) : WFS-612 (glow sur image réduite), WFS-613 (lumières de nuit) | `feature/waforspeed-611`, 2026-11-27 10:30 | 🔧 En cours (WFS-611), suite : WFS-612 puis WFS-613 |
 | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) | WFS-610 | Lead dev en renfort (ordre de l'utilisateur) : prototype Godot 4 de comparaison (voiture, Ville, trafic, caméra, APK séparé) ; WFS-602 et 604 fusionnés, 609 sur sa branche | `godot` (pas encore poussée) | 🔧 En cours (WFS-610) |
 | Claude, agent dev3d (01UY1Vv49f) (session_01UY1Vv49fLTvKRexaJUt2wy) |  | — | `feature/waforspeed-594` (fusionnée) | ⏹️ session terminée (WFS-594 fusionné, #444) |
 | Claude, agent dev3d (01UY1Vv1zn) (session_01UY1Vv1znETyWL8wzqa2tEb) | — | — | `feature/waforspeed-597` (fusionnée, #439, 528ed3b6) | ⏹️ session terminée (WFS-597 fusionné) |
