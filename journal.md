@@ -28,3 +28,18 @@ Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé
 - Ordre de l'utilisateur (2026-11-27, session du lead dev 01UY1Vv1NH) : « Tu dois tout faire tout les tâche créer par le po dans cette sesssion tu dois les faires dans cette session ». Plus récent que la règle « un seul sujet par session », il passe avant elle pour cette session.
 - Créés (RG-05 de WFS-611), [TECHNIQUE] P1, E4, zone `src/render/**`, `shaders/**`, `tests/**`, `CMakeLists.txt` : **WFS-612** (glow de `post.frag` sur image réduite) et **WFS-613** (lumières de nuit de `eclairage.glsl` limitées par tuile / objet, portée bornée). Règles : `regles-de-gestion/WFS-612.md`, `regles-de-gestion/WFS-613.md`. WFS-609 sauté (branche déjà présente).
 - Attribués à Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2), « 📋 Prêt (suite de WFS-611, même session) », après la fusion de WFS-611 ; fusion par une autre instance du lead dev ; 🟡 À valider (utilisateur) après fusion.
+
+### 2026-11-27 15:29:07 — WFS-611 / 612 / 613 : APK d'essai avant fusion, CI lancée sur la branche (Claude, lead dev (01UY1Vv1NH))
+- Demande de l'utilisateur : « Tu peux me générer un fichier avant de merger ? » → un APK qui contient les trois tickets de performance, à essayer sur le téléphone avant la fusion.
+- Branche `feature/waforspeed-613` (a207e551) : WFS-613 + reprise de WFS-611 et WFS-612 + synchronisation avec main ; compilation locale du moteur et tests test_familles_pipeline, test_halo_reduit, test_tuiles_lumieres OK.
+- Lancement à la main de `build.yml` (US techniques : CI de branche permise, une à la fois) : run #1167 (46025288758) ; il vérifie compilation, tests, bancs et APK ; APK dans la Release `apercu-waforspeed-613`.
+- Mesures déjà faites au banc PC : WFS-612 passe finale 54,6 → 22,9 ms (lavapipe), écart moyen ≤ 0,0014 niveau ; WFS-613 10 / 10 captures identiques au pixel près, 71 % des couples (tuile, lumière) écartés.
+
+### 2026-11-27 16:35:17 — WFS-611 / 612 / 613 bloqués par l'utilisateur (Claude, lead dev (01UY1Vv1NH))
+- Ordre de l'utilisateur : « Je merge pas et bloque les PRs. J'ai commencé le test, il y a des trucs bizarres. J'ai lancé le test auto, je te renvoie le rapport dès qu'il finit. »
+- Aucune PR ouverte, aucune fusion ; statut des trois tickets : ⛔ Bloqué par l'utilisateur (APK d'essai `apercu-waforspeed-613`, run #1167). Aucun lead dev (passage de l'heure compris) n'ouvre ni ne fusionne de PR pour ces tickets avant le rapport de l'utilisateur et sa levée du blocage.
+
+### 2026-11-27 17:26:16 — WFS-614 créé et attribué au lead dev (01UY1Vv1NH) (po-scrum-master)
+- Rapport du banc du téléphone (WFS-420, S21 FE, Ville Basse 45 %) sur l'APK d'essai 611-613 : nuit 42,5 ms (avant 62), jour 24,1 ms ; l'utilisateur : « une catastrophe », « essaie d'améliorer plus ». Coût restant dans les matières des pixels, famille inconnue ; 7 essais lents (≈ 70 ms) inexpliqués.
+- **WFS-614** [TECHNIQUE] P1, E4 : trois interrupteurs de couleur unie (sols, décor, voitures), mesurés par le banc ; fréquence réelle de l'écran et plafond img/s par essai dans le rapport. Règles : `regles-de-gestion/WFS-614.md`.
+- Attribué à Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2), ordre de l'utilisateur (tout dans cette session). Branche `feature/waforspeed-614` partie de `feature/waforspeed-613`. ⛔ Pas de PR ni de fusion avant la levée du blocage ; ensuite 🟡 À valider (utilisateur).
