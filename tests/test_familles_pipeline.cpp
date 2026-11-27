@@ -35,7 +35,7 @@ int main() {
     // (2) cas réels
     VERIF(choisir(ROUTE, false) == FAM_ROUTE, "route");
     VERIF(choisir(ROUTE | NORMALES | METAL_RUGOSITE, false) == FAM_ROUTE, "route texturée");
-    VERIF(choisir(TROTTOIR, false) == FAM_SOL, "trottoir");
+    VERIF(choisir(TROTTOIR, false) == FAM_TROTTOIR, "trottoir");
     VERIF(choisir(SOL | OCCLUSION, false) == FAM_SOL, "sol");
     VERIF(choisir(FACADE | OCCLUSION | NORMALES | TANGENTE, false) == FAM_DECOR, "façade");
     VERIF(choisir(INTERIEUR, false) == FAM_DECOR, "vitre d'immeuble");
@@ -47,7 +47,9 @@ int main() {
     VERIF(choisir(FEU_ARRIERE | EMISSION_TEXTURE, true) == FAM_VOITURE, "feu");
     VERIF(choisir(PEINTURE, false) == FAM_VOITURE, "voiture garée en maillage");
     VERIF(choisir(EAU, false) == COMPLET, "eau : shader complet");
-    VERIF(choisir(VITRE, true) == COMPLET, "vitre : shader complet");
+    VERIF(choisir(VITRE | MELANGE, true) == FAM_VITRE, "vitre de voiture");
+    VERIF(choisir(PHARE | MELANGE, true) == FAM_VOITURE, "glace de phare transparente");
+    VERIF(choisir(VEGETATION | MELANGE, false) == FAM_DECOR, "décor transparent");
     VERIF(choisir(ROUTE | TROTTOIR, false) == COMPLET, "route + trottoir : aucune famille n'a les deux");
     // le shader complet garde tous les drapeaux
     VERIF(MASQUES[COMPLET] == 0xFFFFFFFFu, "complet");

@@ -400,7 +400,7 @@ private:
     // moteur 40 img/s : mêmes pipelines opaques, spécialisés par famille (familles_pipeline.h) ; indice 0 inutilisé (= opaque_ etc.).
     // masquePipeline_ : constante MASQUE_FAMILLE de la prochaine makePipeline ; famillesActives_ faux au banc (WFS_FAMILLES=0)
     VkPipeline famOpaque_[famille_pipeline::NOMBRE]{}, famCull_[famille_pipeline::NOMBRE]{}, famLeger_[famille_pipeline::NOMBRE]{},
-               famLegerDouble_[famille_pipeline::NOMBRE]{}, famDecoupe_[famille_pipeline::NOMBRE]{};
+               famLegerDouble_[famille_pipeline::NOMBRE]{}, famDecoupe_[famille_pipeline::NOMBRE]{}, famBlend_[famille_pipeline::NOMBRE]{};
     uint32_t masquePipeline_ = 0xFFFFFFFFu;
     bool famillesActives_ = true;
     void detruireFamilles();

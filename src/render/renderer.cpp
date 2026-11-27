@@ -909,7 +909,7 @@ static_assert(fp::PEINTURE == MAT_PAINT && fp::MELANGE == MAT_BLEND && fp::FEU_A
 // moteur 40 img/s : pipelines par famille détruits (changement de MSAA, préchauffage, arrêt) ; GPU à l'arrêt sur eux
 void Renderer::detruireFamilles() {
     if (!vk_ || !vk_->device) return;
-    for (VkPipeline* t : {famOpaque_, famCull_, famLeger_, famLegerDouble_, famDecoupe_})
+    for (VkPipeline* t : {famOpaque_, famCull_, famLeger_, famLegerDouble_, famDecoupe_, famBlend_})
         for (int f = 0; f < famille_pipeline::NOMBRE; f++) { if (t[f]) vkDestroyPipeline(vk_->device, t[f], nullptr); t[f] = VK_NULL_HANDLE; }
 }
 
@@ -939,6 +939,7 @@ void Renderer::createScenePipelines() {
         masquePipeline_ = famille_pipeline::MASQUES[f];
         famOpaque_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
         famDecoupe_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_);
+        famBlend_[f] = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_);   // transparents (vitres…)
         cullPipeline_ = 1;
         famCull_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
         legerPipeline_ = true;
@@ -972,7 +973,7 @@ void Renderer::prechaufferMsaa() {
     VkPipeline garde[std::size(membres)];
     for (size_t i = 0; i < std::size(membres); i++) garde[i] = *membres[i];
     // moteur 40 img/s : pipelines par famille gardés de même (createScenePipelines les recrée pour chaque variante MSAA)
-    VkPipeline* tableaux[] = {famOpaque_, famCull_, famLeger_, famLegerDouble_, famDecoupe_};
+    VkPipeline* tableaux[] = {famOpaque_, famCull_, famLeger_, famLegerDouble_, famDecoupe_, famBlend_};
     VkPipeline gardeFam[std::size(tableaux)][famille_pipeline::NOMBRE];
     for (size_t t = 0; t < std::size(tableaux); t++) for (int f = 0; f < famille_pipeline::NOMBRE; f++) { gardeFam[t][f] = tableaux[t][f]; tableaux[t][f] = VK_NULL_HANDLE; }
     const VkRenderPass passeGardee = scenePass_;
@@ -1880,7 +1881,9 @@ void Renderer::endFrame() {
         for (const Pending& p : transparent_) {
             if (!(p.vis & VIS_CAM) || (bancSansEffets & 8u)) continue;   // WFS-82 ; WFS-348 (RG-01) : banc seulement
             // WFS-09 : tache des phares (multiplicative), halos (additifs), sinon mélange alpha
-            const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : blend_;
+            // moteur 40 img/s (WFS-611) : mélange alpha dans le shader spécialisé de la famille de l'objet
+            const int fam = famillesActives_ ? famille_pipeline::choisir((uint32_t)(p.pc.params.w + 0.5f), p.famille == FAM_VOITURES) : 0;
+            const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : fam ? famBlend_[fam] : blend_;
             if (voulu != lieT) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lieT = voulu; }
             flushDraw(p);
         }

@@ -67,6 +67,8 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     private static native void nativeInfosPlantage(String version, int code, boolean declencheur);
     // WFS-504 (RG-01) : langue du téléphone (« fr », « en », « ar »…), donnée avant le démarrage du thread du jeu (src/ui/langue.cpp)
     private static native void nativeLangue(String code);
+    // WFS-611 : fréquence la plus haute de l'écran (Hz) : 120 sur le S21 FE ; le jeu demande alors 120 Hz (40 img/s possibles au lieu de 30)
+    private static native void nativeFrequenceEcran(float hzMax);
     private final HashSet<Integer> manettes = new HashSet<>();
     private String derniersEncarts = "";   // WFS-129 : dernières marges écrites au journal
     private InputManager entrees;
@@ -306,6 +308,11 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         String langue = "";   // WFS-504 (RG-01) : illisible → vide → anglais
         try { langue = java.util.Locale.getDefault().getLanguage(); } catch (RuntimeException e) { Log.w("WaForSpeed", "LANGUE illisible : " + e); }
         nativeLangue(langue == null ? "" : langue);
+        float hzMax = 60f;   // WFS-611 : illisible → 60 (comportement d'avant)
+        try {
+            for (android.view.Display.Mode m : getWindowManager().getDefaultDisplay().getSupportedModes()) hzMax = Math.max(hzMax, m.getRefreshRate());
+        } catch (RuntimeException e) { Log.w("WaForSpeed", "ECRAN fréquence illisible : " + e); }
+        nativeFrequenceEcran(hzMax);
         installerPlantageJava();
         final String rapport = prendreRapportPrecedent();
         super.onCreate(etat);

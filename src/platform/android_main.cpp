@@ -73,11 +73,11 @@ extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeLan
     if (c) env->ReleaseStringUTFChars(code, c);
 }
 
-// WFS-611 (moteur 40 img/s) : fréquence la plus haute de l'écran, donnée par JeuActivity.onCreate avant super.onCreate (avant le
+// WFS-611 : fréquence la plus haute de l'écran, donnée par JeuActivity.onCreate avant super.onCreate (avant le
 // thread du jeu : lue ensuite seulement par lui) ; valeur absurde ignorée (60 gardé)
 extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeFrequenceEcran(JNIEnv*, jclass, jfloat hz) {
     if (hz >= 30.f && hz <= 500.f) qualite::frequenceEcranMax = hz;
-    WFS_LOG("Écran : jusqu'à %.1f Hz (cadence de course %d img/s)", (double)hz, qualite::cadenceCible());
+    WFS_LOG("Écran : jusqu'à %.1f Hz", (double)hz);
 }
 
 struct App {
