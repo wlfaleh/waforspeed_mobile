@@ -40,6 +40,9 @@ layout(set = 0, binding = 0) uniform Frame {
     // cascade le long du regard (m), demi-côté (m) ; ombreP x nombre de cascades, y qualité (1 Moyenne, 2 Haute, 3 Ultra),
     // z côté d'une tuile de l'atlas (texels), w tan(0,53°) (pénombre)
     mat4 ombreCasc[4]; vec4 ombreFin; vec4 ombreDemi; vec4 ombreP;
+    // WFS-613 : lumières de nuit par tuile d'écran (src/render/tuiles_lumieres.h) : caméra principale et masques de 16 bits
+    // (2 tuiles par mot), lus par masqueLumieres (eclairage.glsl)
+    mat4 vpTuiles; uvec4 tuilesL[64];
 } F;
 layout(set = 0, binding = 1) uniform sampler2DShadow shadowMap;
 layout(set = 0, binding = 2) uniform sampler2D reflTex;   // WFS-16 : reflet de la scène sur la chaussée mouillée

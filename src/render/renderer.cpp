@@ -15,6 +15,7 @@
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
+#include "tuiles_lumieres.h"      // WFS-613 : lumières de nuit par tuile d'écran
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #include "../core/platform.h"   // WFS-222 : nowSeconds (banc de profilage)
 #include "vehicule_lod.h"         // WFS-158 (RG-04) : niveaux de détail des voitures
@@ -1294,6 +1295,13 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     if (diag::actif(diag::SANS_LUMIERES)) u.spotN.x = 0;           // 0 lumière de nuit
     // WFS-423 (RG-02, RG-04) : Basse et nuit seulement (vernisPeinture ne le lit que la nuit) ; mêmes lumières que le shader
     lumieresImage_.n = (int)(u.spotN.x + 0.5f);
+    {   // WFS-613 : lumières de nuit par tuile de l'écran de la caméra principale (masques conservateurs : même image) ;
+        // WFS_TUILES=0 (banc « avant ») : toutes les lumières dans toutes les tuiles, comme avant ce ticket
+        static const bool sansTuiles = [] { const char* e = std::getenv("WFS_TUILES"); return e && !std::strcmp(e, "0"); }();
+        u.vpTuiles = u.viewProj;
+        if (sansTuiles) for (uint32_t& w : u.tuilesL) w = 0xFFFFFFFFu;
+        else tuiles_lumieres::calculer(u.viewProj, u.spotPos, lumieresImage_.n, u.tuilesL);
+    }
     eclairementCpu_ = qualiteBasse && u.misc.y > 0.5f;
     if (diag::actif(diag::SANS_PLUIE)) u.nuitA.y = 0;              // pas de flaques (les gouttes : src/world/meteo.cpp)
     u.spotN.w = diag::actif(diag::COULEUR_UNIE) ? 1.f : 0.f;      // shader « couleur unie » (scene.frag, scene_skin.frag)

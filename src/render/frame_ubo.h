@@ -16,6 +16,8 @@ struct FrameUBO {
     vec4 nuitA, nuitB;                                      // WFS-09 / WFS-16 : route mouillée, reflets
     vec4 iblSH[9], iblA, iblB, cielP;                       // WFS-151 (accroche E13) : IBL, exposition, ciel (common.glsl)
     mat4 ombreCasc[4]; vec4 ombreFin, ombreDemi, ombreP;   // WFS-227 (accroche E13) : cascades d'ombre du soleil (common.glsl)
+    mat4 vpTuiles; uint32_t tuilesL[256];                  // WFS-613 : lumières de nuit par tuile d'écran (tuiles_lumieres.h)
 };
+static_assert(sizeof(FrameUBO) % 16 == 0, "bloc Frame : multiple de 16 octets (std140)");   // WFS-613
 
 } // namespace wfs

@@ -172,11 +172,27 @@ float feuCroisementRapide(vec3 w, vec3 D, float d, float range) {
 // (EN 1436 : R_L ≥ 100 mcd/m²/lx contre ≈ 15 pour l'enrobé sec)
 float g_retroMarquage = 0.0;
 float retroChaussee(int i, vec3 L, vec3 N, vec3 albedo) { return F.spotCone[i].z > 0.5 && F.spotCone[i].y > 0.99 && N.y > 0.9 ? mix(clamp(0.12 / max(L.y, 1e-3), 1.0, 7.0), 1.0, smoothstep(0.2, 0.4, dot(albedo, vec3(0.2126, 0.7152, 0.0722))) * (1.0 - g_retroMarquage)) : 1.0; }
+// WFS-613 : lumières qui peuvent atteindre le point p (bit i = lumière i), lues dans la tuile d'écran où la caméra principale voit p
+// (masques calculés sur le processeur : src/render/tuiles_lumieres.h, même grille). Toujours conservateur : une lumière sautée
+// aurait été écartée plus bas (« hors de portée ») ; point hors de l'écran ou derrière la caméra (reflet, rétroviseur, capture) :
+// toutes les lumières.
+const int TUILES_X = 32, TUILES_Y = 16;
+uint masqueLumieres(vec3 p) {
+    vec4 c = F.vpTuiles * vec4(p, 1.0);
+    if (!(c.w > 1e-4)) return 0xFFFu;
+    vec2 q = c.xy / c.w;
+    if (abs(q.x) > 1.0 || abs(q.y) > 1.0) return 0xFFFu;
+    ivec2 t = clamp(ivec2((q * 0.5 + 0.5) * vec2(TUILES_X, TUILES_Y)), ivec2(0), ivec2(TUILES_X - 1, TUILES_Y - 1));
+    int k = t.y * TUILES_X + t.x;
+    return (F.tuilesL[k >> 3][(k >> 1) & 3] >> uint((k & 1) * 16)) & 0xFFFFu;
+}
 vec3 spotLights2(int n, vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     float e0 = 0.0, e1 = 0.0, e2 = 0.0, k0 = 0.0, k1 = 0.0;   // 2 plus fortes : éclairement reçu (classement) et k approché déjà compté ; e2 : 3e
     int i0 = -1, i1 = -1;
-    for (int i = 0; i < n; i++) {   // WFS-423 (RG-01) : bornée au vrai nombre de lumières (n ≤ 12, spotLights)
+    uint m = masqueLumieres(p) & ((1u << uint(n)) - 1u);   // WFS-613 : seulement les lumières de la tuile (n ≤ 12)
+    while (m != 0u) {   // WFS-423 (RG-01) : bornée au vrai nombre de lumières (n ≤ 12, spotLights) ; WFS-613 : bits posés seulement
+        int i = findLSB(m); m &= m - 1u;
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);
@@ -233,7 +249,10 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
     float NoV = max(dot(N, V), 1e-3);
     // WFS-226 : 12 projecteurs au plus ; WFS-423 (RG-01) : la boucle s'arrête au vrai nombre de lumières de l'image (n) ou dès que
     // le plafond par pixel est atteint (4 en Basse) : plus aucun tour vide jusqu'à 12 (même résultat, mêmes lumières gardées)
-    for (int i = 0; i < n && vus < parPixel && charge < float(parPixel) - 0.01; i++) {
+    // WFS-613 : seulement les lumières de la tuile, dans le même ordre (une lumière sautée n'aurait été ni comptée ni calculée)
+    uint m = masqueLumieres(p) & ((1u << uint(n)) - 1u);
+    while (m != 0u && vus < parPixel && charge < float(parPixel) - 0.01) {
+        int i = findLSB(m); m &= m - 1u;
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);

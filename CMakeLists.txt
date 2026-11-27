@@ -256,6 +256,8 @@ else()
   target_compile_definitions(test_nuit_qualite PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_eclairement_voiture tests/test_eclairement_voiture.cpp)   # WFS-423 : éclairement autour des voitures (CPU)
   target_compile_definitions(test_eclairement_voiture PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_tuiles_lumieres tests/test_tuiles_lumieres.cpp)   # WFS-613 : lumières de nuit par tuile d'écran, aucune lumière à portée perdue
+  target_compile_definitions(test_tuiles_lumieres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_post_wfs214 tests/post_wfs214.cpp src/game/roues.cpp)   # WFS-214 : tramage du ciel (RG-01), vision de nuit loin des lumières (RG-05)
   target_compile_definitions(test_post_wfs214 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL
