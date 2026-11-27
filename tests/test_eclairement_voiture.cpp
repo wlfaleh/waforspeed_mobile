@@ -79,7 +79,9 @@ int main() {
         verifier(v.find("pc.nuit.w > 0.5 ? pc.nuit.rgb : eclairementRouteAutour()") != std::string::npos, "vehicule.glsl : valeur du CPU lue en Basse");
         verifier(v.find("DEVANT[3] = float[3](4.0, 6.5, 10.0)") != std::string::npos, "vehicule.glsl : mêmes 3 points (4 ; 6,5 ; 10 m)");
         const std::string e = lire(WFS_SOURCE_DIR "/shaders/eclairage.glsl");
-        verifier(e.find("i < n && vus < parPixel") != std::string::npos, "RG-01 : boucle des projecteurs bornée au vrai nombre (eclairage.glsl)");
+        // WFS-613 : la boucle parcourt les bits du masque de la tuile, borné aux n vraies lumières, et garde le plafond par pixel
+        verifier(e.find("masqueLumieres(p) & ((1u << uint(n)) - 1u)") != std::string::npos && e.find("while (m != 0u && vus < parPixel") != std::string::npos,
+                 "RG-01 : boucle des projecteurs bornée au vrai nombre (eclairage.glsl)");
         verifier(lire(WFS_SOURCE_DIR "/shaders/eau.glsl").find("for (int i = 0; i < n; i++)") != std::string::npos, "RG-01 : boucle des reflets de l'eau bornée (eau.glsl)");
     }
     std::printf(echecs ? "test_eclairement_voiture : %d échec(s)\n" : "test_eclairement_voiture : tout est bon\n", echecs);
