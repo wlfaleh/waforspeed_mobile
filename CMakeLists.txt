@@ -258,6 +258,8 @@ else()
   target_compile_definitions(test_eclairement_voiture PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_tuiles_lumieres tests/test_tuiles_lumieres.cpp)   # WFS-613 : lumières de nuit par tuile d'écran, aucune lumière à portée perdue
   target_compile_definitions(test_tuiles_lumieres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_familles_pipeline tests/test_familles_pipeline.cpp)   # moteur 40 img/s : shader de scène par famille d'objets
+  target_compile_definitions(test_familles_pipeline PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_post_wfs214 tests/post_wfs214.cpp src/game/roues.cpp)   # WFS-214 : tramage du ciel (RG-01), vision de nuit loin des lumières (RG-05)
   target_compile_definitions(test_post_wfs214 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL

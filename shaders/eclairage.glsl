@@ -332,11 +332,11 @@ void iblRemplacer(inout vec3 skyAmb, inout vec3 env, inout vec3 Fe, inout float 
     if (F.iblA.x < 0.5) return;
     skyAmb = iblDiffus(N);
     specOcc = 1.0;
-    if ((flags & F_VTINT) != 0u) { Fe = vec3(0.0); env = vec3(0.0); return; }   // feuillage : Lambert sans reflet (pas de lecture)   // aussi dans les captures : rebonds de la lumière d'une capture à la suivante
+    if (aF(flags, F_VTINT)) { Fe = vec3(0.0); env = vec3(0.0); return; }   // feuillage : Lambert sans reflet (pas de lecture)   // aussi dans les captures : rebonds de la lumière d'une capture à la suivante
     env = iblPrefiltre(R, clamp(rough, 0.0, 1.0));
     vec2 ab = texture(iblBrdf, vec2(clamp(NoV, 0.0, 1.0), clamp(rough, 0.0, 1.0))).rg;
     Fe = f0 * ab.x + ab.y;
-    if ((flags & F_ROAD) != 0u) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
+    if (aF(flags, F_ROAD)) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
 }
 
 // WFS-263 (RG-01) : ambiance et reflet du shader léger (décor au-delà de 60 m) : mêmes formules que le complet (ciel analytique

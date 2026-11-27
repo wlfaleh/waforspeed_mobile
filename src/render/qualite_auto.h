@@ -89,6 +89,12 @@ inline float atanRapide(float y, float x) {
     if (x < 0) r = 3.14159274f - r;
     return y < 0 ? -r : r;
 }
+// WFS-611 : fréquence la plus haute de l'écran (Hz), donnée par JeuActivity (Display.getSupportedModes) ; 60 sur le banc PC et
+// sous Android tant qu'elle n'est pas connue. Objectif de la course : 60 img/s (inchangé). Sur un écran 120 Hz (S21 FE), l'écran
+// est mis en 120 Hz : une image trop longue pour 60 (16,7 ms) mais sous 25 ms s'affiche à 40 img/s (120 / 3) au lieu de tomber à
+// 30 (à 60 Hz, la synchro FIFO ne permet que 60, 30 ou 20 img/s). 40 img/s est le plancher visé, jamais un plafond.
+inline float frequenceEcranMax = 60.f;
+inline bool ecran120() { return frequenceEcranMax >= 119.f; }
 inline float budgetMs(int n) { return n == BASSE ? 16.7f : 22.f; }
 inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 (clé qualite.plancher_moyenne) : plus lue depuis WFS-246
 inline float plancher(int n) { return n == BASSE ? ECHELLE_MIN_BASSE : ECHELLE_MIN; }   // WFS-353 : 45 % en Basse

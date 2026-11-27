@@ -741,9 +741,16 @@ void Renderer::refletPass(VkCommandBuffer cb) {
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refSky_);
     vkCmdDraw(cb, 3, 1, 0, 0);
     constexpr uint32_t SANS = MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_SHADOWBLOB | MAT_POOL;
-    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refOpaque_);
-    for (const Pending& p : opaqueQ_) if (p.osOfs < 0 && !(p.mat->flags & SANS) && (p.vis & VIS_REFLET)) flushDraw(p);   // WFS-82
     VkPipeline lie = VK_NULL_HANDLE;
+    for (const Pending& p : opaqueQ_) {
+        if (p.osOfs >= 0 || (p.mat->flags & SANS) || !(p.vis & VIS_REFLET)) continue;   // WFS-82
+        // WFS-611 : shader spécialisé de la famille de l'objet
+        const int fam = famillesActives_ ? famille_pipeline::choisir((uint32_t)(p.pc.params.w + 0.5f), p.famille == FAM_VOITURES) : 0;
+        const VkPipeline voulu = fam && refFam_[fam] ? refFam_[fam] : refOpaque_;
+        if (voulu != lie) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
+        flushDraw(p);
+    }
+    lie = VK_NULL_HANDLE;
     for (const Pending& p : transparent_) {
         if ((p.mat->flags & SANS) || !(p.vis & VIS_REFLET)) continue;   // WFS-82
         const VkPipeline voulu = (p.mat->flags & MAT_ADD) ? refAdd_ : refBlend_;
@@ -788,10 +795,11 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     st[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; st[1].module = fs; st[1].pName = "main";
     // WFS-222 : constante de spécialisation 0 (SANS_DISCARD, booléen 32 bits) : shader sans discard → early-Z
     // WFS-263 (RG-01) : constante 1 (LEGER) : variante légère de scene.frag (legerPipeline_)
-    const VkBool32 valeurs[2] = {sansDiscard ? VK_TRUE : VK_FALSE, legerPipeline_ ? VK_TRUE : VK_FALSE};
-    const VkSpecializationMapEntry entrees[2] = {{0, 0, sizeof(VkBool32)}, {1, sizeof(VkBool32), sizeof(VkBool32)}};
-    const VkSpecializationInfo spec{2, entrees, sizeof valeurs, valeurs};
-    if (sansDiscard || legerPipeline_) st[1].pSpecializationInfo = &spec;
+    // moteur 40 img/s : constante 2 (MASQUE_FAMILLE) : drapeaux de la famille du pipeline (masquePipeline_, tous par défaut)
+    const uint32_t valeurs[3] = {sansDiscard ? VK_TRUE : VK_FALSE, legerPipeline_ ? VK_TRUE : VK_FALSE, masquePipeline_};
+    const VkSpecializationMapEntry entrees[3] = {{0, 0, sizeof(VkBool32)}, {1, sizeof(VkBool32), sizeof(VkBool32)}, {2, 2 * sizeof(VkBool32), sizeof(uint32_t)}};
+    const VkSpecializationInfo spec{3, entrees, sizeof valeurs, valeurs};
+    if (sansDiscard || legerPipeline_ || masquePipeline_ != 0xFFFFFFFFu) st[1].pSpecializationInfo = &spec;
 
     VkVertexInputBindingDescription bind{};
     VkVertexInputAttributeDescription attr[6]{};
@@ -892,9 +900,31 @@ void Renderer::createPipelines() {
     // WFS-16 : passe de reflet (1 échantillon)
     const VkSampleCountFlagBits s1 = VK_SAMPLE_COUNT_1_BIT;
     refOpaque_ = makePipeline(sv, sf, 1, false, false, true, true, refletPass_, s1, sceneLayout_);
+    // WFS-611 : opaques de la passe de reflet dans le shader spécialisé de leur famille (même image, shader plus court)
+    for (int f = 1; f < famille_pipeline::NOMBRE; f++) {
+        masquePipeline_ = famille_pipeline::MASQUES[f];
+        refFam_[f] = makePipeline(sv, sf, 1, false, false, true, true, refletPass_, s1, sceneLayout_);
+    }
+    masquePipeline_ = 0xFFFFFFFFu;
     refBlend_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_);
     refSky_ = makePipeline(kv, kf, 0, false, false, false, false, refletPass_, s1, sceneLayout_);
     refAdd_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_, false, 2);
+}
+
+// moteur 40 img/s : drapeaux de familles_pipeline.h = MatFlags (un écart enverrait un objet dans un shader qui ne sait pas le dessiner)
+namespace fp = famille_pipeline;
+static_assert(fp::PEINTURE == MAT_PAINT && fp::MELANGE == MAT_BLEND && fp::FEU_ARRIERE == MAT_TAIL && fp::PHARE == MAT_HEAD && fp::DOUBLE == MAT_DOUBLE &&
+              fp::DECOUPE == MAT_MASK && fp::VITRE == MAT_GLASS && fp::ROUE == MAT_WHEEL && fp::ROUTE == MAT_ROAD && fp::TROTTOIR == MAT_WALK &&
+              fp::SOL == MAT_GROUND && fp::OMBRE_TACHE == MAT_SHADOWBLOB && fp::NORMALES == MAT_HASNORMAL && fp::METAL_RUGOSITE == MAT_HASMR &&
+              fp::VEGETATION == MAT_VTINT && fp::TACHE_PHARES == MAT_POOL && fp::ADDITIF == MAT_ADD && fp::FANTOME == MAT_FANTOME &&
+              fp::EMISSION_TEXTURE == MAT_EMTEX && fp::TANGENTE == MAT_TANGENTE && fp::INTERIEUR == MAT_INTERIEUR && fp::FACADE == MAT_FACADE &&
+              fp::OCCLUSION == MAT_AO && fp::EAU == MAT_EAU, "familles_pipeline.h : drapeaux différents de MatFlags");
+
+// moteur 40 img/s : pipelines par famille détruits (changement de MSAA, préchauffage, arrêt) ; GPU à l'arrêt sur eux
+void Renderer::detruireFamilles() {
+    if (!vk_ || !vk_->device) return;
+    for (VkPipeline* t : {famOpaque_, famCull_, famLeger_, famLegerDouble_, famDecoupe_, famBlend_})
+        for (int f = 0; f < famille_pipeline::NOMBRE; f++) { if (t[f]) vkDestroyPipeline(vk_->device, t[f], nullptr); t[f] = VK_NULL_HANDLE; }
 }
 
 // pipelines dessinés dans la passe de scène, au nombre d'échantillons du MSAA courant (vk.msaa)
@@ -918,6 +948,22 @@ void Renderer::createScenePipelines() {
     cullPipeline_ = 0;
     opaqueLegerDouble_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
     legerPipeline_ = false;
+    // moteur 40 img/s : les mêmes opaques pour chaque famille d'objets (route, trottoir et sol, décor, voiture), shader spécialisé
+    for (int f = 1; f < famille_pipeline::NOMBRE; f++) {
+        masquePipeline_ = famille_pipeline::MASQUES[f];
+        famOpaque_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
+        famDecoupe_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_);
+        famBlend_[f] = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_);   // transparents (vitres…)
+        cullPipeline_ = 1;
+        famCull_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
+        legerPipeline_ = true;
+        famLeger_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
+        cullPipeline_ = 0;
+        famLegerDouble_[f] = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
+        legerPipeline_ = false;
+    }
+    masquePipeline_ = 0xFFFFFFFFu;
+    { const char* f = std::getenv("WFS_FAMILLES"); famillesActives_ = !(f && f[0] == '0'); }   // banc : WFS_FAMILLES=0 (comparaison)
     { const char* f = std::getenv("WFS_LEGER"); legerActif_ = !(f && f[0] == '0'); }   // banc : WFS_LEGER=0 (comparaison)
     { const char* f = std::getenv("WFS_FACES"); facesArriere_ = !(f && f[0] == '0'); }
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
@@ -940,6 +986,10 @@ void Renderer::prechaufferMsaa() {
                              &copieX1_.pipeline};   // WFS-425
     VkPipeline garde[std::size(membres)];
     for (size_t i = 0; i < std::size(membres); i++) garde[i] = *membres[i];
+    // moteur 40 img/s : pipelines par famille gardés de même (createScenePipelines les recrée pour chaque variante MSAA)
+    VkPipeline* tableaux[] = {famOpaque_, famCull_, famLeger_, famLegerDouble_, famDecoupe_, famBlend_};
+    VkPipeline gardeFam[std::size(tableaux)][famille_pipeline::NOMBRE];
+    for (size_t t = 0; t < std::size(tableaux); t++) for (int f = 0; f < famille_pipeline::NOMBRE; f++) { gardeFam[t][f] = tableaux[t][f]; tableaux[t][f] = VK_NULL_HANDLE; }
     const VkRenderPass passeGardee = scenePass_;
     int variantes = 0;
     for (VkSampleCountFlagBits e : {VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_2_BIT, VK_SAMPLE_COUNT_4_BIT}) {
@@ -950,11 +1000,13 @@ void Renderer::prechaufferMsaa() {
         vk_->msaa = e; scenePass_ = p;
         createScenePipelines();
         for (VkPipeline* m : membres) { if (*m) vkDestroyPipeline(d, *m, nullptr); *m = VK_NULL_HANDLE; }
+        detruireFamilles();   // moteur 40 img/s
         vkDestroyRenderPass(d, p, nullptr);
         variantes++;
     }
     vk_->msaa = enService; scenePass_ = passeGardee;
     for (size_t i = 0; i < std::size(membres); i++) *membres[i] = garde[i];
+    for (size_t t = 0; t < std::size(tableaux); t++) for (int f = 0; f < famille_pipeline::NOMBRE; f++) tableaux[t][f] = gardeFam[t][f];
     WFS_LOG("pipelines (WFS-262 RG-02) : %d variante(s) MSAA de la scène mises en cache au chargement (%u pipelines)", variantes, pipelinesCrees_ - avant);
 }
 
@@ -987,6 +1039,7 @@ bool Renderer::appliquerNettete() {
         VkDevice d = vk_->device;
         for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_, &opaqueLeger_, &opaqueLegerDouble_,
                               &copieX1_.pipeline}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }   // WFS-425 : copie ×1
+        detruireFamilles();   // moteur 40 img/s
         if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
         scenePass_ = VK_NULL_HANDLE;
         vk_->msaa = ms;
@@ -1830,8 +1883,11 @@ void Renderer::endFrame() {
                           mo.at(0, 2) * (mo.at(1, 0) * mo.at(2, 1) - mo.at(2, 0) * mo.at(1, 1));
         const bool cull = !d && facesArriere_ && det > 0 && p.mat && !(p.mat->flags & (MAT_DOUBLE | MAT_GLASS | MAT_ROAD | MAT_WALK | MAT_GROUND));
         const bool leger = p.loin && !d && legerActif_;   // WFS-263 (RG-01) : décor entièrement au-delà de 70 m
+        // moteur 40 img/s : shader spécialisé pour la famille de l'objet (drapeaux réellement envoyés au shader : pc.params.w)
+        const int fam = famillesActives_ && !rendu221 && p.osOfs < 0 ? famille_pipeline::choisir((uint32_t)(p.pc.params.w + 0.5f), p.famille == FAM_VOITURES) : 0;
         const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : cull ? skinOpaqueCull_ : skinOpaque_)
-                                              : (d ? opaqueDecoupe_ : leger ? (cull ? opaqueLeger_ : opaqueLegerDouble_) : cull ? opaqueCull_ : opaque_);   // WFS-63
+                               : fam ? (d ? famDecoupe_[fam] : leger ? (cull ? famLeger_[fam] : famLegerDouble_[fam]) : cull ? famCull_[fam] : famOpaque_[fam])
+                                     : (d ? opaqueDecoupe_ : leger ? (cull ? opaqueLeger_ : opaqueLegerDouble_) : cull ? opaqueCull_ : opaque_);   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
     }
@@ -1846,7 +1902,9 @@ void Renderer::endFrame() {
         for (const Pending& p : transparent_) {
             if (!(p.vis & VIS_CAM) || (bancSansEffets & 8u)) continue;   // WFS-82 ; WFS-348 (RG-01) : banc seulement
             // WFS-09 : tache des phares (multiplicative), halos (additifs), sinon mélange alpha
-            const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : blend_;
+            // moteur 40 img/s (WFS-611) : mélange alpha dans le shader spécialisé de la famille de l'objet
+            const int fam = famillesActives_ ? famille_pipeline::choisir((uint32_t)(p.pc.params.w + 0.5f), p.famille == FAM_VOITURES) : 0;
+            const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : fam ? famBlend_[fam] : blend_;
             if (voulu != lieT) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lieT = voulu; }
             flushDraw(p);
         }
@@ -1952,6 +2010,8 @@ void Renderer::shutdown() {
                          poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_, opaqueCull_, skinOpaqueCull_, opaqueLeger_, opaqueLegerDouble_})
         if (p) vkDestroyPipeline(d, p, nullptr);
     copieX1_.detruire(d);   // WFS-425 : pipeline, jeu, disposition et shaders de la copie ×1
+    detruireFamilles();   // moteur 40 img/s
+    for (VkPipeline& p : refFam_) { if (p) vkDestroyPipeline(d, p, nullptr); p = VK_NULL_HANDLE; }   // WFS-611 : passe de reflet
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
     vk_->destroy(quadIb_);
     if (refletPass_) vkDestroyRenderPass(d, refletPass_, nullptr);

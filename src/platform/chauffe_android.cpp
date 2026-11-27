@@ -4,13 +4,15 @@
 //     aucun symbole, statut −1 → niveau 0, rien d'autre. Le rappel d'Android (thread binder) écrit un atomique ; la boucle
 //     de jeu le lit par chauffeNiveau() (source de chauffe.h).
 //   - RG-04 : ANativeWindow_setFrameRate(fenêtre, 60, défaut) à chaque création de la fenêtre (API 30+, par dlsym) : les
-//     écrans 90 / 120 Hz affichent 60 images/s stables, la présentation FIFO de vk.cpp ne change pas.
+//     écrans 90 Hz affichent 60 images/s stables, la présentation FIFO de vk.cpp ne change pas. WFS-611 : écran 120 Hz → 120
+//     demandés : 40 img/s possibles sous 60 (au lieu de 30).
 #if defined(__ANDROID__)
 #include <android/native_window.h>
 #include <dlfcn.h>
 #include <atomic>
 #include "../core/log.h"
 #include "chauffe.h"
+#include "../render/qualite_auto.h"   // WFS-611 : fréquence de l'écran, cadence de course
 
 namespace wfs {
 namespace {
@@ -56,8 +58,12 @@ void chauffeAndroidDemarrer() {
 void chauffeAndroidFenetre(ANativeWindow* fenetre) {
     if (!fenetre) return;
     if (!g_setFrameRate) { WFS_LOG("setFrameRate absent (API < 30) : fréquence de l'écran inchangée"); return; }
-    const int32_t code = g_setFrameRate(fenetre, 60.f, 0 /* ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_DEFAULT */);
-    WFS_LOG("setFrameRate 60 : %s (code %d)", code == 0 ? "ok" : "refusé", (int)code);
+    // WFS-611 : écran 120 Hz → 120 demandés : la course vise toujours 60 img/s, mais une image entre 16,7 et 25 ms s'affiche à 40
+    // au lieu de 30 (60 Hz forcés : FIFO à 60, 30 ou 20 seulement) ; menus à 30 (4 rafraîchissements). Autres écrans : 60 comme avant.
+    const float hz = qualite::ecran120() ? 120.f : 60.f;
+    const int32_t code = g_setFrameRate(fenetre, hz, 0 /* ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_DEFAULT */);
+    WFS_LOG("setFrameRate %.0f (écran jusqu'à %.0f Hz) : %s (code %d)", hz, qualite::frequenceEcranMax,
+            code == 0 ? "ok" : "refusé", (int)code);
 }
 
 } // namespace wfs
