@@ -590,6 +590,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-607 | [TECHNIQUE] CI Windows : construction de l'installateur | E24 | ⏳ En attente | | après WFS-602 ; `@cicd` | `feature/waforspeed-607` |  |  |
 | P3 Moyenne | WFS-608 | Équité du duel PC / téléphone (décision de l'utilisateur à prendre) | E24 | ⏳ En attente (décision utilisateur) | | après WFS-604 | `feature/waforspeed-608` |  |  |
 | P1 Urgent | WFS-610 | [PROTOTYPE] Godot 4 : voiture + route de la Ville + trafic + caméra, APK Android à comparer | E25 | 🔧 En cours | Claude, lead dev (01UY1Vv3au) (session_01UY1Vv3aubodvdU7e7M2as8) 2026-11-24, ordre de l'utilisateur | — | `godot` |  |  |
+| P1 Urgent | WFS-611 | [TECHNIQUE] [URGENT] Moteur : minimum 40 img/s (objectif 60) en qualité top : shader de scène spécialisé par famille d'objets, écran en 120 Hz | E4 | 🔧 En cours | Claude, lead dev (01UY1Vv1NH) (session_01UY1Vv1NH1rKiiKnxJVinu2) 2026-11-27, renfort sur ordre de l'utilisateur | exception PO : zone dans regles-de-gestion/WFS-611.md | `feature/waforspeed-611` |  |  |
 
 ## Critères d'acceptation
 
