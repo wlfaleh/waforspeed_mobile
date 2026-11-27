@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+#include <span>   // WFS-612
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
 #include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
 #include "cache_pipelines.h"        // WFS-262 (RG-01)
@@ -181,14 +182,14 @@ bool Renderer::init(VkCtx& vk) {
     for (uint32_t i = 0; i < 3; i++) mb[i] = {i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
     lci.bindingCount = 3; lci.pBindings = mb;
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &matLayout_));
-    lci.bindingCount = 2; lci.pBindings = mb;   // WFS-100 : 0 = image source, 1 = bloom (passe finale) / niveau inférieur (remontée)
+    lci.bindingCount = 3; lci.pBindings = mb;   // WFS-100 : 0 = image source, 1 = bloom (passe finale) / niveau inférieur (remontée) ; WFS-612 : 2 = halo (passe finale)
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &postLayout_));
 
-    VkDescriptorPoolSize sizes[3] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16 + 48 + 12},   // WFS-151 : + 3 × 4 jeux de l'image
+    VkDescriptorPoolSize sizes[3] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16 + 48 + 12 + 32},   // WFS-612 : 3e image des jeux du bloom et du halo   // WFS-151 : + 3 × 4 jeux de l'image
                                      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 4}};   // WFS-63 : palettes d'os
     VkDescriptorPoolCreateInfo pci{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    pci.maxSets = 1024 + 16 + 16; pci.poolSizeCount = 3; pci.pPoolSizes = sizes;   // WFS-100 : + 16 sets du bloom
+    pci.maxSets = 1024 + 16 + 16 + 2;   // WFS-612 : + 2 sets du halo ; pci.poolSizeCount = 3; pci.pPoolSizes = sizes;   // WFS-100 : + 16 sets du bloom
     VK_OK(vkCreateDescriptorPool(d, &pci, nullptr, &pool_));
     ETAPE_RENDU("descripteurs");
 
@@ -450,6 +451,12 @@ struct Renderer::Bloom {
     uint32_t w[N]{}, ht[N]{};
     VkDescriptorSet pre = VK_NULL_HANDLE, setH[N]{}, setV[N]{}, setUp[N]{};
     float force = 0;   // force de l'image (0 : chaîne non dessinée)
+    // WFS-612 : halo de la passe finale à demi-définition (taille du niveau 0) : passe 5 (horizontale, lit la scène) → haloX,
+    // passe 6 (verticale) → haloY, lue par la passe finale ; dessiné même quand le bloom est coupé (force 0)
+    Image haloX, haloY;
+    VkFramebuffer fbHaloX = VK_NULL_HANDLE, fbHaloY = VK_NULL_HANDLE;
+    VkDescriptorSet setHaloX = VK_NULL_HANDLE, setHaloY = VK_NULL_HANDLE;
+    bool halo = false;   // vrai : passes du halo à dessiner à cette image (faux : diagnostic « sans post », fond flouté)
     // UnrealBloomPass : bloomFactors [1,0 ; 0,8 ; 0,6 ; 0,4 ; 0,2] mélangés au rayon 0,45 (lerpBloomFactor : mix(f, 1,2 − f, r))
     static float sommePoids() { float s = 0; for (int i = 0; i < N; i++) s += poids(i); return s; }   // WFS-548 : h[0] = Σ poids × niveau flou
     static float poids(int i) { const float f = 1.0f - 0.2f * (float)i, r = 0.45f; return f + (1.2f - f - f) * r; }
@@ -493,11 +500,14 @@ struct Renderer::Bloom {
             VK_OK(vkAllocateDescriptorSets(d, &dai, &pre));
             dai.descriptorSetCount = N;
             VK_OK(vkAllocateDescriptorSets(d, &dai, setH)); VK_OK(vkAllocateDescriptorSets(d, &dai, setV)); VK_OK(vkAllocateDescriptorSets(d, &dai, setUp));
+            dai.descriptorSetCount = 1;   // WFS-612
+            VK_OK(vkAllocateDescriptorSets(d, &dai, &setHaloX)); VK_OK(vkAllocateDescriptorSets(d, &dai, &setHaloY));
         }
         VkCommandBuffer cb = vk.beginOneShot();
         for (int i = 0; i < N; i++) {
             w[i] = std::max(1u, R.cw_ >> (i + 1)); ht[i] = std::max(1u, R.ch_ >> (i + 1));   // WFS-246 (RG-07) : capacité
-            for (Image* im : {&h[i], &v[i]}) {
+            Image* const ims[4] = {&h[i], &v[i], &haloX, &haloY};   // WFS-612 : halo à la taille du niveau 0
+            for (Image* im : std::span(ims, i == 0 ? 4 : 2)) {
                 *im = vk.createImage(w[i], ht[i], 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
                 // lisible dès le départ (bloom coupé : la passe finale garde un descripteur valide)
                 VkImageMemoryBarrier b{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
@@ -514,16 +524,22 @@ struct Renderer::Bloom {
             fci.renderPass = pass; fci.attachmentCount = 1; fci.width = w[i]; fci.height = ht[i]; fci.layers = 1;
             fci.pAttachments = &h[i].view; VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &fbH[i]));
             fci.pAttachments = &v[i].view; VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &fbV[i]));
+            if (i == 0) {   // WFS-612
+                fci.pAttachments = &haloX.view; VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &fbHaloX));
+                fci.pAttachments = &haloY.view; VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &fbHaloY));
+            }
         }
-        auto ecrire = [&](VkDescriptorSet s, VkImageView a, VkImageView b) {
-            VkDescriptorImageInfo ii[2] = {{R.clampSampler_, a, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-                                           {R.clampSampler_, b ? b : R.white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
-            VkWriteDescriptorSet wr[2]{};
-            for (int k = 0; k < 2; k++) {
+        // WFS-612 : 3e image (halo) écrite dans chaque set : post.frag la déclare, même les passes du bloom qui ne la lisent pas
+        auto ecrire = [&](VkDescriptorSet s, VkImageView a, VkImageView b, VkImageView c = VK_NULL_HANDLE) {
+            VkDescriptorImageInfo ii[3] = {{R.clampSampler_, a, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+                                           {R.clampSampler_, b ? b : R.white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+                                           {R.clampSampler_, c ? c : R.white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
+            VkWriteDescriptorSet wr[3]{};
+            for (int k = 0; k < 3; k++) {
                 wr[k].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; wr[k].dstSet = s; wr[k].dstBinding = (uint32_t)k;
                 wr[k].descriptorCount = 1; wr[k].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[k].pImageInfo = &ii[k];
             }
-            vkUpdateDescriptorSets(d, 2, wr, 0, nullptr);
+            vkUpdateDescriptorSets(d, 3, wr, 0, nullptr);
         };
         ecrire(pre, R.hdr_.view, VK_NULL_HANDLE);
         for (int i = 0; i < N; i++) {
@@ -531,7 +547,9 @@ struct Renderer::Bloom {
             ecrire(setV[i], h[i].view, VK_NULL_HANDLE);
             ecrire(setUp[i], v[i].view, i + 1 < N ? h[i + 1].view : VK_NULL_HANDLE);
         }
-        ecrire(R.postSet_, R.hdr_.view, h[0].view);   // passe finale : scène + bloom remonté
+        ecrire(setHaloX, R.hdr_.view, VK_NULL_HANDLE);   // WFS-612 : passe 5 : lit la scène
+        ecrire(setHaloY, haloX.view, VK_NULL_HANDLE);     // passe 6 : lit le résultat de la passe 5
+        ecrire(R.postSet_, R.hdr_.view, h[0].view, haloY.view);   // passe finale : scène + bloom remonté + halo
     }
 
     void detruireCibles(Renderer& R) {
@@ -542,6 +560,8 @@ struct Renderer::Bloom {
             fbH[i] = fbV[i] = VK_NULL_HANDLE;
             R.vk_->destroy(h[i]); R.vk_->destroy(v[i]);
         }
+        for (VkFramebuffer* f : {&fbHaloX, &fbHaloY}) { if (*f) vkDestroyFramebuffer(d, *f, nullptr); *f = VK_NULL_HANDLE; }   // WFS-612
+        R.vk_->destroy(haloX); R.vk_->destroy(haloY);
     }
 
     void liberer(Renderer& R) {
@@ -553,7 +573,7 @@ struct Renderer::Bloom {
     }
 
     // une passe plein écran : source(s) du set, mode et paramètres du shader post.frag
-    void passe(Renderer& R, VkCommandBuffer cb, VkFramebuffer fb, int i, VkDescriptorSet s, float mode, float poidsNiveau, float z) {
+    void passe(Renderer& R, VkCommandBuffer cb, VkFramebuffer fb, int i, VkDescriptorSet s, float mode, float poidsNiveau, float z, float nuit = 0.f) {
         VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         rbi.renderPass = pass; rbi.framebuffer = fb; rbi.renderArea = {{0, 0}, {w[i], ht[i]}};
         vkCmdBeginRenderPass(cb, &rbi, VK_SUBPASS_CONTENTS_INLINE);
@@ -561,13 +581,19 @@ struct Renderer::Bloom {
         VkRect2D sc{{0, 0}, {w[i], ht[i]}};
         vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, R.postPLayout_, 0, 1, &s, 0, nullptr);
-        struct { float rot[4]; float params[4]; float bloom[4]; } pp{{1, 0, 0, 1}, {R.exposure_, R.flouImage_ ? 1.f : 0.f, 0, 0}, {mode, poidsNiveau, z, mode == 1 ? R.echelleDyn_ : 0.f}};   // WFS-246 : bloom.w = part de la scène lue
+        struct { float rot[4]; float params[4]; float bloom[4]; } pp{{1, 0, 0, 1}, {R.exposure_, R.flouImage_ ? 1.f : 0.f, 0, nuit}, {mode, poidsNiveau, z, mode == 1 ? R.echelleDyn_ : 0.f}};   // WFS-246 : bloom.w = part de la scène lue ; WFS-612 : params.w = k de nuit (halo)
         vkCmdPushConstants(cb, R.postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof pp, &pp);
         vkCmdDraw(cb, 3, 1, 0, 0);
         vkCmdEndRenderPass(cb);
     }
 
     void dessiner(Renderer& R, VkCommandBuffer cb) {
+        if (halo) {   // WFS-612 : halo à demi-définition (4 + 4 lectures sur un quart des pixels au lieu de 16 lectures par pixel)
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
+            const float k = eclairage::kVisionNuit();   // même valeur que params.w de la passe finale : poids gaussien la nuit
+            passe(R, cb, fbHaloX, 0, setHaloX, 5, 0, 0, k);
+            passe(R, cb, fbHaloY, 0, setHaloY, 6, 0, 0, k);
+        }
         if (force <= 0.f) return;
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
         passe(R, cb, fbV[0], 0, pre, 1, 0, 0);                       // seuil + réduction de moitié
@@ -1847,7 +1873,10 @@ void Renderer::endFrame() {
     if (passe_scene::avecCopie(vk.msaa)) copieX1_.enregistrer(r.cb, sw_, sh_);   // WFS-425 : ×1 : scène copiée dans la cible HDR (même tuile)
     vkCmdEndRenderPass(r.cb);
     if (statsPool_) { vkCmdEndQuery(r.cb, statsPool_, (uint32_t)cur_); statsEcrit_[cur_] = true; }   // WFS-348 : banc
-    if (bloom_) bloom_->dessiner(*this, r.cb);   // WFS-100 : chaîne du bloom, comptée avec la passe de scène
+    if (bloom_) {   // WFS-100 : chaîne du bloom, comptée avec la passe de scène ; WFS-612 : halo, sauf « sans post » et fond flouté
+        bloom_->halo = !diag::actif(diag::SANS_POST) && !flouImage_;
+        bloom_->dessiner(*this, r.cb);
+    }
     // WFS-09 : coût mesuré aussi la nuit (sans ombres) : passes de reflet et de scène (+ bloom, WFS-100)
     if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 3);
     passes::apresScene(*this, r.cb);   // WFS-150 : post-traitement enfichable (avant la passe finale)
