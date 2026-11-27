@@ -3,11 +3,13 @@
 // WFS-100 : le même shader sert aussi aux passes du bloom (pc.bloom.x ≠ 0), dessinées hors écran avant la passe finale.
 layout(set = 0, binding = 0) uniform sampler2D hdr;        // passe finale : scène HDR ; passes du bloom : image source
 layout(set = 0, binding = 1) uniform sampler2D bloomTex;   // passe finale : bloom remonté ; remontée : niveau inférieur
+layout(set = 0, binding = 2) uniform sampler2D haloTex;    // WFS-612 : passe finale : halo déjà flouté à demi-définition (passes 5 et 6)
 // params : x exposition, y sortie sRGB matérielle, z force du bloom, w exposition physique k la nuit (WFS-230 : vision de nuit ;
 //          0 de jour : image inchangée ; WFS-276 : négative dans la Ville = sans relèvement des basses lumières)
 //          WFS-548 (fond flouté des écrans arrêtés) : passes du bloom : y = 1 → mode 1 SANS seuil (toute l'image) ;
 //          passe finale : z < 0 → la scène est remplacée par le bloom flouté (bloomTex × −z), halo et ajout du bloom sautés
-// bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée),
+// bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée,
+//                   WFS-612 : 5 halo horizontal, 6 halo vertical ; params.w = k de nuit, comme la passe finale),
 //                   y poids du niveau (remontée) ; passe finale : luminance d'adaptation de nuit en cd/m² (WFS-214, 0 de jour), z pas du flou en texels de la source / niveau inférieur présent (remontée)
 layout(push_constant) uniform P { vec4 rot; vec4 params; vec4 bloom; } pc;
 layout(location = 0) in vec2 vUv;
@@ -74,6 +76,33 @@ vec3 seuilBloom(vec3 c) {
 // flou gaussien séparable à 9 prises contiguës (UnrealBloomPass : getSeperableBlurMaterial), poids normalisés
 const float G9[5] = float[](0.2270270, 0.1945946, 0.1216216, 0.0540540, 0.0162162);
 
+// WFS-612 : halo des zones très lumineuses, calculé à demi-définition au lieu de 16 lectures par pixel de l'écran.
+// L'ancien halo (passe finale) : 4 × 4 lectures bilinéaires aux décalages o = 2i − 3,5 pixels (i = 0..3) autour du pixel, chacune
+// plafonnée, seuillée (max(min(s, 24) − 2,5 ; 0)) et pondérée (1 de jour, gaussienne exp(−|o|² / 6) la nuit), puis divisée par la
+// somme des poids. Une lecture bilinéaire à cheval sur 2 × 2 pixels vaut la moyenne d'un bloc de 2 × 2 pixels, c'est-à-dire un
+// texel d'une image réduite de moitié : pour un pixel pair (k = 2m), les 4 lectures d'une ligne tombent exactement au centre des
+// texels m − 2 … m + 1. La somme est séparable (poids gaussien = produit des poids en x et en y) : passe 5 = 4 lectures horizontales
+// seuillées, passe 6 = 4 lectures verticales, sur un quart des pixels ; la passe finale ne fait plus qu'une lecture bilinéaire.
+// Pixel pair : même valeur que l'ancien halo ; pixel impair : moyenne des deux voisins (écart mesuré au banc, écrit dans la PR).
+float poidsHalo(float o) { return pc.params.w != 0.0 ? exp(-o * o / 6.0) : 1.0; }
+vec4 passeHalo(int mode) {
+    float somme = 0.0;
+    for (int i = 0; i < 4; i++) somme += poidsHalo(float(i) * 2.0 - 3.5);
+    vec3 s = vec3(0.0);
+    if (mode == 5) {
+        // texel (m, n) de l'image réduite = bloc de pixels (2m, 2n)…(2m + 1, 2n + 1) de la scène, centre au point 2 × gl_FragCoord
+        vec2 px = 1.0 / vec2(textureSize(hdr, 0)), c = gl_FragCoord.xy * 2.0;
+        for (int i = 0; i < 4; i++) {
+            vec3 v = texture(hdr, (c + vec2(float(i) * 2.0 - 4.0, 0.0)) * px).rgb * pc.params.x;
+            s += max(min(v, vec3(24.0)) - 2.5, 0.0) * poidsHalo(float(i) * 2.0 - 3.5);
+        }
+        return vec4(s / somme, 1.0);
+    }
+    vec2 q = 1.0 / vec2(textureSize(hdr, 0));   // passe 6 : la source est l'image de la passe 5 (même taille)
+    for (int j = 0; j < 4; j++) s += texture(hdr, (gl_FragCoord.xy + vec2(0.0, float(j) - 2.0)) * q).rgb * poidsHalo(float(j) * 2.0 - 3.5);
+    return vec4(s / somme, 1.0);
+}
+
 vec4 passeBloom(int mode) {
     vec2 px = 1.0 / vec2(textureSize(hdr, 0));
     if (mode == 1) {
@@ -107,6 +136,7 @@ vec4 passeBloom(int mode) {
 
 void main() {
     int mode = int(pc.bloom.x + 0.5);
+    if (mode >= 5) { outColor = passeHalo(mode); return; }   // WFS-612
     if (mode != 0) { outColor = passeBloom(mode); return; }
     vec2 uvS = vUv * (pc.bloom.w > 0.0 ? pc.bloom.w : 1.0);   // WFS-246 (RG-07) : part de la cible de scène dessinée
     // WFS-548 (RG-02) : params.z < 0 : écran arrêté, la scène est remplacée par la chaîne du bloom calculée sans seuil (somme des
@@ -114,25 +144,20 @@ void main() {
     vec3 scene = pc.params.z < 0.0 ? texture(bloomTex, vUv).rgb * (-pc.params.z) / max(pc.params.x, 1e-6) : texture(hdr, uvS).rgb;
     vec3 c = visionNuit(scene, abs(pc.params.w), pc.bloom.y) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
     c = basseLumiereNuit(c, pc.params.w);   // WFS-276 : basses lumières de la nuit relevées (rien de jour ; params.w < 0 : Ville, rien)
-    // léger halo autour des zones très lumineuses (soleil, reflets).
-    // 4 × 4 lectures bilinéaires, chacune à cheval sur 2 × 2 pixels, espacées de 2 pixels : elles couvrent tout le
-    // carré de 8 × 8 pixels sans trou (WFS-32 : l'ancienne grille de 5 × 5 lectures espacées de 3 pixels transformait
-    // chaque pixel très brillant en une grille de points blancs). Chaque lecture est plafonnée pour qu'un seul pixel
-    // extrême ne fasse pas une tache.
-    vec2 px = 1.0 / vec2(textureSize(hdr, 0));
-    vec3 glow = vec3(0.0); float poids = 0.0;
-    // WFS-419 : diagnostic « sans post » (bloom.z = 1 dans la passe finale, 0 par défaut) : halo des 16 lectures sauté
-    if (pc.bloom.z < 0.5 && pc.params.z >= 0.0) for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) {
-        vec2 o = vec2(i, j) * 2.0 - 3.5;   // WFS-382 : la nuit, prises pondérées par la distance (gaussienne) : halo rond, pas de carré
-        float w = pc.params.w != 0.0 ? exp(-dot(o, o) / 6.0) : 1.0; poids += w;
-        vec3 s = texture(hdr, uvS + o * px).rgb * pc.params.x;   // -3,5 : à cheval entre 2 pixels
-        glow += max(min(s, vec3(24.0)) - 2.5, 0.0) * w;
+    // léger halo autour des zones très lumineuses (soleil, reflets) : carré de 8 × 8 pixels autour du pixel, seuillé et plafonné
+    // (WFS-32 : pas de grille de points ; WFS-382 : rond la nuit). WFS-612 : déjà sommé à demi-définition (passes 5 et 6, voir
+    // passeHalo) ; ici une seule lecture bilinéaire : coordonnée réduite (X + 0,5) / 2, X = coordonnée du pixel dans la scène
+    // (pixel pair : centre d'un texel, même valeur qu'avant ; impair : entre deux texels).
+    vec3 glow = vec3(0.0);
+    // WFS-419 : diagnostic « sans post » (bloom.z = 1 dans la passe finale, 0 par défaut) : halo sauté
+    if (pc.bloom.z < 0.5 && pc.params.z >= 0.0) {
+        vec2 X = uvS * vec2(textureSize(hdr, 0));
+        glow = texture(haloTex, (X + 0.5) * 0.5 / vec2(textureSize(haloTex, 0))).rgb;
     }
-    glow *= 16.0 / max(poids, 1.0);   // WFS-419 : poids = 0 quand le halo est sauté   // même énergie que 16 prises égales (le jour : poids = 16, rien ne change)
     // WFS-382 (RG-03, ANO-222) : la nuit (params.w ≠ 0), halo et bloom compressés en douceur sur leur luminance Y : e / (1 + Y / 0,35),
     // presque rien sous 0,05, jamais plus de 0,35 ajouté ; continu, sans palier ni changement de teinte (2e revue du lead dev : un
     // min() par canal faisait un disque gris, un carré et un anneau irisé autour des sources vives) ; le jour, rien ne change
-    c += pc.params.w != 0.0 ? eclatNuit(glow / 16.0 * 0.35) : glow / 16.0 * 0.35;
+    c += pc.params.w != 0.0 ? eclatNuit(glow * 0.35) : glow * 0.35;   // WFS-612 : glow déjà divisé par la somme des poids
     // bloom (WFS-15, WFS-100 : UnrealBloomPass du jeu web) : chaîne « dual filter » de 5 niveaux calculée avant cette passe
     // (Renderer::passesBloom) ; force 0 (qualité basse, GPU logiciel) : rien n'est lu, image identique
     if (pc.params.z > 0.0) { vec3 b = texture(bloomTex, vUv).rgb * pc.params.z; c += pc.params.w != 0.0 ? eclatNuit(b) : b; }   // WFS-382

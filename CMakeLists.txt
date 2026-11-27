@@ -260,6 +260,8 @@ else()
   target_compile_definitions(test_tuiles_lumieres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_familles_pipeline tests/test_familles_pipeline.cpp)   # moteur 40 img/s : shader de scène par famille d'objets
   target_compile_definitions(test_familles_pipeline PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_halo_reduit tests/test_halo_reduit.cpp)   # WFS-612 : halo de la passe finale à demi-définition, même halo
+  target_compile_definitions(test_halo_reduit PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_post_wfs214 tests/post_wfs214.cpp src/game/roues.cpp)   # WFS-214 : tramage du ciel (RG-01), vision de nuit loin des lumières (RG-05)
   target_compile_definitions(test_post_wfs214 PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL
